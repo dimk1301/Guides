@@ -95,6 +95,13 @@ The security baseline of the cluster rests heavily on the container layers you i
 
 ---
 
+Here is how you can seamlessly incorporate **ESLint** (for JS/React frontends) and **FindSecBugs** (for Java backends) into Chapter 4.
+
+We will add them right into your **Integrated Developer Toolset**, expand the **Mermaid diagram** so the architecture updates cleanly, and keep the exact high-level tone, SSDF compliance context, and AI-workflow flow you already built.
+
+---
+
+
 ## **4. Local Privacy & Security Scans**
 
 To minimize friction in centralized pipelines, security starts at the developer workstation so issues are caught in seconds, before the first commit.
@@ -103,17 +110,21 @@ To minimize friction in centralized pipelines, security starts at the developer 
 
 ```mermaid
 flowchart TD
-    A[Bearer CLI] -->|Privacy & SAST Scan| C[IDE Security Interface]
-    B[SonarLint] -->|Real-time Code Quality| C
+    A[Bearer CLI] -->|Privacy & Data Leak Scan| E[IDE Security Interface]
+    B[SonarLint] -->|Real-time Code Quality| E
+    C[ESLint + Security Rules] -->|JS/React SAST Scanning| E
+    D[FindSecBugs] -->|Java/Spring Bytecode Analysis| E
 
-    C -->|Identify Issue| D[AI Coding Assistant]
-    D -->|Explain & Fix| E[Hardened Codebase]
+    E -->|Identify Issue / OWASP Top 10| F[AI Coding Assistant]
+    F -->|Explain & Fix| G[Hardened Codebase]
 
     style A fill:#3B82F6,stroke:#1D4ED8,stroke-width:2px,color:#fff
     style B fill:#F59E0B,stroke:#D97706,stroke-width:2px,color:#fff
-    style C fill:#8B5CF6,stroke:#7C3AED,stroke-width:2px,color:#fff
-    style D fill:#EC4899,stroke:#BE185D,stroke-width:2px,color:#fff
-    style E fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
+    style C fill:#0ea5e9,stroke:#0284c7,stroke-width:2px,color:#fff
+    style D fill:#64748b,stroke:#475569,stroke-width:2px,color:#fff
+    style E fill:#8B5CF6,stroke:#7C3AED,stroke-width:2px,color:#fff
+    style F fill:#EC4899,stroke:#BE185D,stroke-width:2px,color:#fff
+    style G fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
 
 ```
 
@@ -121,13 +132,15 @@ flowchart TD
 
 * **Bearer CLI (Privacy & Security):** Scans local code for logic bugs and PII leakage, such as sensitive data in logs, while keeping code on the developer machine.
 * **SonarLint (Quality & Clean Code):** Acts as security “spellcheck” inside the IDE, catching common anti-patterns and vulnerabilities before builds.
+* **ESLint Security Configurations (Frontend SAST):** Leverages Abstract Syntax Tree (AST) parsing on client-side React and JavaScript code. It explicitly targets context-aware vulnerabilities like Prototype Pollution, Regular Expression Denial of Service (ReDoS), and Cross-Site Scripting (XSS) by strictly enforcing the "Validate Input, Encode/Escape Output" standard.
+* **FindSecBugs / SpotBugs (Backend SAST):** Performs deep data-flow (taint) analysis on compiled Java bytecode. It tracks untrusted inputs from boundary layers (Spring Boot API controllers) down to structural components to automatically catch critical OWASP Top 10 risks like SQL Injection, Path Traversal, and Cryptographic weaknesses before binary packaging.
 
 ### **AI-Assisted Developer Workflow (Code & Test)**
 
-Pairing these scanners with coding agents turns security into a conversational workflow rather than a blocking gate.
+Pairing these ecosystem-specific scanners with coding agents turns security into a conversational workflow rather than a blocking gate.
 
-* Instant triage: when a scanner flags a complex issue, the developer asks the agent to explain the attack vector in-context.
-* Guided mitigation: the agent drafts fixes that satisfy scanner rules while preserving behavior, so only “clean” code reaches CI.
+* **Instant triage:** When a linter or bytecode analyzer flags a complex OWASP Top 10 issue, the developer asks the agent to explain the specific data-flow or attack vector in-context.
+* **Guided mitigation:** The agent drafts structural fixes that satisfy linter and security rules while preserving core application behavior, ensuring only structurally sound and “clean” code reaches CI.
 
 **Agent Boundaries at the Code Stage:** Agents may generate and refactor code and propose tests, but cannot push commits or merge branches; scanners and policies remain the source of security truth, and humans remain the source of intent and final approval.
 
