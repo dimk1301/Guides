@@ -32,17 +32,27 @@ By utilizing highly targeted open-source utilities and community-tier tools rath
 The architecture is governed end-to-end by the **OWASP Kubernetes Security Testing Guide (KSTG)** for cluster infrastructure, and the **OWASP Application Security Verification Standard (ASVS)** for application-layer requirements. Together, they provide attacker-centric, structured security objectives that each tool in this pipeline is selected to satisfy.
 
 ```mermaid
-flowchart LR
-    1[1. REQUIREMENTS<br/>OWASP ASVS] --> 2[2. DESIGN<br/>Threat Dragon]
-    2 --> 3[3. CODE<br/>SonarLint / Bearer]
-    3 --> 4[4. PRE-COMMIT<br/>Checkov]
-    4 --> 5[5. BUILD<br/>OWASP dep-scan]
-    5 --> 6[6. GOVERN<br/>SecObserve]
-    6 --> 7[7. DEPLOY<br/>Kyverno]
-    7 --> 8[8. RUNTIME<br/>Falco]
-    8 --> 9[9. AUDIT<br/>Kube-bench]
-    9 --> 10[10. COMPLIANCE<br/>OpenSCAP]
+flowchart TD
+    %% Top Row (Left to Right)
+    subgraph Row1 [" "]
+        direction LR
+        1[1. REQUIREMENTS<br/>OWASP ASVS] --> 2[2. DESIGN<br/>Threat Dragon] --> 3[3. CODE<br/>SonarLint / Bearer] --> 4[4. PRE-COMMIT<br/>Checkov] --> 5[5. BUILD<br/>OWASP dep-scan]
+    end
 
+    %% Invisible link creates a clean vertical line break/space with no arrow
+    Row1 ~~~ Row2
+
+    %% Bottom Row (Left to Right)
+    subgraph Row2 [" "]
+        direction LR
+        6[6. GOVERN<br/>SecObserve] --> 7[7. DEPLOY<br/>Kyverno] --> 8[8. RUNTIME<br/>Falco] --> 9[9. AUDIT<br/>Kube-bench] --> 10[10. COMPLIANCE<br/>OpenSCAP]
+    end
+
+    %% Hide container boxes
+    style Row1 fill:none,stroke:none
+    style Row2 fill:none,stroke:none
+
+    %% Styling
     style 1 fill:#1E293B,stroke:#0F172A,stroke-width:2px,color:#fff
     style 2 fill:#4B5563,stroke:#1F2937,stroke-width:2px,color:#fff
     style 3 fill:#3B82F6,stroke:#1D4ED8,stroke-width:2px,color:#fff
@@ -53,7 +63,6 @@ flowchart LR
     style 8 fill:#EF4444,stroke:#DC2626,stroke-width:2px,color:#fff
     style 9 fill:#8B5CF6,stroke:#7C3AED,stroke-width:2px,color:#fff
     style 10 fill:#06B6D4,stroke:#0891B2,stroke-width:2px,color:#fff
-
 ```
 
 ### **High-Level Shift-Left Lifecycle**
