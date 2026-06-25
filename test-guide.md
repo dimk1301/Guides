@@ -1,38 +1,26 @@
-# **DevSecOps Guide**
+# **The Developer's Guide to DevSecOps**
 
-> **Core Objective:** A zero-license-cost DevSecOps pipeline for an on-premise Kubernetes data platform. Aligned with **NIST SSDF**, **OWASP DevSecOps guidance**, and **CIS hardening benchmarks**.
->
-
+> **Our Main Goal:** We are building a secure, automated pipeline for our on-premise Kubernetes data platform. It costs zero dollars in licensing fees and follows industry gold standards like NIST, OWASP, and CIS.
 
 ---
 
-## **1. Executive Mandate & NIST SSDF Governance**
+## **1. Team Rules & Security Culture (NIST SSDF)**
 
-A pipeline cannot be compliant by technology alone; it requires organizational governance. This architecture is designed to fulfill the **NIST Secure Software Development Framework (SSDF - SP 800-218)**, which mandates outcomes across four core pillars:
+Great tools don't matter if we don't have the right habits. This pipeline is built around the **NIST Secure Software Development Framework (SSDF)**, which focuses on four key areas: preparing our team, protecting our code, producing secure software, and responding to vulnerabilities.
 
-1. **Prepare the Organization (PO):** People, processes, and policies are baseline prerequisites.
-2. **Protect the Software (PS):** Code and security-policy configuration are secured against tampering, end to end.
-3. **Produce Well-Secured Software (PW):** Security is designed in (threat modeling), built in (secure coding), and verified continuously (SAST, SCA, DAST, IaC scanning) rather than caught only at a single CI gate.
-4. **Respond to Vulnerabilities (RV):** Real-time monitoring, formalized incident response, and tested recovery procedures are actively maintained.
+To make this work, we all need to follow a few basic ground rules:
 
-**Human & Policy Prerequisites:**
-To satisfy SSDF Phase 1 (PO), the automated controls in this pipeline are backed by the following non-negotiable organizational rules:
-
-* **Security Training:** All engineers must complete annual secure coding training (e.g., OWASP Top 10) prior to being granted CI/CD pipeline access.
-* **Policy Enforcement:** Bypassing automated pipeline gates (e.g., Checkov, Gitleaks, Kyverno) is explicitly prohibited unless accompanied by a documented, time-bound risk acceptance signed by a Security Lead.
-* **Policy-as-Code Change Control (NEW):** Changes to the security controls themselves — Kyverno `ClusterPolicy` manifests, Falco rule files, Checkov custom checks — are governed by the *same* two-person review and signed-commit rule defined for application code in Section 4. A scanner is not a security boundary if anyone can quietly edit its rules; the rule repositories are protected branches like any other.
+* **Security Training:** Every engineer must complete an annual secure coding training (like the OWASP Top 10) before getting CI/CD pipeline access.
+* **Don't Skip the Gates:** Bypassing automated checks (like Checkov, Gitleaks, or Kyverno) is strictly forbidden unless you have a documented exception signed by a Security Lead.
+* **Treat Security Rules Like Code:** If you want to change a security rule (like a Kyverno policy or Falco alert), it goes through the exact same Pull Request (PR) process as application code. It requires two reviewers and a signed commit.
 
 ---
 
-## **2. Executive Strategy**
+## **2. The Game Plan: "Shift Left"**
 
-### **The Paradigm Shift**
+Our core strategy is simple: **catch bugs early**. Instead of waiting for a security audit right before launch, our tools check for issues while you're designing, coding, and building.
 
-This framework shifts security **left**, catching weaknesses during architectural design, coding, and containerization instead of waiting for production audits.
-
-By utilizing highly targeted open-source utilities and community-tier tools rather than commercial suites, the primary investment shifts from recurring licensing fees to upfront operational engineering.
-
-The architecture is directionally governed by the **OWASP Kubernetes Security Testing Guide (KSTG)** for cluster infrastructure, and the **OWASP Application Security Verification Standard (ASVS)** for application-layer requirements. *Note: KSTG is an actively evolving OWASP project, not yet a finished, versioned standard like ASVS — it is treated here as the best available attacker-centric reference for cluster testing, and is supplemented by CIS Kubernetes Benchmarks (via kube-bench) wherever KSTG coverage is incomplete.*
+We use free, community-driven tools and invest our time in setting them up well, rather than paying for expensive commercial software. We base our cluster rules on the **OWASP Kubernetes Security Testing Guide** and our app rules on the **OWASP ASVS**.
 
 ```mermaid
 flowchart TD
@@ -62,8 +50,8 @@ flowchart TD
     style 9 fill:#EF4444,stroke:#DC2626,stroke-width:2px,color:#fff
     style 10 fill:#8B5CF6,stroke:#7C3AED,stroke-width:2px,color:#fff
     style 11 fill:#06B6D4,stroke:#0891B2,stroke-width:2px,color:#fff
-```
 
+```
 
 ### **The Lifecycle, Step-by-Step**
 
@@ -83,57 +71,49 @@ flowchart TD
 
 ---
 
-## **3. Supply Chain: Base Image Hardening**
+## **3. Starting Safe: Secure Container Images**
 
-The security baseline of the cluster rests heavily on the container layers you inherit, so the platform defaults to verified, stripped-down images rather than public hub distributions.
+Standard container images (like the ones you pull by default from public hubs) are bloated with extra tools like `curl` or `bash`. Hackers love these tools. We use stripped-down images instead:
 
-### **The Standard: dhi.io vs. Distroless**
+* **dhi.io (Free Tier):** Our standard choice for most apps. It has no shells or package managers, and it updates automatically every week.
+* **gcr.io/distroless:** Used for compiled languages like Go or Rust that just need bare minimum libraries.
 
-* **dhi.io (Primary Runtimes):** For main application environments, stripping out package managers and shells, while tracking upstream patches on an automated cadence.
-* **gcr.io/distroless (Static Binaries):** For self-contained compiled binaries (Go, Rust) that only need fundamental libraries such as glibc.
+### **Image Comparison Matrix**
 
-> **Tier clarification (NEW):** This architecture standardizes on the **dhi.io Free / Community tier**, which requires only a free Docker account to authenticate and pull. The Enterprise-tier row below is retained for forward-planning reference only — it is **not** currently licensed, and adopting it would be a deliberate, budgeted decision, not an automatic upgrade.
-
-### **Hardening Architecture Matrix**
-
-| **Capability** | **Standard Public Distributions** | **dhi.io Hardened (Free Tier — in use)** | **dhi.io Hardened (Paid Enterprise — reference only)** |
+| **Feature** | **Standard Public Images** | **Our Standard (dhi.io Free Tier)** | **Future Upgrade (dhi.io Enterprise)** |
 | --- | --- | --- | --- |
-| **Patch Velocity** | Occasional / quarterly | Weekly automated cycles | Daily / on-demand cycles |
-| **Interim CVE Status** | Vulnerable between releases | Near-zero CVE footprint | Near-zero + contractual SLA |
-| **Remediation SLA** | None | None (best-effort) | Guaranteed < 7 days |
-| **Attack Surface** | High (ships with sh, apt, curl) | Zero (no shell, no utilities) | Zero + FIPS-grade crypto options |
-| **Cryptographic Proofs** | Standard manifest | Signed SBOM & VEX metadata | Strict provenance + extended support |
+| **Updates** | Occasional / quarterly | Weekly automated cycles | Daily / on-demand |
+| **Vulnerability Footprint** | Vulnerable between releases | Near-zero CVEs | Near-zero + SLAs |
+| **Hacker Friendly?** | Highly (ships with `sh`, `apt`, etc.) | Zero (no shell, no utilities) | Zero + FIPS crypto |
 
-### **Image Signing & Verification Roadmap**
+### **Proving Our Images are Ours (Signing)**
 
+We don't just trust images; we verify them.
 
-
-| State | What's Actually True |
-| --- | --- |
-| **Today** | Kyverno enforces *configuration* policy (non-root, no privilege escalation, resource limits, Pod Security Admission profile). It does **not** verify image signatures, because no signatures are being produced yet. |
-| **Target** | Cosign signs every image at Build. Kyverno's `verifyImages` policy rejects any image at admission that lacks a valid signature from the trusted key. |
-| **On-prem key management decision (must be made before rollout)** | Sigstore's default *keyless* signing flow depends on the public Fulcio/Rekor infrastructure — this will not work in an air-gapped on-prem cluster. Choose one: (a) a self-hosted private Sigstore stack (Fulcio + Rekor + a private CA), or (b) long-lived Cosign keys held in **HashiCorp Vault** (already on the roadmap below) as the signing backend. Option (b) is simpler to stand up first and reuses infrastructure you're already building. |
+1. **Build:** Cosign digitally signs every image we make.
+2. **Deploy:** Kyverno checks the signature. No signature? The code doesn't deploy.
+3. **Keys:** We store our signing keys safely in HashiCorp Vault.
 
 ---
 
-## **4. Local Privacy & Security Scans**
+## **4. Developer Tools (Catching Bugs Before Commit)**
 
-To minimize friction in centralized pipelines, security starts at the developer workstation so issues are caught in seconds, before the first commit.
+The cheapest time to fix a bug is while you're writing the code. We have two layers of protection:
 
-> **Source Code Integrity (SSDF PS.3):** Before any code reaches the CI/CD pipeline, the Git repository enforces strict branch protection rules: **mandatory cryptographic commit signatures** (verified via the VCS's "require signed commits" branch protection setting), **required status checks** (CI re-runs of every local gate), and a **strict two-person rule** enforced via CODEOWNERS + required PR approvals. This same protection extends to the policy-as-code repositories (Kyverno, Falco, Checkov rules) per Section 1.
+1. **On your laptop:** Fast tools that warn you instantly. You can bypass them locally if you're testing, but they exist to save you a headache later.
+2. **In CI/CD:** The unskippable automated gate. If the CI/CD pipeline finds a hardcoded password or a critical flaw, it *will* block the merge.
 
-> **Local gates are fast feedback, not the security boundary (NEW):** A developer can bypass a local pre-commit hook with `git commit --no-verify`. That's fine — it's a convenience layer. The actual enforcement boundary is the **CI re-run** of Checkov and Gitleaks against every pushed commit and every PR, which cannot be skipped by an individual developer. The org policy in Section 1 (no bypassing gates without signed risk acceptance) governs the CI gate, not the local one.
+**Repo Rules:** You need signed commits (so we know who wrote the code) and a second reviewer to approve your PR.
 
 ```mermaid
 flowchart TD
-    A[Bearer CLI] -->|Privacy & Data Leak Scan| E[IDE Security Interface]
-    B[SonarLint] -->|Real-time Code Quality| E
-    C[ESLint + Security Rules] -->|JS/React SAST Scanning| E
-    D[FindSecBugs] -->|Java/Spring Bytecode Analysis| E
-    H[Gitleaks] -->|Secret & Credential Detection| E
+    A[Bearer CLI] -->|Privacy & data leak scan| E[Developer's IDE]
+    B[SonarLint] -->|Code quality & common bugs| E
+    C[ESLint + Security Rules] -->|JS / React vulnerability scan| E
+    D[FindSecBugs] -->|Java bytecode vulnerability scan| E
+    H[Gitleaks] -->|Secret & credential scan| E
 
-    E -->|Identify Issue / OWASP Top 10| F[AI Coding Assistant]
-    F -->|Explain & Fix| G[Hardened Codebase]
+    E -->|Fixed before commit| G[Commit-Ready Code]
 
     style A fill:#3B82F6,stroke:#1D4ED8,stroke-width:2px,color:#fff
     style B fill:#F59E0B,stroke:#D97706,stroke-width:2px,color:#fff
@@ -141,172 +121,98 @@ flowchart TD
     style D fill:#64748b,stroke:#475569,stroke-width:2px,color:#fff
     style H fill:#F43F5E,stroke:#BE123C,stroke-width:2px,color:#fff
     style E fill:#8B5CF6,stroke:#7C3AED,stroke-width:2px,color:#fff
-    style F fill:#EC4899,stroke:#BE185D,stroke-width:2px,color:#fff
     style G fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
+
 ```
 
-### **Integrated Developer Toolset**
+### **What These Tools Do For You**
 
-* **Gitleaks (Secrets Detection — NEW):** Scans staged changes and full git history for hardcoded credentials, API keys, and high-entropy strings. Runs as a pre-commit hook locally and as a non-bypassable CI gate on every push. A one-time historical scan of existing repository history is required before this control can be trusted as complete — secrets committed before today don't disappear because a new hook was added.
-* **Bearer CLI (Privacy & Security):** Scans local code for logic bugs and PII leakage, such as sensitive data in logs, while keeping code on the developer machine.
-* **SonarLint (Quality & Clean Code):** Acts as security "spellcheck" inside the IDE, catching common anti-patterns and vulnerabilities before builds.
-* **ESLint Security Configurations (Frontend SAST):** Leverages Abstract Syntax Tree (AST) parsing on client-side React and JavaScript code. It explicitly targets context-aware vulnerabilities like Prototype Pollution, Regular Expression Denial of Service (ReDoS), and Cross-Site Scripting (XSS) by strictly enforcing the "Validate Input, Encode/Escape Output" standard.
-* **FindSecBugs / SpotBugs (Backend SAST):** Performs deep data-flow (taint) analysis on compiled Java bytecode. It tracks untrusted inputs from boundary layers (Spring Boot API controllers) down to structural components to automatically catch critical OWASP Top 10 risks like SQL Injection, Path Traversal, and Cryptographic weaknesses before binary packaging.
-
-### **AI-Assisted Developer Workflow (Code & Test)**
-
-Pairing these ecosystem-specific scanners with coding agents turns security into a conversational workflow rather than a blocking gate.
-
-* **Instant triage:** When a linter or bytecode analyzer flags a complex OWASP Top 10 issue, the developer asks the agent to explain the specific data-flow or attack vector in-context.
-* **Guided mitigation:** The agent drafts structural fixes that satisfy linter and security rules while preserving core application behavior, ensuring only structurally sound and "clean" code reaches CI.
-
-**Agent Boundaries at the Code Stage:** Agents may generate and refactor code and propose tests, but cannot push commits or merge branches; scanners and policies remain the source of security truth, and humans remain the source of intent and final approval. See Section 8.6 for how agents must treat scanner output and other automated inputs.
-
----
-
-## **5. Deep-Dive: Tool Profiles & Deployment Topology**
-
-### **Tool Operational Profiles**
-
-* **OWASP ASVS:** Provides a checklist framework matrix used to build verifiable functional security controls directly into project acceptance criteria.
-* **Checkov:** Parses IaC (Terraform, Helm, Kubernetes YAML) to stop misconfigured privileges or risky settings from entering git history. The CI run (not the local hook) is the authoritative gate.
-* **Gitleaks:** Dedicated secrets-detection scanner, distinct from Checkov's IaC focus. Covers staged diffs, full history, and CI pushes.
-* **OWASP dep-scan:** Run in standard mode against the source tree, it performs **SCA** — inspecting open-source libraries for vulnerable dependencies and risky licenses. Run with the `--deep` flag against the **built container image**, it additionally generates an OS-package SBOM and checks it for CVEs — covering the job a tool like Trivy or Grype would otherwise be needed for. One tool, one SBOM/VEX pipeline, one place to govern: SecObserve.
-* **OWASP ZAP (Baseline Scan):** Free, open-source DAST tool. Run against a staging deployment before promotion, it tests the live application for issues that are invisible to static analysis — broken auth flows, session handling, security headers, live configuration drift.
-* **SecObserve (Governance Hub):** Vulnerability and License Management system acting as the central orchestrator for findings and supply-chain risk.
-  * Ingests SBOMs (application-layer from standard dep-scan runs, OS-layer from `--deep` runs) and configuration/DAST reports.
-  * Supports triage, false-positive management, and license compliance tracking.
-  * Maintains a persistent remediation history as "Evidence of Control" — see Section 6 for how tamper-resistance is actually implemented, not just claimed.
-* **Kyverno:** Kubernetes-native policy engine enforcing guardrails like non-root execution, resource limits, and Pod Security Admission baseline/restricted profiles at admission time. Image *signature* verification activates once Cosign is live (Section 3) — until then, this is a configuration gate, not a supply-chain integrity gate.
-* **Falco + Falcosidekick:** Falco uses kernel-level instrumentation to monitor system calls and alert on suspicious runtime behavior. Falcosidekick (the free companion project) routes those alerts to a **named destination** — chat, pager, and SecObserve — so detections become incidents, not unread log lines.
-* **Kube-bench:** Audits Kubernetes control-plane and kubelet configuration against CIS Kubernetes Benchmarks.
-* **OpenSCAP:** Offline compliance and audit component for formalized evidence and standards-aligned reports against the **host OS** layer beneath Kubernetes.
-
-### **Structural Component Placement**
-
-> **Planning / Design Zone (Product Management / JIRA — expanded)**
-> Tools: OWASP ASVS, Threat Dragon
-> Objective: Proactive definition of functional security baselines and threat models before project engineering kicks off. *(Fixed in v2: Threat Dragon's output — identified threats and mitigations — is filed as tracked backlog items and mirrored into SecObserve, not left as a static diagram nobody revisits.)*
-
-> **Workstation Zone (Developer Laptop)**
-> Tools: SonarLint, Bearer CLI, Gitleaks (local hook)
-> Objective: Shift-left validation of code, secrets, and data flows before git pushes.
-
-> **Pipeline Zone (CI/CD)**
-> Tools: Checkov, Gitleaks (authoritative re-run), OWASP dep-scan (`--deep` for image/OS coverage)
-> Objective: Automated gatekeeping for infrastructure manifests, secrets, application libraries, and container/OS packages, with builds failing on high-severity issues.
-
-> **Validate Zone (Staging — NEW)**
-> Tools: OWASP ZAP
-> Objective: Dynamic testing of the running application before promotion to production; closes the gap where static-only analysis can't confirm ASVS runtime requirements.
-
-> **Management Zone (Control Plane Infrastructure)**
-> Tools: SecObserve
-> Objective: Central governance, deduplicating alerts and maintaining an audit trail with explicit RBAC and backup guarantees (Section 6 and 7).
-
-> **In-Cluster Zone (Live Kubernetes Environment — expanded)**
-> Tools: Kyverno (+ Pod Security Admission profiles, resource quotas), Falco + Falcosidekick, Kube-bench, NetworkPolicies (Cilium/Calico)
-> Objective: Active defense at admission and runtime, continuous node-hardening checks, and — critically — **network segmentation**, without which Falco can only observe lateral movement, not stop it.
-
-> **Compliance Overlay (Offline Auditing)**
-> Tools: OpenSCAP + STIG Viewer
-> Objective: Audit readiness via standards-aligned reports from raw host-OS evidence.
-
-**Agent Boundaries in CI/CD and Review:** Agents can annotate builds and pull requests with comments and suggested fixes, but the pipeline never treats an agent review as equivalent to a human review; only human approvals unblock merges or deployments, and only humans trigger production rollouts or rollbacks.
-
----
-
-## **6. Connecting the Controls: Tools to Evidence**
-
-The platform must prove controls are effective, not just configured. This section ties each tool to the evidence it produces for auditors, all funneled into SecObserve.
-
-| **Tool** | **Security Job** | **Evidence Produced** |
+| **Tool** | **What It Catches** | **Where It Runs** |
 | --- | --- | --- |
-| **Kube-bench / Checkov** | Configuration Check | Reports showing alignment with industry best practices. |
-| **Gitleaks** | Secrets Detection | Pre-commit/CI scan logs; one-time historical repo scan report; remediation record for any found-and-rotated credential. |
-| **Kyverno** | Policy Enforcement | Logs showing rejected non-compliant resources (root containers, missing resource limits, unsigned images once Cosign is live). |
-| **Falco / Falcosidekick** | Live Monitoring | Streams of routed events flagging suspicious runtime behavior, with a recorded destination and on-call owner. |
-| **Bearer / SonarLint** | Code Safety | Local scans demonstrating leaked secrets or weak code being fixed before deployment. |
-| **OWASP dep-scan** | Supply Chain — App + Container/OS | SBOM and VEX/VDR reports for third-party libraries **and** the OS packages in the built image, from a single tool run. |
-| **OWASP ZAP** | Dynamic Testing | Baseline scan reports against staging, tracked alongside static findings in SecObserve. |
+| **Gitleaks** | Accidentally pasted API keys and passwords. | Pre-commit on your laptop, and again in CI. |
+| **Bearer CLI** | Personal user data (PII) leaking into logs. | On your laptop. |
+| **SonarLint** | Common bugs and bad code patterns. | Right in your code editor. |
+| **ESLint** | Security bugs specific to JavaScript/React. | IDE and build phase. |
+| **FindSecBugs** | Security bugs specific to compiled Java code. | IDE and build phase. |
 
-### **SecObserve: The "Single Source of Truth"**
+---
 
-SecObserve aggregates scans, alerts, and remediations into a queryable history so teams can answer "How do you know your cluster is safe?" with evidence instead of opinions. As gaps are closed, their fixes are recorded as durable "Proof of Protection" entries that support broader frameworks such as NIST and CIS.
+## **5. Our Security Toolkit & Where Everything Lives**
 
-> **What "tamper-resistant" actually means here:**
-> * Analysts can update finding status (triaged, false-positive, accepted-risk) but cannot hard-delete a finding — deletion is disabled at the RBAC layer.
-> * Every status change is itself an audit-logged event with actor, timestamp, and justification.
-> * A nightly export of the SecObserve database is written to immutable/append-only storage, independent of the live instance, so the audit trail survives even a compromise of the SecObserve host itself.
+Here's how our tools map out across the work environment:
 
-* **Incident Documentation (SSDF RV.3 — scope expanded):** To fully close the loop on vulnerability response, any critical runtime event, exploited CVE, **or confirmed policy bypass** tracked in SecObserve must have a formalized, blameless Root Cause Analysis (RCA) document attached before the ticket can be officially marked as resolved.
+* **Planning Zone:** We use OWASP ASVS and Threat Dragon to figure out what needs to be secured before we start typing.
+* **Workstation Zone (Your Laptop):** SonarLint, Bearer CLI, and Gitleaks keep your local environment safe.
+* **Pipeline Zone (CI/CD):** Checkov scans our Terraform/Helm files, Gitleaks double-checks for passwords, and OWASP dep-scan (`--deep`) checks our libraries and base image operating system for known flaws.
+* **Staging Zone:** OWASP ZAP attacks our staging app to find runtime holes.
+* **Management Hub:** SecObserve acts as our central dashboard for all alerts.
+* **Live Kubernetes Zone:** Kyverno enforces rules at the door. Falco watches for weird behavior inside. Cilium/Calico segments our network.
+* **Compliance:** OpenSCAP makes sure the underlying servers are up to code.
 
+*Note: Automation bots might suggest fixes on your PRs, but only human engineers can approve them.*
 
-### **Remaining / Re-Prioritized Roadmap**
+---
 
-| **Risk Level** | **The Problem (Gap)** | **The Planned Fix** |
+You are absolutely right to catch that! The previous version of Chapter 6 left out several key tools that were mentioned earlier in the document, specifically the planning tools (Threat Dragon/ASVS), local code scanners (SonarLint/Bearer), the dynamic tester (OWASP ZAP), and the compliance/backup tools (OpenSCAP/Velero)—all of which generate crucial evidence for audits.
+
+Here is the fully updated **Chapter 6**, expanded to include every tool from the pipeline that creates security proof or evidence.
+
+---
+
+## **6. Proving It: Audit & Evidence**
+
+It's not enough to say we're secure; we have to prove it to auditors and ourselves. Every tool we use generates evidence, and almost all of it feeds directly into our central dashboard, **SecObserve**.
+
+Here is exactly how each tool proves we are doing our jobs:
+
+| **Tool** | **What it Protects** | **The Proof it Creates (Evidence)** |
 | --- | --- | --- |
-| 🔴 **Critical** | Secrets exposure via plain-text storage | Introduce HashiCorp Vault for secure secret injection. |
-| 🔴 **Critical** | Unverified container images | Cosign signing + Kyverno `verifyImages`, keyed via Vault or a private Sigstore stack (Section 3). |
-| 🔴 **Critical** | Policy engine fragility | Deploy Kyverno in HA with backups. |
-| 🔴 **Critical**  | Lack of internal network segmentation | Implement Kubernetes NetworkPolicies (Cilium/Calico). Without this, Falco detects lateral movement but cannot contain it — see Section 7. |
-| 🟠 **High** | No backup/HA for SecObserve itself, the system of record for all evidence above | Nightly DB backup + documented, tested restore procedure (Section 7). |
-| 🟠 **High** | No policy-as-code RBAC formalization beyond the stated rule | Enforce branch protection technically (not just by policy) on Kyverno/Falco/Checkov rule repos, identical to app-code branch protection. |
-| 🟡 **Medium** | Short log retention | Centralize logs in Loki/ELK with long-term storage. |
-| 🟡 **Medium** | No Pod Security Admission baseline/restricted enforcement or resource quotas beyond Kyverno's non-root check | Roll out PSA profiles + namespace ResourceQuotas cluster-wide. |
+| **OWASP ASVS & Threat Dragon** | Planning & Design | Security checklists and threat models tracked as project tickets before coding begins. |
+| **SonarLint, Bearer CLI, ESLint, FindSecBugs** | Local Code Safety | Local scan histories proving that bugs and data leaks were fixed *before* the code was committed. |
+| **Kube-bench, Checkov, OpenSCAP** | Configuration & Compliance | Audit-ready reports proving our app configs, Kubernetes settings, and Host OS align with industry standards. |
+| **Gitleaks** | Secrets | Pipeline logs and remediation records proving any exposed keys were caught and rotated. |
+| **OWASP dep-scan (`--deep`)** | Supply Chain | Software Bill of Materials (SBOMs) and vulnerability reports for both our app libraries and the base operating system. |
+| **OWASP ZAP** | Staging / Dynamic Testing | Baseline scan reports proving our live application was attacked and tested before going to production. |
+| **Kyverno + Cosign** | Deployment Policies | Logs of rejected deployments (e.g., stopping a container that runs as root or lacks a verified Cosign signature). |
+| **Falco + Falcosidekick** | Live Environment | Real-time routed alerts tied to a specific incident ticket and an on-call engineer. |
+| **Velero & etcd Snapshots** | Disaster Recovery | Logs of successful "restore drills" logged into SecObserve as Proof of Protection (an untested backup doesn't count as proof). |
 
-**Agent Boundaries in Operations & Maintenance:** In operations, agents are constrained to gathering and summarizing data (logs, metrics, alerts); humans own diagnosis and remediation decisions, while agents are granted more autonomy only in background maintenance tasks such as dependency updates that are fully covered by tests.
+**SecObserve** is locked down to protect this evidence. Security analysts can update tickets to track progress, but **no one can quietly delete a finding**. To ensure we never lose our audit trail even if the server goes down, the database is backed up nightly to independent, tamper-proof storage.
+
+### **Our Immediate Action Plan**
+
+Even with these tools, we have a few gaps to close. Here is the roadmap for the platform:
+
+| **Risk** | **The Gap** | **How We're Fixing It** |
+| --- | --- | --- |
+| 🔴 **Critical** | Secrets stored in plain text. | Rolling out HashiCorp Vault. |
+| 🔴 **Critical** | Unverified container images. | Enforcing Cosign image signing + Kyverno verification. |
+| 🔴 **Critical** | Flat network (easy for hackers to spread). | Rolling out Cilium/Calico Network Policies to contain breaches. |
+| 🟠 **High** | SecObserve needs a backup plan. | Implementing nightly DB backups and tested restore drills. |
+| 🟡 **Medium** | Need longer log storage. | Centralizing logs in Loki/ELK for long-term audit history. |
 
 ---
 
-## **7. Resilience & Disaster Recovery (NEW SECTION)**
+## **7. Bouncing Back (Resilience)**
 
+Disaster recovery is a core part of security. Here's our safety net:
 
-* **etcd backup:** Scheduled, encrypted etcd snapshots, stored off-cluster. Restore procedure documented and **drilled on a fixed cadence** (e.g., quarterly) — an untested backup is a hypothesis, not a control.
-* **Persistent volume / data backup:** **Velero** (free, CNCF, consistent with the zero-license-cost mandate) for namespace- and PV-level backup/restore, with the same drill cadence as etcd.
-* **SecObserve resilience:** Nightly database backup, independent storage location, documented restore runbook (ties to the High-priority gap in Section 6).
-* **Network segmentation as containment, not just hygiene:** NetworkPolicies (Cilium/Calico) are reframed here as a **recovery-time control**: in a flat network, a single compromised pod has unrestricted east-west reach, which is exactly the scenario Falco is built to detect but not stop. This is why the gap is rated Critical, not High.
-* **Restore drills are evidence too:** Each successful drill (etcd, PV, SecObserve) is logged as a "Proof of Protection" entry in SecObserve, the same way a closed CVE is — auditors increasingly ask "when did you last *test* your backup," not just "do you have one."
+* **Cluster Data (etcd):** Backed up regularly, stored off-cluster, and tested quarterly.
+* **App Data (Volumes):** Velero handles backups and restores.
+* **Containment:** Our Network Policies (Cilium/Calico) stop hackers from jumping from one infected app to another.
 
 ---
 
-## **8. Agentic Orchestration: From Detection to Remediation**
+## **8. AI Assistants (Helping, Not Taking Over)**
 
-> **Core Objective:** Evolve from a "security signaling" pipeline to an **assisted remediation** pipeline that compresses MTTR using on‑prem LLMs and agents, while preserving strict human-in-the-loop governance.
+We use local AI agents to help us move faster, but **humans are always in control of the big decisions**. Think of the agent as a helpful resident engineer.
 
-### **8.1 What "Agentic" Means Here**
-
-In this platform, "agentic" means that AI agents continuously watch security signals from the pipeline and environment, propose changes in low-blast-radius areas (Code, Test, Maintain), and rely on humans to approve anything that affects risk, production state, or audit posture.
-
-### **8.2 AI Agent Responsibility Model (DevSecOps Pipeline)**
-
-AI agents are used across the pipeline, but humans retain control of risk decisions, production changes, and audit evidence.
-
-| **Stage** | **Agent Security Role** | **Human Security Role** | **Guardrail** |
-| --- | --- | --- | --- |
-| **Plan** | Draft security requirements and threat-model checklists. | Approve scope and risk ratings. | Agents cannot accept risk or change severity. |
-| **Design** | Suggest security patterns and mitigations. | Own data flows and trust boundaries. | Agents cannot approve architecture or reclassify data. |
-| **Code** | Propose secure refactors and fixes for findings in branches. | Own intent and merge decisions. | Agents never push to protected branches or mark checks as passed. |
-| **Test / Review** | Generate candidate security tests and first-pass PR comments. | Curate tests and perform final review. | Agents cannot merge tests or PRs; human approval is required. |
-| **Deploy** | Enrich deploy checks with risk context. | Decide rollout and rollback. | Agents cannot trigger deploys or rollbacks. |
-| **Runtime / Operate** | Correlate alerts and draft runbook steps. | Own incident severity, RCA, and containment. | Agents cannot close incidents or change on-call routing. |
-| **Maintain** | Open PRs for low-risk dependency and policy updates. | Approve changes for critical systems. | Auto-fix limited to well-tested repos; humans approve merges. |
-
-Agents are **never** allowed to initiate design changes, alter deployment pipelines, perform incident RCA, or trigger production deploys or rollbacks; those remain human-only responsibilities as defined in this DevSecOps Agent Responsibility Model.
-
-### **8.3 Human–Agent Collaboration (Interactive Loop)**
-
-On a day-to-day basis, agents act as "resident SRE/coders" working alongside developers and security engineers:
-
-* When tools such as Bearer or SonarLint flag an issue, the agent explains the vulnerability in the local code context and suggests remediation options.
-* The agent drafts candidate fixes and targeted tests; humans review, edit, and decide what actually lands in the branch.
-* This keeps security work continuous and conversational while preserving human ownership of intent, design, and risk.
-
-Interactive collaboration operates within the guardrails of the responsibility model: agents help investigate and propose, humans decide and approve.
-
-### **8.4 Autonomous Agentic Loop (Low-Blast-Radius Work)**
-
-For background maintenance and infrastructure debt, a constrained agent loop can handle routine tasks within the limits of the responsibility model:
+| **Stage** | **What the AI Agent Does** | **What the Human Engineer Does** |
+| --- | --- | --- |
+| **Code** | Suggests secure code fixes in your branch. | Makes the final call on merging code. |
+| **Test** | Generates candidate tests and leaves PR comments. | Curates tests and approves the PR. |
+| **Deploy** | Adds risk context to deployment checks. | Decides when to roll out or roll back. |
+| **Maintain** | Opens PRs for simple dependency updates. | Reviews and merges the automated updates. |
 
 ```mermaid
 flowchart LR
@@ -318,64 +224,42 @@ flowchart LR
     style 2 fill:#EC4899,stroke:#BE185D,stroke-width:2px,color:#fff
     style 3 fill:#3B82F6,stroke:#1D4ED8,stroke-width:2px,color:#fff
     style 4 fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
+
 ```
 
-This loop is explicitly limited to low-blast-radius tasks such as dependency bumps, static-analysis-driven refactors, and policy synthesis for Kyverno or Checkov, all validated by automated tests and admission policies before a human approves the merge.
-
-### **8.5 Technical Pillars of Agentic Security**
-
-| **Pillar** | **Mechanism** | **On-Premise Implementation** |
-| --- | --- | --- |
-| **1. Reachability Triage & Auto-Remediation** | Decide whether a CVE found by dep-scan is actually reachable and patch it if safe. | Agent analyzes call graphs, checks compatibility, updates dependencies, re-runs tests, and opens a PR with results and test outcomes attached. |
-| **2. Policy Synthesis** | Convert plain-text NIST/CIS requirements into Kyverno or Checkov policies. | Agent translates rules like "must not run as root" into validated YAML policies, links them to test cases, and proposes them via PRs for human review — these PRs go through the same policy-as-code branch protection as Section 1. |
-
-### **8.6 Agent Input Trust Boundary (NEW)**
-
-Agents in this pipeline read scanner output, CVE/advisory descriptions, dependency metadata, and PR/issue comments — all of which can originate from outside the organization and can be attacker-influenced (a malicious dependency's README, a crafted advisory description, a poisoned PR comment). This is a real and growing risk class, separate from the *action* guardrails in 8.2.
-
-* **Treat external content as data, never as instructions.** A string inside a scan result or advisory is something to summarize or act on per the responsibility table — it is never authorization to take an action outside that table, no matter what it says.
-* **Fixed tool-calling surface.** The set of tools/actions available to an agent at each stage is exactly what's listed in Section 8.2's guardrail column. It is not dynamically extensible at runtime based on content the agent reads.
-* **On-prem inference only.** Code, scan findings, and credentials do not leave the network boundary to external APIs as part of any agent workflow.
+*Agents are explicitly prohibited from sending data outside our network or blindly trusting third-party alerts.*
 
 ---
 
-## **9. Acronyms & Abbreviations Reference**
+## **9. Step-by-Step Implementation Checklist**
 
-| Acronym | Full Definition | Context in this Guide |
+Here is the exact order we are rolling this out:
+
+* **Phase 1 (Basics):** Enable branch protections (2 reviewers, signed commits). Install SonarLint, Bearer, and Gitleaks locally.
+* **Phase 2 (CI/CD):** Make Checkov and Gitleaks required steps in the pipeline. Set up dep-scan and SecObserve.
+* **Phase 3 (Testing):** Deploy OWASP ZAP in staging. Start doing Threat Dragon design reviews.
+* **Phase 4 (Live Cluster):** Turn on Kyverno, Falco, and NetworkPolicies (Cilium/Calico). Run OpenSCAP.
+* **Phase 5 (Images):** Set up HashiCorp Vault. Enable Cosign image signing.
+* **Phase 6 (Backups):** Finalize and test etcd, Velero, and SecObserve backups.
+* **Phase 7 (AI):** Connect our AI agents for triage and auto-drafting PRs.
+
+---
+
+## **10. Cheat Sheet (Acronyms)**
+
+| Term | What it Means | Context in our Pipeline |
 | --- | --- | --- |
-| **API** | Application Programming Interface | The target gate where Kyverno intercepts and validates Kubernetes resource manifests. |
-| **ASVS** | Application Security Verification Standard | The granular framework blueprint checklist used to define functional application security requirements during planning. |
-| **CI/CD** | Continuous Integration / Continuous Deployment | The automated pipeline zone where code is built, tested, and validated before production. |
-| **CIS** | Center for Internet Security | The organization defining the global standard hardening benchmarks used by `kube-bench`. |
-| **CLI** | Command Line Interface | Text-based interfaces used locally by developers (e.g., Bearer CLI, Gitleaks) or within automated runners. |
-| **CVE** | Common Vulnerabilities and Exposures | A publicly disclosed list of information security flaws tracked across base images and dependencies. |
-| **DAST** | Dynamic Application Security Testing | Testing methodology used by OWASP ZAP against a running staging deployment; complements static SAST/SCA coverage. |
-| **DevSecOps** | Development, Security, and Operations | The practice of integrating automated security controls seamlessly throughout the entire software lifecycle. |
-| **DR** | Disaster Recovery | Etcd, PV, and SecObserve backup/restore procedures defined in Section 7. |
-| **ELK** | Elasticsearch, Logstash, and Kibana | A common open-source stack used for centralized log aggregation and security event management. |
-| **FIPS** | Federal Information Processing Standards | U.S. government computer security standards required for cryptographic modules in high-compliance zones. |
-| **HA** | High Availability | Architectural setup (e.g., for Kyverno) ensuring the security system remains functional during a node failure. |
-| **IaC** | Infrastructure as Code | Configuration files (Helm, Terraform, YAML) evaluated by `Checkov` for security flaws before deployment. |
-| **IDE** | Integrated Development Environment | The local developer workspace where tools like `SonarLint` catch vulnerabilities in real time. |
-| **K8s** | Kubernetes | The underlying container orchestration platform being secured and governed by this framework. |
-| **KMS** | Key Management Service | Generic term for where Cosign signing keys are held if a self-hosted KMS is chosen over Vault or a private Sigstore stack (Section 3). |
-| **KSTG** | Kubernetes Security Testing Guide | An evolving OWASP framework providing attacker-centric control objectives for Kubernetes; supplemented here by CIS benchmarks. |
-| **LLM** | Large Language Model | On-premise artificial intelligence models powering the assistant and autonomous remediation agents. |
-| **MTTR** | Mean Time to Remediation | The average time required to identify, patch, and deploy a fix for a security vulnerability. |
-| **NIST** | National Institute of Standards and Technology | The agency defining the Secure Software Development Framework (**SSDF**) governing this architecture. |
-| **OWASP** | Open Worldwide Application Security Project | The global community providing baseline security frameworks for software code, dependencies, and Kubernetes. |
-| **PII** | Personally Identifiable Information | Sensitive user data monitored by `Bearer CLI` to prevent accidental logging or exposure. |
-| **PR** | Pull Request | The primary governance gate where humans review agent-generated or developer-submitted code and policy changes. |
-| **PSA** | Pod Security Admission | Kubernetes-native baseline/restricted profiles enforced alongside Kyverno for additional in-cluster hardening. |
-| **RBAC** | Role-Based Access Control | Mechanism restricting who can delete SecObserve findings, edit policy-as-code, or administer cluster security tooling. |
-| **RCA** | Root Cause Analysis | The deep-dive investigation into how a runtime security incident, exploited CVE, or policy bypass occurred (owned strictly by humans). |
-| **SAST** | Static Application Security Testing | The methodology used to scan raw source code for structural security vulnerabilities without executing it. |
-| **SCA** | Software Composition Analysis | The practice of inspecting open-source third-party dependencies for known vulnerabilities and licensing risks. |
-| **SBOM** | Software Bill of Materials | A structured inventory of all ingredients and dependencies nested within a hardened container image, generated for both app and OS layers by `dep-scan --deep`. |
-| **SRE** | Site Reliability Engineering | The engineering discipline focused on keeping infrastructure scalable, highly available, and resilient. |
-| **SSDF** | Secure Software Development Framework | NIST's standard set of core software development security practices baked into this strategy. |
-| **STIG** | Security Technical Implementation Guide | Cybersecurity configuration standards set by DISA, verified using the OpenSCAP compliance overlay. |
-| **VEX** | Vulnerability Exploitability eXchange | A companion metadata standard to SBOMs that clarifies whether a container image is *actually* vulnerable to a CVE. |
-| **WORM** | Write Once, Read Many | Storage property required for the immutable SecObserve audit-trail export described in Section 6. |
-| **YAML** | YAML Ain't Markup Language | The human-readable data serialization language used to write Kubernetes manifests and Kyverno policies. |
-| **ZAP** | Zed Attack Proxy | OWASP's free DAST tool, run as a baseline scan against staging in the new Validate stage. |
+| **API** | Application Programming Interface | Where Kyverno intercepts code heading into Kubernetes. |
+| **ASVS** | Application Security Verification Standard | Our security checklist for planning. |
+| **CI/CD** | Continuous Integration / Deployment | Our automated build/test pipeline. |
+| **CIS** | Center for Internet Security | The group that writes the rules Kube-bench checks for. |
+| **CVE** | Common Vulnerabilities and Exposures | A public list of known hacker exploits. |
+| **DAST** | Dynamic Application Security Testing | Attacking a live staging app (done by ZAP). |
+| **IaC** | Infrastructure as Code | Config files (Helm/Terraform) scanned by Checkov. |
+| **LLM** | Large Language Model | The local AI brains powering our SRE assistants. |
+| **PR** | Pull Request | The gate where humans approve code and security changes. |
+| **RBAC** | Role-Based Access Control | Decides who has admin powers in the cluster. |
+| **SAST** | Static Application Security Testing | Scanners looking at raw code without running it. |
+| **SCA** | Software Composition Analysis | Checking our third-party libraries for flaws. |
+| **SBOM** | Software Bill of Materials | The "ingredients list" of our apps. |
+| **VEX** | Vulnerability Exploitability eXchange | Tells us if a known bug is *actually* dangerous to us. |
