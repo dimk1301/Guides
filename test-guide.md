@@ -2,7 +2,7 @@
 
 > **Core Objective:** A zero-license-cost DevSecOps pipeline for an on-premise Kubernetes data platform. Aligned with **NIST SSDF**, **OWASP DevSecOps guidance**, and **CIS hardening benchmarks**.
 >
-> **Revision note:** This version incorporates a full security/SRE audit of v1. Every Critical and High finding has been closed or explicitly re-scoped in the document itself. A full changelog is in Section 10.
+
 
 ---
 
@@ -64,7 +64,6 @@ flowchart TD
     style 11 fill:#06B6D4,stroke:#0891B2,stroke-width:2px,color:#fff
 ```
 
-**What changed vs. v1:** added a dedicated **secrets-scan** control at Pre-Commit (4), consolidated **container/OS vulnerability scanning** into the existing Build-stage tool instead of adding a new one (5), and added a **DAST/Validate** stage (6) that was previously entirely missing. Stage count moved from 10 to 11.
 
 ### **High-Level Shift-Left Lifecycle**
 
@@ -105,9 +104,9 @@ The security baseline of the cluster rests heavily on the container layers you i
 | **Attack Surface** | High (ships with sh, apt, curl) | Zero (no shell, no utilities) | Zero + FIPS-grade crypto options |
 | **Cryptographic Proofs** | Standard manifest | Signed SBOM & VEX metadata | Strict provenance + extended support |
 
-### **Image Signing & Verification Roadmap (NEW — corrects v1 inconsistency)**
+### **Image Signing & Verification Roadmap**
 
-v1 of this guide stated that Kyverno performs "image verification at admission time" while simultaneously listing unverified images as an unresolved Critical gap. Both can't be true. Here is the corrected, honest state:
+
 
 | State | What's Actually True |
 | --- | --- |
@@ -172,7 +171,7 @@ Pairing these ecosystem-specific scanners with coding agents turns security into
 * **OWASP ASVS:** Provides a checklist framework matrix used to build verifiable functional security controls directly into project acceptance criteria.
 * **Checkov:** Parses IaC (Terraform, Helm, Kubernetes YAML) to stop misconfigured privileges or risky settings from entering git history. The CI run (not the local hook) is the authoritative gate.
 * **Gitleaks:** Dedicated secrets-detection scanner, distinct from Checkov's IaC focus. Covers staged diffs, full history, and CI pushes.
-* **OWASP dep-scan:** A single tool covering two jobs that v1 of this guide treated as separate problems requiring separate tooling. Run in standard mode against the source tree, it performs **SCA** — inspecting open-source libraries for vulnerable dependencies and risky licenses. Run with the `--deep` flag against the **built container image**, it additionally generates an OS-package SBOM and checks it for CVEs — covering the job a tool like Trivy or Grype would otherwise be needed for. One tool, one SBOM/VEX pipeline, one place to govern: SecObserve.
+* **OWASP dep-scan:** Run in standard mode against the source tree, it performs **SCA** — inspecting open-source libraries for vulnerable dependencies and risky licenses. Run with the `--deep` flag against the **built container image**, it additionally generates an OS-package SBOM and checks it for CVEs — covering the job a tool like Trivy or Grype would otherwise be needed for. One tool, one SBOM/VEX pipeline, one place to govern: SecObserve.
 * **OWASP ZAP (Baseline Scan):** Free, open-source DAST tool. Run against a staging deployment before promotion, it tests the live application for issues that are invisible to static analysis — broken auth flows, session handling, security headers, live configuration drift.
 * **SecObserve (Governance Hub):** Vulnerability and License Management system acting as the central orchestrator for findings and supply-chain risk.
   * Ingests SBOMs (application-layer from standard dep-scan runs, OS-layer from `--deep` runs) and configuration/DAST reports.
@@ -207,7 +206,7 @@ Pairing these ecosystem-specific scanners with coding agents turns security into
 
 > **In-Cluster Zone (Live Kubernetes Environment — expanded)**
 > Tools: Kyverno (+ Pod Security Admission profiles, resource quotas), Falco + Falcosidekick, Kube-bench, NetworkPolicies (Cilium/Calico)
-> Objective: Active defense at admission and runtime, continuous node-hardening checks, and — critically — **network segmentation**, without which Falco can only observe lateral movement, not stop it. (Re-rated to Critical in Section 7; previously understated as High in v1.)
+> Objective: Active defense at admission and runtime, continuous node-hardening checks, and — critically — **network segmentation**, without which Falco can only observe lateral movement, not stop it.
 
 > **Compliance Overlay (Offline Auditing)**
 > Tools: OpenSCAP + STIG Viewer
@@ -235,25 +234,13 @@ The platform must prove controls are effective, not just configured. This sectio
 
 SecObserve aggregates scans, alerts, and remediations into a queryable history so teams can answer "How do you know your cluster is safe?" with evidence instead of opinions. As gaps are closed, their fixes are recorded as durable "Proof of Protection" entries that support broader frameworks such as NIST and CIS.
 
-> **What "tamper-resistant" actually means here (NEW — v1 asserted this without a mechanism):**
+> **What "tamper-resistant" actually means here:**
 > * Analysts can update finding status (triaged, false-positive, accepted-risk) but cannot hard-delete a finding — deletion is disabled at the RBAC layer.
 > * Every status change is itself an audit-logged event with actor, timestamp, and justification.
 > * A nightly export of the SecObserve database is written to immutable/append-only storage, independent of the live instance, so the audit trail survives even a compromise of the SecObserve host itself.
 
 * **Incident Documentation (SSDF RV.3 — scope expanded):** To fully close the loop on vulnerability response, any critical runtime event, exploited CVE, **or confirmed policy bypass** tracked in SecObserve must have a formalized, blameless Root Cause Analysis (RCA) document attached before the ticket can be officially marked as resolved.
 
-### **Gaps Closed in This Revision**
-
-| **v1 Issue** | **How v2 Closes It** |
-| --- | --- |
-| No dedicated secrets scanner | Gitleaks added at pre-commit + CI (Sections 2, 4, 5, 6) |
-| No container/OS image vulnerability scan | Consolidated into existing `dep-scan --deep` — no new tool needed |
-| No DAST | OWASP ZAP added as a new Validate stage before promotion |
-| Kyverno claimed image verification it couldn't yet perform | Corrected; explicit "today vs. target" state defined, with on-prem key-management decision named (Section 3) |
-| Falco alerts had no named destination | Falcosidekick added, routing to chat/pager/SecObserve |
-| Threat Dragon had no zone, no feedback loop | Added to Planning/Design Zone; output now tracked, not orphaned |
-| "Tamper-resistant audit trail" was asserted, not designed | RBAC, audit logging, and immutable export mechanism now specified |
-| Zero-cost mandate vs. paid dhi.io tier ambiguity | Explicit statement: Free/Community tier in use; Enterprise is reference-only |
 
 ### **Remaining / Re-Prioritized Roadmap**
 
@@ -262,7 +249,7 @@ SecObserve aggregates scans, alerts, and remediations into a queryable history s
 | 🔴 **Critical** | Secrets exposure via plain-text storage | Introduce HashiCorp Vault for secure secret injection. |
 | 🔴 **Critical** | Unverified container images | Cosign signing + Kyverno `verifyImages`, keyed via Vault or a private Sigstore stack (Section 3). |
 | 🔴 **Critical** | Policy engine fragility | Deploy Kyverno in HA with backups. |
-| 🔴 **Critical** *(re-rated from High in v1)* | Lack of internal network segmentation | Implement Kubernetes NetworkPolicies (Cilium/Calico). Without this, Falco detects lateral movement but cannot contain it — see Section 7. |
+| 🔴 **Critical**  | Lack of internal network segmentation | Implement Kubernetes NetworkPolicies (Cilium/Calico). Without this, Falco detects lateral movement but cannot contain it — see Section 7. |
 | 🟠 **High** | No backup/HA for SecObserve itself, the system of record for all evidence above | Nightly DB backup + documented, tested restore procedure (Section 7). |
 | 🟠 **High** | No policy-as-code RBAC formalization beyond the stated rule | Enforce branch protection technically (not just by policy) on Kyverno/Falco/Checkov rule repos, identical to app-code branch protection. |
 | 🟡 **Medium** | Short log retention | Centralize logs in Loki/ELK with long-term storage. |
@@ -274,7 +261,6 @@ SecObserve aggregates scans, alerts, and remediations into a queryable history s
 
 ## **7. Resilience & Disaster Recovery (NEW SECTION)**
 
-v1 of this guide had no DR/backup story at all — a significant omission for a platform explicitly framed with an SRE lens, and one with direct security relevance: recovering cleanly from a destructive incident (ransomware, accidental deletion, compromised admin) is part of the RV pillar, not separate from it.
 
 * **etcd backup:** Scheduled, encrypted etcd snapshots, stored off-cluster. Restore procedure documented and **drilled on a fixed cadence** (e.g., quarterly) — an untested backup is a hypothesis, not a control.
 * **Persistent volume / data backup:** **Velero** (free, CNCF, consistent with the zero-license-cost mandate) for namespace- and PV-level backup/restore, with the same drill cadence as etcd.
@@ -393,4 +379,3 @@ Agents in this pipeline read scanner output, CVE/advisory descriptions, dependen
 | **WORM** | Write Once, Read Many | Storage property required for the immutable SecObserve audit-trail export described in Section 6. |
 | **YAML** | YAML Ain't Markup Language | The human-readable data serialization language used to write Kubernetes manifests and Kyverno policies. |
 | **ZAP** | Zed Attack Proxy | OWASP's free DAST tool, run as a baseline scan against staging in the new Validate stage. |
-
