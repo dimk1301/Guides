@@ -65,21 +65,21 @@ flowchart TD
 ```
 
 
-### **High-Level Shift-Left Lifecycle**
+### **The Lifecycle, Step-by-Step**
 
-| **Phase** | **Core Utility** | **Primary Responsibility** | **Strategic Value** |
+| **Phase** | **Tool** | **What it Does** | **Why it Matters** |
 | --- | --- | --- | --- |
-| **1. Requirements** | OWASP ASVS | Security User Stories | Establishes testable security acceptance criteria before design or code. |
-| **2. Design** | Threat Dragon | Threat Modeling | Flushes out structural architectural design risks early; outputs feed the backlog (see Section 5). |
-| **3. Code** | SonarLint & Bearer CLI | Local SAST & Privacy | Finds bugs and raw PII leakage directly inside the IDE. |
-| **4. Pre-Commit** | Checkov + Gitleaks | IaC Configuration & Secrets Detection | Blocks weak Helm charts, hardcoded secrets, and high-entropy credential strings pre-merge. Re-run (non-bypassable) in CI. |
-| **5. Build** | OWASP dep-scan (`--deep`) | SCA + Container/OS Vulnerability Scanning | A single free tool scans both **application libraries** and the **built container's OS packages**, producing one SBOM + VEX/VDR pair instead of two disconnected reports. |
-| **6. Validate** | OWASP ZAP (Baseline Scan) | Dynamic Application Security Testing (DAST) | Exercises the running app in staging for issues static analysis structurally cannot see (auth flows, session handling, live config). |
-| **7. Govern** | SecObserve | Unified Vuln & License Mgmt | System of record for tracking security flaws, licenses, and policy exceptions. |
-| **8. Deploy** | Kyverno + Cosign | K8s Admission Control + Image Signature Verification | Rejects non-compliant manifests at the API gate; verifies image signatures once Cosign signing is live (see Section 3). |
-| **9. Runtime** | Falco + Falcosidekick | Behavioral Detection & Alert Routing | Flags real-time anomalies and container escapes, and routes them to a named destination (chat/pager/SecObserve) instead of an unread log. |
-| **10. Audit** | Kube-bench | CIS Benchmarking | Validates K8s control-plane and kubelet hardening. |
-| **11. Compliance** | OpenSCAP + STIG Viewer | Audit-ready reporting | Validates underlying **host OS** hardening and produces reports auditors already recognize. *(Scope note: kube-bench checks Kubernetes components; OpenSCAP checks the OS beneath them — complementary, not redundant.)* |
+| **1.&nbsp;Requirements** | OWASP ASVS | Creates security checklists. | Sets clear security goals before we even write code. |
+| **2.&nbsp;Design** | Threat Dragon | Helps us map out potential threats. | Flushes out bad architectural ideas early. |
+| **3.&nbsp;Code** | SonarLint & Bearer CLI | Scans your code right in your IDE. | Acts like a spellchecker for bugs and data leaks. |
+| **4.&nbsp;Pre-Commit** | Checkov + Gitleaks | Checks for bad infrastructure configs and accidentally pasted passwords. | Stops silly mistakes before they reach the main codebase. |
+| **5.&nbsp;Build** | OWASP dep-scan (`--deep`) | Scans our app libraries AND the container's operating system. | Gives us a single report of all the ingredients we use and any known vulnerabilities. |
+| **6.&nbsp;Validate** | OWASP ZAP | Tests the running app in staging (Dynamic Testing). | Catches things code-scanners miss, like broken login flows. |
+| **7.&nbsp;Govern** | SecObserve | A central dashboard for all security alerts. | Keeps us organized so bugs actually get fixed. |
+| **8.&nbsp;Deploy** | Kyverno + Cosign | Checks our Kubernetes setup and verifies image signatures. | Acts as a bouncer, rejecting code that breaks our security rules. |
+| **9.&nbsp;Runtime** | Falco + Falcosidekick | Watches the live system for weird behavior. | Pings us in chat/pager if something looks like a hack. |
+| **10.&nbsp;Audit** | Kube-bench | Checks our Kubernetes settings against CIS standards. | Makes sure our platform is locked down tight. |
+| **11.&nbsp;Compliance** | OpenSCAP | Scans the actual host operating system. | Gives auditors the reports they love to see. |
 
 ---
 
