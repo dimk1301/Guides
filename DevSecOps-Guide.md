@@ -1,7 +1,3 @@
-Here is the integrated DevSecOps guide with the numbering adjusted so the chapters begin at 1, keeping the flow and all SSDF compliance information perfectly intact.
-
----
-
 # **DevSecOps Guide**
 
 > **Core Objective:** A zero-license-cost DevSecOps pipeline for an on-premise Kubernetes data platform. Aligned with **NIST SSDF**, **OWASP DevSecOps guidance**, and **CIS hardening benchmarks**.
@@ -33,28 +29,30 @@ This framework shifts security **left**, catching weaknesses during architectura
 
 By utilizing highly targeted open-source utilities and community-tier tools rather than commercial suites, the primary investment shifts from recurring licensing fees to upfront operational engineering.
 
-The architecture is governed end-to-end by the **OWASP Kubernetes Security Testing Guide (KSTG)**, which provides attacker-centric, Kubernetes-specific control objectives that each tool in this pipeline is selected to satisfy.
+The architecture is governed end-to-end by the **OWASP Kubernetes Security Testing Guide (KSTG)** for cluster infrastructure, and the **OWASP Application Security Verification Standard (ASVS)** for application-layer requirements. Together, they provide attacker-centric, structured security objectives that each tool in this pipeline is selected to satisfy.
 
 ```mermaid
 flowchart LR
-    1[1. DESIGN<br/>Threat Dragon] --> 2[2. CODE<br/>SonarLint / Bearer]
-    2 --> 3[3. PRE-COMMIT<br/>Checkov]
-    3 --> 4[4. BUILD<br/>OWASP dep-scan]
-    4 --> 5[5. GOVERN<br/>SecObserve]
-    5 --> 6[6. DEPLOY<br/>Kyverno]
-    6 --> 7[7. RUNTIME<br/>Falco]
-    7 --> 8[8. AUDIT<br/>Kube-bench]
-    8 --> 9[9. COMPLIANCE<br/>OpenSCAP]
+    1[1. REQUIREMENTS<br/>OWASP ASVS] --> 2[2. DESIGN<br/>Threat Dragon]
+    2 --> 3[3. CODE<br/>SonarLint / Bearer]
+    3 --> 4[4. PRE-COMMIT<br/>Checkov]
+    4 --> 5[5. BUILD<br/>OWASP dep-scan]
+    5 --> 6[6. GOVERN<br/>SecObserve]
+    6 --> 7[7. DEPLOY<br/>Kyverno]
+    7 --> 8[8. RUNTIME<br/>Falco]
+    8 --> 9[9. AUDIT<br/>Kube-bench]
+    9 --> 10[10. COMPLIANCE<br/>OpenSCAP]
 
-    style 1 fill:#4B5563,stroke:#1F2937,stroke-width:2px,color:#fff
-    style 2 fill:#3B82F6,stroke:#1D4ED8,stroke-width:2px,color:#fff
-    style 3 fill:#F59E0B,stroke:#D97706,stroke-width:2px,color:#fff
-    style 4 fill:#F97316,stroke:#C2410C,stroke-width:2px,color:#fff
-    style 5 fill:#6366F1,stroke:#4338CA,stroke-width:2px,color:#fff
-    style 6 fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
-    style 7 fill:#EF4444,stroke:#DC2626,stroke-width:2px,color:#fff
-    style 8 fill:#8B5CF6,stroke:#7C3AED,stroke-width:2px,color:#fff
-    style 9 fill:#06B6D4,stroke:#0891B2,stroke-width:2px,color:#fff
+    style 1 fill:#1E293B,stroke:#0F172A,stroke-width:2px,color:#fff
+    style 2 fill:#4B5563,stroke:#1F2937,stroke-width:2px,color:#fff
+    style 3 fill:#3B82F6,stroke:#1D4ED8,stroke-width:2px,color:#fff
+    style 4 fill:#F59E0B,stroke:#D97706,stroke-width:2px,color:#fff
+    style 5 fill:#F97316,stroke:#C2410C,stroke-width:2px,color:#fff
+    style 6 fill:#6366F1,stroke:#4338CA,stroke-width:2px,color:#fff
+    style 7 fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
+    style 8 fill:#EF4444,stroke:#DC2626,stroke-width:2px,color:#fff
+    style 9 fill:#8B5CF6,stroke:#7C3AED,stroke-width:2px,color:#fff
+    style 10 fill:#06B6D4,stroke:#0891B2,stroke-width:2px,color:#fff
 
 ```
 
@@ -62,15 +60,16 @@ flowchart LR
 
 | **Phase** | **Core Utility** | **Primary Responsibility** | **Strategic Value** |
 | --- | --- | --- | --- |
-| **1. Design** | Threat Dragon | Threat Modeling | Flushes out structural architectural design risks early. |
-| **2. Code** | SonarLint & Bearer CLI | Local SAST & Privacy | Finds bugs and raw PII leakage directly inside the IDE. |
-| **3. Pre-Commit** | Checkov | IaC Configuration Security | Blocks weak Helm charts and hardcoded secrets pre-merge. |
-| **4. Build** | OWASP dep-scan | SCA & License Auditing | Evaluates application library risks prior to assembly. |
-| **5. Govern** | SecObserve | Unified Vuln & License Mgmt | System of record for tracking security flaws and licenses. |
-| **6. Deploy** | Kyverno | K8s Admission Control | Rejects non-compliant manifests at the API gate. |
-| **7. Runtime** | Falco | Behavioral Detection | Flags real-time anomalies and container escapes. |
-| **8. Audit** | Kube-bench | CIS Benchmarking | Validates underlying node hardening. |
-| **9. Compliance** | OpenSCAP + STIG Viewer | Audit-ready reporting | Produces reports auditors already recognize. |
+| **1. Requirements** | OWASP ASVS | Security User Stories | Establishes testable security acceptance criteria before design or code. |
+| **2. Design** | Threat Dragon | Threat Modeling | Flushes out structural architectural design risks early. |
+| **3. Code** | SonarLint & Bearer CLI | Local SAST & Privacy | Finds bugs and raw PII leakage directly inside the IDE. |
+| **4. Pre-Commit** | Checkov | IaC Configuration Security | Blocks weak Helm charts and hardcoded secrets pre-merge. |
+| **5. Build** | OWASP dep-scan | SCA & License Auditing | Evaluates application library risks prior to assembly. |
+| **6. Govern** | SecObserve | Unified Vuln & License Mgmt | System of record for tracking security flaws and licenses. |
+| **7. Deploy** | Kyverno | K8s Admission Control | Rejects non-compliant manifests at the API gate. |
+| **8. Runtime** | Falco | Behavioral Detection | Flags real-time anomalies and container escapes. |
+| **9. Audit** | Kube-bench | CIS Benchmarking | Validates underlying node hardening. |
+| **10. Compliance** | OpenSCAP + STIG Viewer | Audit-ready reporting | Produces reports auditors already recognize. |
 
 ---
 
@@ -94,13 +93,6 @@ The security baseline of the cluster rests heavily on the container layers you i
 | **Cryptographic Proofs** | Standard manifest | Signed SBOM & VEX metadata | Strict provenance + extended support |
 
 ---
-
-Here is how you can seamlessly incorporate **ESLint** (for JS/React frontends) and **FindSecBugs** (for Java backends) into Chapter 4.
-
-We will add them right into your **Integrated Developer Toolset**, expand the **Mermaid diagram** so the architecture updates cleanly, and keep the exact high-level tone, SSDF compliance context, and AI-workflow flow you already built.
-
----
-
 
 ## **4. Local Privacy & Security Scans**
 
@@ -150,6 +142,7 @@ Pairing these ecosystem-specific scanners with coding agents turns security into
 
 ### **Tool Operational Profiles**
 
+* **OWASP ASVS:** Provides a checklist framework matrix used to build verifiable functional security controls directly into project acceptance criteria.
 * **Checkov:** Parses IaC (Terraform, Helm, Kubernetes YAML) to stop misconfigured privileges or plain-text credentials from entering git history.
 * **OWASP dep-scan:** Inspects open-source libraries for vulnerable dependencies and risky licenses before compilation.
 * **SecObserve (Governance Hub):** Vulnerability and License Management system acting as the central orchestrator for findings and supply-chain risk.
@@ -165,19 +158,28 @@ Pairing these ecosystem-specific scanners with coding agents turns security into
 
 ### **Structural Component Placement**
 
-> **Workstation Zone (Developer Laptop)** > Tools: SonarLint, Bearer CLI
+> **Planning Zone (Product Management / JIRA)**
+> Tools: OWASP ASVS
+> Objective: Proactive definition of functional security baselines prior to project engineering kicks.
+
+> **Workstation Zone (Developer Laptop)**
+> Tools: SonarLint, Bearer CLI
 > Objective: Shift-left validation of code and data flows before git pushes.
 
-> **Pipeline Zone (CI/CD)** > Tools: Checkov, OWASP dep-scan
+> **Pipeline Zone (CI/CD)**
+> Tools: Checkov, OWASP dep-scan
 > Objective: Automated gatekeeping for infrastructure manifests and application libraries, with builds failing on high-severity issues.
 
-> **Management Zone (Control Plane Infrastructure)** > Tools: SecObserve
+> **Management Zone (Control Plane Infrastructure)**
+> Tools: SecObserve
 > Objective: Central governance, deduplicating alerts and maintaining a tamper-resistant audit trail.
 
-> **In-Cluster Zone (Live Kubernetes Environment)** > Tools: Kyverno, Falco, Kube-bench
+> **In-Cluster Zone (Live Kubernetes Environment)**
+> Tools: Kyverno, Falco, Kube-bench
 > Objective: Active defense at admission and runtime, plus continuous node-hardening checks.
 
-> **Compliance Overlay (Offline Auditing)** > Tools: OpenSCAP + STIG Viewer
+> **Compliance Overlay (Offline Auditing)**
+> Tools: OpenSCAP + STIG Viewer
 > Objective: Audit readiness via standards-aligned reports from raw system evidence.
 
 **Agent Boundaries in CI/CD and Review:** Agents can annotate builds and pull requests with comments and suggested fixes, but the pipeline never treats an agent review as equivalent to a human review; only human approvals unblock merges or deployments, and only humans trigger production rollouts or rollbacks.
@@ -283,6 +285,7 @@ This loop is explicitly limited to low-blast-radius tasks such as dependency bum
 | Acronym | Full Definition | Context in this Guide |
 | --- | --- | --- |
 | **API** | Application Programming Interface | The target gate where Kyverno intercepts and validates Kubernetes resource manifests. |
+| **ASVS** | Application Security Verification Standard | The granular framework blueprint checklist used to define functional application security requirements during planning. |
 | **CI/CD** | Continuous Integration / Continuous Deployment | The automated pipeline zone where code is built, tested, and validated before production. |
 | **CIS** | Center for Internet Security | The organization defining the global standard hardening benchmarks used by `kube-bench`. |
 | **CLI** | Command Line Interface | Text-based interfaces used locally by developers (e.g., Bearer CLI) or within automated runners. |
