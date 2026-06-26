@@ -24,27 +24,28 @@ We use free, community-driven tools and invest our time in setting them up well,
 
 ```mermaid
 flowchart TD
-    %% Define a custom class with your target font size
-    classDef bigText font-size:22px;
+    %% Define font size AND exact dimensions so all boxes match
+    classDef uniformSize font-size:28px,width:300px,height:150px;
 
     subgraph Row1 [" "]
         direction LR
-        1[1. REQUIREMENTS<br/>OWASP ASVS] --> 2[2. DESIGN<br/>Threat Dragon] --> 3[3. CODE<br/>SonarLint / Bearer] --> 4[4. PRE-COMMIT<br/>Checkov + Gitleaks] --> 5[5. BUILD<br/>dep-scan --deep] --> 6[6. VALIDATE<br/>OWASP ZAP - DAST]
+        1[1. REQUIREMENTS<br/>OWASP ASVS] --> 2[2. DESIGN<br/>Threat Dragon <br/><br/>] --> 3[3. CODE<br/>SonarLint / Bearer] --> 4[4. PRE-COMMIT<br/>Checkov + Gitleaks] --> 5[5. BUILD<br/>dep-scan --deep] --> 6[6. VALIDATE<br/>OWASP ZAP - DAST]
     end
 
     Row1 ~~~ Row2
 
     subgraph Row2 [" "]
         direction LR
-        7[7. GOVERN<br/>SecObserve] --> 8[8. DEPLOY<br/>Kyverno + Cosign] --> 9[9. RUNTIME<br/>Falco + Falcosidekick] --> 10[10. AUDIT<br/>Kube-bench] --> 11[11. COMPLIANCE<br/>OpenSCAP]
+        7[7. GOVERN<br/>SecObserve <br/><br/>] --> 8[8. DEPLOY<br/>Kyverno + Cosign] --> 9[9. RUNTIME<br/>Falco + Falcosidekick] --> 10[10. AUDIT<br/>Kube-bench <br/><br/>] --> 11[11. COMPLIANCE<br/>OpenSCAP]
     end
 
     style Row1 fill:none,stroke:none
     style Row2 fill:none,stroke:none
 
-    %% Apply the custom class to all nodes
-    class 1,2,3,4,5,6,7,8,9,10,11 bigText;
+    %% Apply the uniform sizing class to all nodes
+    class 1,2,3,4,5,6,7,8,9,10,11 uniformSize;
 
+    %% Your original color styling remains intact
     style 1 fill:#1E293B,stroke:#0F172A,stroke-width:2px,color:#fff
     style 2 fill:#4B5563,stroke:#1F2937,stroke-width:2px,color:#fff
     style 3 fill:#3B82F6,stroke:#1D4ED8,stroke-width:2px,color:#fff
@@ -56,7 +57,6 @@ flowchart TD
     style 9 fill:#EF4444,stroke:#DC2626,stroke-width:2px,color:#fff
     style 10 fill:#8B5CF6,stroke:#7C3AED,stroke-width:2px,color:#fff
     style 11 fill:#06B6D4,stroke:#0891B2,stroke-width:2px,color:#fff
-
 ```
 
 ### **The Lifecycle, Step-by-Step**
