@@ -211,7 +211,11 @@ Disaster recovery is a core part of security. Here's our safety net:
 
 ## **8. AI Assistants (Helping, Not Taking Over)**
 
-We use local AI agents to help us move faster, but **humans are always in control of the big decisions**. Think of the agent as a helpful resident engineer.
+We use AI agents to help us move faster, but **humans are always in control of the big decisions**. 
+
+This section is the floor, not the ceiling. We anchor it to the **OWASP Top 10 for Agentic Applications (ASI Top 10)** — the OWASP framework for autonomous-agent risk — and its two guiding ideas: **Least-Agency** (give an agent only the autonomy a task actually needs) and **Strong Observability** (always know what it did, why, and under which identity). What follows is enough to start applying agents safely; as our usage grows, it's on the team to keep building on these foundations.
+
+### **The Agent Responsibility Model**
 
 | **Stage** | **Agent Security Role** | **Human Security Role** | **Guardrail** |
 | --- | --- | --- | --- |
@@ -223,21 +227,17 @@ We use local AI agents to help us move faster, but **humans are always in contro
 | **Runtime / Operate** | Correlate alerts and draft runbook steps. | Own incident severity, RCA, and containment. | Agents cannot close incidents or change on-call routing. |
 | **Maintain** | Open PRs for low-risk dependency and policy updates. | Approve changes for critical systems. | Auto-fix limited to well-tested repos; humans approve merges. |
 
-Agents are **never** allowed to initiate design changes, alter deployment pipelines, perform incident RCA, or trigger production deploys or rollbacks; those remain human-only responsibilities as defined in this DevSecOps Agent Responsibility Model.
+Agents are **never** allowed to initiate design changes, alter deployment pipelines, perform incident RCA, or trigger production deploys or rollbacks — those stay human-only, as defined in the Agent Responsibility Model above.
 
-### **8.1 Human–Agent Collaboration (Interactive Loop)**
+### **Working With Agents Day to Day**
 
-On a day-to-day basis, agents act as “resident SRE/coders” working alongside developers and security engineers:
-
-* When tools such as Bearer or SonarLint flag an issue, the agent explains the vulnerability in the local code context and suggests remediation options.
+* When tools like Bearer or SonarLint flag an issue, the agent explains it in context and suggests remediation options.
 * The agent drafts candidate fixes and targeted tests; humans review, edit, and decide what actually lands in the branch.
-* This keeps security work continuous and conversational while preserving human ownership of intent, design, and risk.
+* Security-rule changes the agent drafts (Kyverno, Falco, Checkov) still go through the **same two-reviewer, signed-commit process** as any other security rule change (Chapter 1). Agent-authored is not a shortcut.
 
-Interactive collaboration operates within the guardrails of the responsibility model: agents help investigate and propose, humans decide and approve.
+### **The Autonomous Loop (Low-Blast-Radius Work)**
 
-### **8.2 Autonomous Agentic Loop (Low-Blast-Radius Work)**
-
-For background maintenance and infrastructure debt, a constrained agent loop can handle routine tasks within the limits of the responsibility model:
+For background maintenance, a constrained agent loop can handle routine tasks on its own:
 
 ```mermaid
 flowchart LR
@@ -249,17 +249,18 @@ flowchart LR
     style 2 fill:#EC4899,stroke:#BE185D,stroke-width:2px,color:#fff
     style 3 fill:#3B82F6,stroke:#1D4ED8,stroke-width:2px,color:#fff
     style 4 fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
-
 ```
 
-This loop is explicitly limited to low-blast-radius tasks such as dependency bumps, static-analysis-driven refactors, and policy synthesis for Kyverno or Checkov, all validated by automated tests and admission policies before a human approves the merge.
+This loop is limited to low-blast-radius tasks: dependency bumps and static-analysis-driven refactors are good fits. Policy synthesis (below) can use this loop too, but because a wrong policy can fail *silently* — blocking good deploys, or worse, leaving a quiet gap — it never skips the two-reviewer rule above.
 
-### **8.3 Technical Pillars of Agentic Security**
+### **Where Agents Plug Into the Pipeline**
 
-| **Pillar** | **Mechanism** | **On-Premise Implementation** |
+| **Pillar** | **What It Does** | **On-Premise Implementation** |
 | --- | --- | --- |
-| **1. Reachability Triage & Auto-Remediation** | Decide whether a CVE found by dep-scan is actually reachable and patch it if safe. | Agent analyzes call graphs, checks compatibility, updates dependencies, re-runs tests, and opens a PR with results and test outcomes attached. |
-| **2. Policy Synthesis** | Convert plain-text NIST/CIS requirements into Kyverno or Checkov policies. | Agent translates rules like “must not run as root” into validated YAML policies, links them to test cases, and proposes them via PRs for human review. |
+| **Reachability Triage** | Decides whether a CVE that dep-scan found is actually reachable in our code, and produces a VEX verdict. | Agent walks the call graph, checks compatibility, updates the dependency, re-runs tests, and opens a PR with the VEX result attached. |
+| **Policy Synthesis** | Turns plain-text NIST/CIS rules into Kyverno or Checkov policy. | Agent drafts validated YAML, links it to test cases, and proposes it via PR — held to the two-reviewer rule above. |
+| **Alert Correlation** | Groups related Falco alerts into one picture and drafts a first-pass runbook. | Agent clusters alerts by host/workload and attaches relevant logs, giving the on-call engineer a starting point — it never closes the incident. |
+
 
 ---
 
