@@ -25,7 +25,7 @@ We use free, community-driven tools and invest our time in setting them up well,
 ```mermaid
 flowchart TD
     %% Define font size AND exact dimensions so all boxes match
-    classDef uniformSize font-size:28px,width:300px,height:150px;
+    classDef uniformSize font-size:28px;
 
     subgraph Row1 [" "]
         direction LR
