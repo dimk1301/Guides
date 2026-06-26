@@ -213,12 +213,17 @@ Disaster recovery is a core part of security. Here's our safety net:
 
 We use local AI agents to help us move faster, but **humans are always in control of the big decisions**. Think of the agent as a helpful resident engineer.
 
-| **Stage** | **What the AI Agent Does** | **What the Human Engineer Does** |
-| --- | --- | --- |
-| **Code** | Suggests secure code fixes in your branch. | Makes the final call on merging code. |
-| **Test** | Generates candidate tests and leaves PR comments. | Curates tests and approves the PR. |
-| **Deploy** | Adds risk context to deployment checks. | Decides when to roll out or roll back. |
-| **Maintain** | Opens PRs for simple dependency updates. | Reviews and merges the automated updates. |
+| **Stage** | **Agent Security Role** | **Human Security Role** | **Guardrail** |
+| --- | --- | --- | --- |
+| **Plan** | Draft security requirements and threat-model checklists. | Approve scope and risk ratings. | Agents cannot accept risk or change severity. |
+| **Design** | Suggest security patterns and mitigations. | Own data flows and trust boundaries. | Agents cannot approve architecture or reclassify data. |
+| **Code** | Propose secure refactors and fixes for findings in branches. | Own intent and merge decisions. | Agents never push to protected branches or mark checks as passed. |
+| **Test / Review** | Generate candidate security tests and first-pass PR comments. | Curate tests and perform final review. | Agents cannot merge tests or PRs; human approval is required. |
+| **Deploy** | Enrich deploy checks with risk context. | Decide rollout and rollback. | Agents cannot trigger deploys or rollbacks. |
+| **Runtime / Operate** | Correlate alerts and draft runbook steps. | Own incident severity, RCA, and containment. | Agents cannot close incidents or change on-call routing. |
+| **Maintain** | Open PRs for low-risk dependency and policy updates. | Approve changes for critical systems. | Auto-fix limited to well-tested repos; humans approve merges. |
+
+Agents are **never** allowed to initiate design changes, alter deployment pipelines, perform incident RCA, or trigger production deploys or rollbacks; those remain human-only responsibilities as defined in this DevSecOps Agent Responsibility Model.
 
 ```mermaid
 flowchart LR
@@ -233,7 +238,6 @@ flowchart LR
 
 ```
 
-*Agents are explicitly prohibited from sending data outside our network or blindly trusting third-party alerts.*
 
 ---
 
