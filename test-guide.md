@@ -225,6 +225,20 @@ We use local AI agents to help us move faster, but **humans are always in contro
 
 Agents are **never** allowed to initiate design changes, alter deployment pipelines, perform incident RCA, or trigger production deploys or rollbacks; those remain human-only responsibilities as defined in this DevSecOps Agent Responsibility Model.
 
+### **8.1 Human–Agent Collaboration (Interactive Loop)**
+
+On a day-to-day basis, agents act as “resident SRE/coders” working alongside developers and security engineers:
+
+* When tools such as Bearer or SonarLint flag an issue, the agent explains the vulnerability in the local code context and suggests remediation options.
+* The agent drafts candidate fixes and targeted tests; humans review, edit, and decide what actually lands in the branch.
+* This keeps security work continuous and conversational while preserving human ownership of intent, design, and risk.
+
+Interactive collaboration operates within the guardrails of the responsibility model: agents help investigate and propose, humans decide and approve.
+
+### **8.2 Autonomous Agentic Loop (Low-Blast-Radius Work)**
+
+For background maintenance and infrastructure debt, a constrained agent loop can handle routine tasks within the limits of the responsibility model:
+
 ```mermaid
 flowchart LR
     1[1. FIND<br/>Scanner Flags Issue] --> 2[2. FIX<br/>Agent Applies Change]
@@ -238,6 +252,14 @@ flowchart LR
 
 ```
 
+This loop is explicitly limited to low-blast-radius tasks such as dependency bumps, static-analysis-driven refactors, and policy synthesis for Kyverno or Checkov, all validated by automated tests and admission policies before a human approves the merge.
+
+### **8.3 Technical Pillars of Agentic Security**
+
+| **Pillar** | **Mechanism** | **On-Premise Implementation** |
+| --- | --- | --- |
+| **1. Reachability Triage & Auto-Remediation** | Decide whether a CVE found by dep-scan is actually reachable and patch it if safe. | Agent analyzes call graphs, checks compatibility, updates dependencies, re-runs tests, and opens a PR with results and test outcomes attached. |
+| **2. Policy Synthesis** | Convert plain-text NIST/CIS requirements into Kyverno or Checkov policies. | Agent translates rules like “must not run as root” into validated YAML policies, links them to test cases, and proposes them via PRs for human review. |
 
 ---
 
