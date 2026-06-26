@@ -24,6 +24,9 @@ We use free, community-driven tools and invest our time in setting them up well,
 
 ```mermaid
 flowchart TD
+    %% Define a custom class with your target font size
+    classDef bigText font-size:22px;
+
     subgraph Row1 [" "]
         direction LR
         1[1. REQUIREMENTS<br/>OWASP ASVS] --> 2[2. DESIGN<br/>Threat Dragon] --> 3[3. CODE<br/>SonarLint / Bearer] --> 4[4. PRE-COMMIT<br/>Checkov + Gitleaks] --> 5[5. BUILD<br/>dep-scan --deep] --> 6[6. VALIDATE<br/>OWASP ZAP - DAST]
@@ -38,6 +41,9 @@ flowchart TD
 
     style Row1 fill:none,stroke:none
     style Row2 fill:none,stroke:none
+
+    %% Apply the custom class to all nodes
+    class 1,2,3,4,5,6,7,8,9,10,11 bigText;
 
     style 1 fill:#1E293B,stroke:#0F172A,stroke-width:2px,color:#fff
     style 2 fill:#4B5563,stroke:#1F2937,stroke-width:2px,color:#fff
