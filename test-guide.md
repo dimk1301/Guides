@@ -180,7 +180,7 @@ Here is exactly how each tool proves we are doing our jobs:
 | **Falco + Falcosidekick** | Live Environment | Real-time routed alerts tied to a specific incident ticket and an on-call engineer. |
 | **Velero & etcd Snapshots** | Disaster Recovery | Logs of successful "restore drills" logged into SecObserve as Proof of Protection (an untested backup doesn't count as proof). |
 
-**SecObserve** is locked down to protect this evidence. Security analysts can update tickets to track progress, but **no one can quietly delete a finding**. To ensure we never lose our audit trail even if the server goes down, the database is backed up nightly to independent, tamper-proof storage.
+**SecObserve** is locked down to protect this evidence. Most of the team can update a finding, but only a couple of trusted leads can delete one — so **no one can quietly make a finding disappear**. Every change needs a short written reason, saved automatically next to the finding, and for sensitive cases we can require a second person to sign off, just like our code reviews. (Logs are even stricter — see Chapter 7 — once written, they can't be changed by anyone, not even an administrator.) The database itself is backed up nightly to independent, tamper-proof storage so we never lose this record.
 
 ### **Our Immediate Action Plan**
 
@@ -196,19 +196,28 @@ Even with these tools, we have a few gaps to close. Here is the roadmap for the 
 
 ---
 
+## Chapter 6 — the updated paragraph
+
+> **SecObserve** is locked down to protect this evidence. Security analysts can update tickets to track progress, but **no one can quietly delete a finding** — closing an issue as "resolved" still leaves the original record behind, like crossing an item off a list rather than tearing out the page, and every change is itself written to a separate trail nobody can edit. (Logs work a bit differently — see Chapter 7 — once they're written, they can't be changed at all, by anyone, not even an administrator.) To ensure we never lose our audit trail even if the server goes down, the database is backed up nightly to independent, tamper-proof storage.
+
+---
+
 ## **7. Bouncing Back (Resilience)**
 
-Disaster recovery is a core part of security. Here's our safety net:
+Disaster recovery is a core part of security. Even with every prevention tool in this guide running, things can still go wrong — a bad deploy, a hardware failure, or a real attack. When that happens, the only thing that matters is whether we can get back the data and systems we lost. Here's what we back up, how often, and — just as important — how we actually prove each backup works before we ever need it for real.
 
-| **What** | **Tool** | **Cadence** | **How We Verify It** |
+| **What** | **Tool** | **How Often** | **How We Prove It Works** |
 | --- | --- | --- | --- |
-| **Cluster State (etcd)** | Native etcd snapshotting | Daily, stored off-cluster | Quarterly restore into a sandbox cluster |
-| **App Volumes** | Velero | Daily | Quarterly restore drill, same sandbox |
-| **Application Data (DBs)** | Native DB backup/PITR (e.g. `pg_basebackup` + WAL archiving for Postgres) | Continuous WAL + daily base backup | Quarterly point-in-time restore test |
-| **SecObserve (our audit trail)** | DB dump to off-cluster storage | Nightly | See Chapter 6 — restore drills logged back into SecObserve itself |
-| **Containment** | Cilium/Calico Network Policies | Always-on | Hubble/flow logs reviewed after any incident |
+| **Cluster State (etcd)** — the master record of everything running in Kubernetes | Native etcd snapshotting | Daily, stored away from the cluster itself | Every three months, we restore it onto a separate test cluster to confirm it actually works |
+| **App Volumes** — the files and storage our applications use | Velero | Daily | Same quarterly restore test, on the same test cluster |
+| **Application Data (Databases)** — the actual records our apps create, like customer or transaction data | Native database backup tools (e.g. `pg_basebackup` for Postgres) | Continuous, plus one full backup daily | Every three months, we restore the database to a specific point in time and confirm the data is correct |
+| **SecObserve (our security record-keeping)** | Database export to storage outside the cluster | Nightly | See Chapter 6 — restore tests are logged back into SecObserve itself as proof |
+| **Network Containment** — stopping an attacker from spreading if they get in | Cilium/Calico Network Policies | Always running | We review network traffic logs after any real incident to confirm the containment held |
 
-**One rule that applies to all of the above:** backups must land on storage that's immutable from the cluster's own credentials. If an attacker (or a ransomware payload) gets cluster-admin, they shouldn't also be able to delete or encrypt the backups — that's what turns a recoverable incident into a permanent one.
+**One rule applies to everything above:** our backups are stored somewhere that even our own cluster administrators can't delete or change. If an attacker — or a member of our own team, by mistake — gets full admin access to the cluster, they should still not be able to touch yesterday's backup. That's the difference between a bad day and a permanent loss.
+
+In practice, this means turning on a setting called **WORM (Write Once, Read Many)**, sometimes labeled "object lock," on whatever storage holds the backups. Once switched on for a file, this setting makes it physically impossible for anyone — including someone with full admin rights — to delete or overwrite it until a set time period has passed. It's enforced by the storage system itself, not by Kubernetes permissions, which is exactly why it still protects us even if our Kubernetes access is fully compromised.
+
 
 ---
 
