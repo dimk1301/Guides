@@ -200,9 +200,15 @@ Even with these tools, we have a few gaps to close. Here is the roadmap for the 
 
 Disaster recovery is a core part of security. Here's our safety net:
 
-* **Cluster Data (etcd):** Backed up regularly, stored off-cluster, and tested quarterly.
-* **App Data (Volumes):** Velero handles backups and restores.
-* **Containment:** Our Network Policies (Cilium/Calico) stop hackers from jumping from one infected app to another.
+| **What** | **Tool** | **Cadence** | **How We Verify It** |
+| --- | --- | --- | --- |
+| **Cluster State (etcd)** | Native etcd snapshotting | Daily, stored off-cluster | Quarterly restore into a sandbox cluster |
+| **App Volumes** | Velero | Daily | Quarterly restore drill, same sandbox |
+| **Application Data (DBs)** | Native DB backup/PITR (e.g. `pg_basebackup` + WAL archiving for Postgres) | Continuous WAL + daily base backup | Quarterly point-in-time restore test |
+| **SecObserve (our audit trail)** | DB dump to off-cluster storage | Nightly | See Chapter 6 — restore drills logged back into SecObserve itself |
+| **Containment** | Cilium/Calico Network Policies | Always-on | Hubble/flow logs reviewed after any incident |
+
+**One rule that applies to all of the above:** backups must land on storage that's immutable from the cluster's own credentials. If an attacker (or a ransomware payload) gets cluster-admin, they shouldn't also be able to delete or encrypt the backups — that's what turns a recoverable incident into a permanent one.
 
 ---
 
