@@ -11,8 +11,10 @@ Great tools don't matter if we don't have the right habits. This pipeline is bui
 To make this work, we all need to follow a few basic ground rules:
 
 * **Security Training:** Every engineer must complete an annual secure coding training (like the OWASP Top 10) before getting CI/CD pipeline access.
+* **Lock Every Account:** MFA is mandatory on every SCM (GitHub/GitLab) account. Stolen or reused passwords are still the #1 way real breaches start, and this one setting blocks most of them before any tool below ever gets a chance to fire.
 * **Don't Skip the Gates:** Bypassing automated checks (like Checkov, Gitleaks, or Kyverno) is strictly forbidden unless you have a documented exception signed by a Security Lead.
 * **Treat Security Rules Like Code:** If you want to change a security rule (like a Kyverno policy or Falco alert), it goes through the exact same Pull Request (PR) process as application code. It requires two reviewers and a signed commit.
+* **Make It Safe to Report Bugs:** We publish exactly how to reach us privately — SECURITY.md in every repo, security.txt on every live app — so a researcher who finds an issue tells us quietly instead of posting it publicly.
 
 ---
 
@@ -109,7 +111,7 @@ The cheapest time to fix a bug is while you're writing the code. We have two lay
 1. **On your laptop:** Fast tools that warn you instantly. You can bypass them locally if you're testing, but they exist to save you a headache later.
 2. **In CI/CD:** The unskippable automated gate. If the CI/CD pipeline finds a hardcoded password or a critical flaw, it *will* block the merge.
 
-**Repo Rules:** You need signed commits (so we know who wrote the code) and a second reviewer to approve your PR.
+**Repo Rules:** You need signed commits (so we know who wrote the code), a CODEOWNERS file so the right reviewer gets pulled in automatically, a shared .gitignore baseline so secrets and build junk never get committed in the first place, and a second reviewer to approve your PR.
 
 ```mermaid
 flowchart TD
@@ -151,17 +153,12 @@ Here's how our tools map out across the work environment:
 * **Workstation Zone (Your Laptop):** SonarLint, Bearer CLI, and Gitleaks keep your local environment safe.
 * **Pipeline Zone (CI/CD):** Checkov scans our Terraform/Helm files, Gitleaks double-checks for passwords, and OWASP dep-scan (`--deep`) checks our libraries and base image operating system for known flaws.
 * **Staging Zone:** OWASP ZAP attacks our staging app to find runtime holes.
+* **Edge Zone (Ingress / Load Balancer):** Before traffic ever reaches the cluster, we enforce HTTPS redirect, HSTS, CSP, and TLS 1.3 here, and publish security.txt so anyone who finds a live issue knows how to reach us. This is baseline config, not a scan — set once per app, and it closes the exact holes ZAP would otherwise keep flagging in Staging.
 * **Management Hub:** SecObserve acts as our central dashboard for all alerts.
 * **Live Kubernetes Zone:** Kyverno enforces rules at the door. Falco watches for weird behavior inside. Cilium/Calico segments our network.
 * **Compliance:** OpenSCAP makes sure the underlying servers are up to code.
 
 *Note: Automation bots might suggest fixes on your PRs, but only human engineers can approve them.*
-
----
-
-You are absolutely right to catch that! The previous version of Chapter 6 left out several key tools that were mentioned earlier in the document, specifically the planning tools (Threat Dragon/ASVS), local code scanners (SonarLint/Bearer), the dynamic tester (OWASP ZAP), and the compliance/backup tools (OpenSCAP/Velero)—all of which generate crucial evidence for audits.
-
-Here is the fully updated **Chapter 6**, expanded to include every tool from the pipeline that creates security proof or evidence.
 
 ---
 
@@ -261,17 +258,16 @@ This loop is limited to low-blast-radius tasks: dependency bumps and static-anal
 | **Policy Synthesis** | Turns plain-text NIST/CIS rules into Kyverno or Checkov policy. | Agent drafts validated YAML, links it to test cases, and proposes it via PR — held to the two-reviewer rule above. |
 | **Alert Correlation** | Groups related Falco alerts into one picture and drafts a first-pass runbook. | Agent clusters alerts by host/workload and attaches relevant logs, giving the on-call engineer a starting point — it never closes the incident. |
 
-
 ---
 
 ## **9. Step-by-Step Implementation Checklist**
 
 Here is the exact order we are rolling this out:
 
-* **Phase 1 (Basics):** Enable branch protections (2 reviewers, signed commits). Install SonarLint, Bearer, and Gitleaks locally.
+* **Phase 1 (Basics):** Enable MFA org-wide and branch protections (2 reviewers, signed commits, CODEOWNERS). Add a shared .gitignore baseline and SECURITY.md. Install SonarLint, Bearer, and Gitleaks locally.
 * **Phase 2 (CI/CD):** Make Checkov and Gitleaks required steps in the pipeline. Set up dep-scan and SecObserve.
 * **Phase 3 (Testing):** Deploy OWASP ZAP in staging. Start doing Threat Dragon design reviews.
-* **Phase 4 (Live Cluster):** Turn on Kyverno, Falco, and NetworkPolicies (Cilium/Calico). Run OpenSCAP.
+* **Phase 4 (Live Cluster):** Turn on Kyverno, Falco, and NetworkPolicies (Cilium/Calico). Configure ingress/load balancer for HTTPS redirect, HSTS, CSP, TLS 1.3, and security.txt. Run OpenSCAP.
 * **Phase 5 (Images):** Set up HashiCorp Vault. Enable Cosign image signing.
 * **Phase 6 (Backups):** Finalize and test etcd, Velero, and SecObserve backups.
 * **Phase 7 (AI):** Connect our AI agents for triage and auto-drafting PRs.
@@ -286,10 +282,13 @@ Here is the exact order we are rolling this out:
 | **ASVS** | Application Security Verification Standard | Our security checklist for planning. |
 | **CI/CD** | Continuous Integration / Deployment | Our automated build/test pipeline. |
 | **CIS** | Center for Internet Security | The group that writes the rules Kube-bench checks for. |
+| **CSP** | Content Security Policy | An ingress/edge rule that blocks malicious scripts from loading in the browser. |
 | **CVE** | Common Vulnerabilities and Exposures | A public list of known hacker exploits. |
 | **DAST** | Dynamic Application Security Testing | Attacking a live staging app (done by ZAP). |
+| **HSTS** | HTTP Strict Transport Security | An ingress/edge rule forcing browsers to always use HTTPS for our apps. |
 | **IaC** | Infrastructure as Code | Config files (Helm/Terraform) scanned by Checkov. |
 | **LLM** | Large Language Model | The local AI brains powering our SRE assistants. |
+| **MFA** | Multi-Factor Authentication | Required on every SCM (GitHub/GitLab) account. |
 | **PR** | Pull Request | The gate where humans approve code and security changes. |
 | **RBAC** | Role-Based Access Control | Decides who has admin powers in the cluster. |
 | **SAST** | Static Application Security Testing | Scanners looking at raw code without running it. |
