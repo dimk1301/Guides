@@ -196,12 +196,6 @@ Even with these tools, we have a few gaps to close. Here is the roadmap for the 
 
 ---
 
-## Chapter 6 — the updated paragraph
-
-> **SecObserve** is locked down to protect this evidence. Security analysts can update tickets to track progress, but **no one can quietly delete a finding** — closing an issue as "resolved" still leaves the original record behind, like crossing an item off a list rather than tearing out the page, and every change is itself written to a separate trail nobody can edit. (Logs work a bit differently — see Chapter 7 — once they're written, they can't be changed at all, by anyone, not even an administrator.) To ensure we never lose our audit trail even if the server goes down, the database is backed up nightly to independent, tamper-proof storage.
-
----
-
 ## **7. Bouncing Back (Resilience)**
 
 Disaster recovery is a core part of security. Even with every prevention tool in this guide running, things can still go wrong — a bad deploy, a hardware failure, or a real attack. When that happens, the only thing that matters is whether we can get back the data and systems we lost. Here's what we back up, how often, and — just as important — how we actually prove each backup works before we ever need it for real.
