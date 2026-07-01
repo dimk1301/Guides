@@ -15,6 +15,19 @@ To make this work, we all need to follow a few basic ground rules:
 * **Don't Skip the Gates:** Bypassing automated checks (like Checkov, Gitleaks, or Kyverno) is strictly forbidden unless you have a documented exception signed by a Security Lead.
 * **Treat Security Rules Like Code:** If you want to change a security rule (like a Kyverno policy or Falco alert), it goes through the exact same Pull Request (PR) process as application code. It requires two reviewers and a signed commit.
 * **Make It Safe to Report Bugs:** We publish exactly how to reach us privately — SECURITY.md in every repo, security.txt on every live app — so a researcher who finds an issue tells us quietly instead of posting it publicly.
+* **Security Champions:** Each service has a designated security champion who:
+  * Reviews security-related PRs.
+  * Maintains threat models and ASVS checklists.
+  * Acts as the first escalation point for security questions.
+* **Exception-Management Template:** Every documented exception must include:
+  * A clear description.
+  * Mitigations in place.
+  * A time-bound expiry (e.g., 30 days).
+  * An automatic SecObserve ticket.
+* **Annual Tabletop Exercise:** Once per year, run a simulated incident (e.g., leaked secret, CVE exploit) and:
+  * Validate SecObserve workflows.
+  * Verify MFA, backup restore, and Falco alerting.
+  * Log lessons learned.
 
 ---
 
@@ -77,6 +90,18 @@ flowchart TD
 | **10.&nbsp;Audit** | Kube-bench | Checks our Kubernetes settings against CIS standards. | Makes sure our platform is locked down tight. |
 | **11.&nbsp;Compliance** | OpenSCAP | Scans the actual host operating system. | Gives auditors the reports they love to see. |
 
+### **Pipeline Controls**
+
+* **SBOM Generation:** Every CI build must generate a CycloneDX or SPDX SBOM artifact, stored alongside the image.
+* **Branch-Protection Rules:** Use Terraform or similar to codify:
+  * Requires signed commits.
+  * Requires 2 approvals.
+  * Requires a match between CODEOWNERS.
+  * Blocks force-pushes and deletion of protected branches.
+* **Pre-Commit Hooks:** Pre-commit hooks are mandatory and enforced via:
+  * A shared `.pre-commit-config.yaml` in the repo.
+  * CI validating that hooks ran (e.g., `pre-commit run --all-files`).
+
 ---
 
 ## **3. Starting Safe: Secure Container Images**
@@ -101,6 +126,14 @@ We don't just trust images; we verify them.
 1. **Build:** Cosign digitally signs every image we make.
 2. **Deploy:** Kyverno checks the signature. No signature? The code doesn't deploy.
 3. **Keys:** We store our signing keys safely in HashiCorp Vault.
+
+### **Additional Image Controls**
+
+* **Pinned Digests:** All image references in manifests must use a digest, not a tag:
+  * `image: dhi.io/app@sha256:...`
+  * CI fails if a tag is used instead.
+* **Base-Image Update Automation:** Automated weekly PRs update base images (dhi.io/distroless) using Renovate or Dependabot.
+* **Cosign Key Rotation:** Cosign keys are rotated annually; old keys are revoked in Kyverno policy.
 
 ---
 
@@ -143,6 +176,14 @@ flowchart TD
 | **ESLint** | Security bugs specific to JavaScript/React. | IDE and build phase. |
 | **FindSecBugs** | Security bugs specific to compiled Java code. | IDE and build phase. |
 
+### **Developer Environment Controls**
+
+* **IDE Config-as-Code:** Share IDE security configs (SonarLint, ESLint rules) as code in `.vscode/` or `.idea/` directories.
+* **Secret-Detection in CI as Mandatory:** CI fails if Gitleaks finds secrets; remediation requires:
+  * Rotating the secret.
+  * Adding it to Vault.
+  * Updating the code.
+
 ---
 
 ## **5. Our Security Toolkit & Where Everything Lives**
@@ -159,6 +200,15 @@ Here's how our tools map out across the work environment:
 * **Compliance:** OpenSCAP makes sure the underlying servers are up to code.
 
 *Note: Automation bots might suggest fixes on your PRs, but only human engineers can approve them.*
+
+### **Infrastructure Controls**
+
+* **Network Segmentation Diagram:** Add a simple diagram showing:
+  * Ingress → DMZ → App tier → Data tier.
+  * Where Cilium/Calico policies sit.
+* **Explicit Logging of Policy Decisions:** All Kyverno policy changes are:
+  * Logged to SecObserve.
+  * Reviewed annually for drift against CIS/ASVS.
 
 ---
 
@@ -181,6 +231,20 @@ Here is exactly how each tool proves we are doing our jobs:
 | **Velero & etcd Snapshots** | Disaster Recovery | Logs of successful "restore drills" logged into SecObserve as Proof of Protection (an untested backup doesn't count as proof). |
 
 **SecObserve** is locked down to protect this evidence. Most of the team can update a finding, but only a couple of trusted leads can delete one — so **no one can quietly make a finding disappear**. Every change needs a short written reason, saved automatically next to the finding, and for sensitive cases we can require a second person to sign off, just like our code reviews. (Logs are even stricter — see Chapter 7 — once written, they can't be changed by anyone, not even an administrator.) The database itself is backed up nightly to independent, tamper-proof storage so we never lose this record.
+
+### **Evidence Management**
+
+* **Automated Evidence Collection:** CI/CD automatically attaches the following to each release artifact in SecObserve:
+  * SBOM.
+  * dep-scan report.
+  * Checkov report.
+  * Gitleaks report.
+  * ZAP baseline scan.
+* **Retention Policy:** SecObserve retains:
+  * Critical findings: 7 years.
+  * High/Medium: 2 years.
+  * Low: 1 year.
+* **Read-Only Auditor Role:** Auditors get read-only access to SecObserve with no delete/modify permissions.
 
 ### **Our Immediate Action Plan**
 
@@ -212,6 +276,14 @@ Disaster recovery is a core part of security. Even with every prevention tool in
 
 In practice, this means turning on a setting called **WORM (Write Once, Read Many)**, sometimes labeled "object lock," on whatever storage holds the backups. Once switched on for a file, this setting makes it physically impossible for anyone — including someone with full admin rights — to delete or overwrite it until a set time period has passed. It's enforced by the storage system itself, not by Kubernetes permissions, which is exactly why it still protects us even if our Kubernetes access is fully compromised.
 
+### **Resilience Controls**
+
+* **Backup Test Automation:** Quarterly restore tests are:
+  * Automated via scripts.
+  * Logged in SecObserve with pass/fail status.
+* **RPO/RSL Definitions:** Define Recovery Point Objective (RPO) and Recovery Service Level (RSL) per workload:
+  * Critical: RPO < 15 minutes, RSL < 4 hours.
+  * Non-critical: RPO < 24 hours, RSL < 24 hours.
 
 ---
 
@@ -267,19 +339,31 @@ This loop is limited to low-blast-radius tasks: dependency bumps and static-anal
 | **Policy Synthesis** | Turns plain-text NIST/CIS rules into Kyverno or Checkov policy. | Agent drafts validated YAML, links it to test cases, and proposes it via PR — held to the two-reviewer rule above. |
 | **Alert Correlation** | Groups related Falco alerts into one picture and drafts a first-pass runbook. | Agent clusters alerts by host/workload and attaches relevant logs, giving the on-call engineer a starting point — it never closes the incident. |
 
+### **Agent Controls**
+
+* **Agent Identity and Audit Trail:** All agent actions:
+  * Use a dedicated service account.
+  * Are logged with a `service=ai-agent` label.
+  * Require human approval for any production change.
+* **Agent-Generated Code Review Checklist:** Agents generate a lightweight checklist per PR:
+  * Secrets scanned.
+  * CVEs triaged.
+  * Policy changes reviewed.
+  * Humans check off before merge.
+
 ---
 
 ## **9. Step-by-Step Implementation Checklist**
 
 Here is the exact order we are rolling this out:
 
-* **Phase 1 (Basics):** Enable MFA org-wide and branch protections (2 reviewers, signed commits, CODEOWNERS). Add a shared .gitignore baseline and SECURITY.md. Install SonarLint, Bearer, and Gitleaks locally.
-* **Phase 2 (CI/CD):** Make Checkov and Gitleaks required steps in the pipeline. Set up dep-scan and SecObserve.
-* **Phase 3 (Testing):** Deploy OWASP ZAP in staging. Start doing Threat Dragon design reviews.
-* **Phase 4 (Live Cluster):** Turn on Kyverno, Falco, and NetworkPolicies (Cilium/Calico). Configure ingress/load balancer for HTTPS redirect, HSTS, CSP, TLS 1.3, and security.txt. Run OpenSCAP.
-* **Phase 5 (Images):** Set up HashiCorp Vault. Enable Cosign image signing.
-* **Phase 6 (Backups):** Finalize and test etcd, Velero, and SecObserve backups.
-* **Phase 7 (AI):** Connect our AI agents for triage and auto-drafting PRs.
+* **Phase 1 (Basics):** Enable MFA org-wide and branch protections (2 reviewers, signed commits, CODEOWNERS). Add a shared .gitignore baseline and SECURITY.md. Install SonarLint, Bearer, and Gitleaks locally. Enforce pre-commit hooks and shared IDE configs.
+* **Phase 2 (CI/CD):** Make Checkov and Gitleaks required steps in the pipeline. Set up dep-scan and SecObserve. Require SBOM generation in CI.
+* **Phase 3 (Testing):** Deploy OWASP ZAP in staging. Start doing Threat Dragon design reviews. Automate ZAP baseline scans on each staging deploy.
+* **Phase 4 (Live Cluster):** Turn on Kyverno, Falco, and NetworkPolicies (Cilium/Calico). Configure ingress/load balancer for HTTPS redirect, HSTS, CSP, TLS 1.3, and security.txt. Run OpenSCAP. Document network segmentation and policy review cadence.
+* **Phase 5 (Images):** Set up HashiCorp Vault. Enable Cosign image signing. Enforce image digests and key rotation.
+* **Phase 6 (Backups):** Finalize and test etcd, Velero, and SecObserve backups. Automate backup restore tests and define RPO/RSL.
+* **Phase 7 (AI):** Connect our AI agents for triage and auto-drafting PRs. Add agent identity logging and PR checklists.
 
 ---
 
@@ -300,6 +384,8 @@ Here is the exact order we are rolling this out:
 | **MFA** | Multi-Factor Authentication | Required on every SCM (GitHub/GitLab) account. |
 | **PR** | Pull Request | The gate where humans approve code and security changes. |
 | **RBAC** | Role-Based Access Control | Decides who has admin powers in the cluster. |
+| **RPO** | Recovery Point Objective | How much data loss is acceptable in a disaster. |
+| **RSL** | Recovery Service Level | How quickly services must be restored after a disaster. |
 | **SAST** | Static Application Security Testing | Scanners looking at raw code without running it. |
 | **SCA** | Software Composition Analysis | Checking our third-party libraries for flaws. |
 | **SBOM** | Software Bill of Materials | The "ingredients list" of our apps. |
