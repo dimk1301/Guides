@@ -261,37 +261,50 @@ The runtime environment splits logs and metrics at the source to maximize perfor
 
 ## **6. Proving It: Audit & Evidence**
 
-It's not enough to say we're secure; we have to prove it to auditors and ourselves. Every tool we use generates evidence, and almost all of it feeds directly into our central dashboard, **SecObserve**.
+It's not enough to say we're secure; we have to prove it to auditors and ourselves. Every tool we use generates evidence, and it all feeds directly into our two centralized management hubs: **SecObserve** (for static, point-in-time build findings) and **OpenObserve** (for live, high-velocity stream analytics).
 
 Here is exactly how each tool proves we are doing our jobs:
 
-| **Tool** | **What it Protects** | **The Proof it Creates (Evidence)** |
-| --- | --- | --- |
-| **OWASP ASVS & Threat Dragon** | Planning & Design | Security checklists and threat models tracked as project tickets before coding begins. |
-| **SonarLint, Bearer CLI, ESLint, FindSecBugs** | Local Code Safety | Local scan histories proving that bugs and data leaks were fixed *before* the code was committed. |
-| **Kube-bench, Checkov, OpenSCAP** | Configuration & Compliance | Audit-ready reports proving our app configs, Kubernetes settings, and Host OS align with industry standards. |
-| **Gitleaks** | Secrets | Pipeline logs and remediation records proving any exposed keys were caught and rotated. |
-| **OWASP dep-scan (`--deep`)** | Supply Chain | Software Bill of Materials (SBOMs) and vulnerability reports for both our app libraries and the base operating system. |
-| **OWASP ZAP** | Staging / Dynamic Testing | Baseline scan reports proving our live application was attacked and tested before going to production. |
-| **Kyverno + Cosign** | Deployment Policies | Logs of rejected deployments (e.g., stopping a container that runs as root or lacks a verified Cosign signature). |
-| **Falco + Falcosidekick** | Live Environment | Real-time routed alerts tied to a specific incident ticket and an on-call engineer. |
-| **Velero & etcd Snapshots** | Disaster Recovery | Logs of successful "restore drills" logged into SecObserve as Proof of Protection (an untested backup doesn't count as proof). |
+### **The Evidence Matrix**
 
-**SecObserve** is locked down to protect this evidence. Most of the team can update a finding, but only a couple of trusted leads can delete one — so **no one can quietly make a finding disappear**. Every change needs a short written reason, saved automatically next to the finding, and for sensitive cases we can require a second person to sign off, just like our code reviews. (Logs are even stricter — see Chapter 7 — once written, they can't be changed by anyone, not even an administrator.) The database itself is backed up nightly to independent, tamper-proof storage so we never lose this record.
+| **Tool** | **What it Protects** | **The Proof it Creates (Evidence)** | **Where It Lives** |
+| --- | --- | --- | --- |
+| **OWASP ASVS & Threat Dragon** | Planning & Design | Security checklists and threat models tracked as project tickets before coding begins. | Project Management Board |
+| **SonarLint, Bearer CLI, ESLint, FindSecBugs** | Local Code Safety | Local scan histories proving that bugs and data leaks were fixed *before* the code was committed. | SCM / Pull Request Logs |
+| **Kube-bench, Checkov, OpenSCAP** | Configuration & Compliance | Audit-ready reports proving our app configs, Kubernetes settings, and Host OS align with industry standards. | **SecObserve** |
+| **Gitleaks** | Secrets | Pipeline logs and remediation records proving any exposed keys were caught and rotated. | **SecObserve** |
+| **OWASP dep-scan (`--deep`)** | Supply Chain | Software Bill of Materials (SBOMs) and vulnerability reports for both our app libraries and the base operating system. | **SecObserve** |
+| **OWASP ZAP** | Staging / Dynamic Testing | Baseline scan reports proving our live application was attacked and tested before going to production. | **SecObserve** |
+| **Kyverno + Cosign** | Deployment Policies | Logs of rejected deployments (e.g., stopping a container that runs as root or lacks a verified Cosign signature). | **OpenObserve** |
+| **Falco + Falcosidekick** | Live Environment | Real-time behavior anomalies and runtime threat alerts routed straight to incident response channels. | **OpenObserve** |
+| **Tetragon** | Kernel & Process Integrity | Incorruptible execution lineage paths, namespace modification logs, and audit trails of kernel-enforced process terminations (`SIGKILL`). | **OpenObserve** |
+| **Velero & etcd Snapshots** | Disaster Recovery | Logs of successful "restore drills" logged into our compliance tracking as Proof of Protection (an untested backup doesn't count as proof). | **SecObserve** |
+
+**SecObserve** is locked down to protect this static evidence. Most of the team can update a finding, but only a couple of trusted leads can delete one — so **no one can quietly make a finding disappear**. Every change needs a short written reason, saved automatically next to the finding, and for sensitive cases we can require a second person to sign off, just like our code reviews.
+
+The live security telemetry flowing into **OpenObserve** is handled with similar rigor. Because OpenObserve stores logs and metrics in compressed, append-only files on secure storage, these operational security records cannot be altered or deleted by application teams, providing an unalterable trail for forensic audits.
+
+---
 
 ### **Evidence Management**
 
-* **Automated Evidence Collection:** CI/CD automatically attaches the following to each release artifact in SecObserve:
+* **Automated Evidence Collection:** CI/CD automatically attaches the following to each release artifact in **SecObserve**:
   * SBOM.
   * dep-scan report.
   * Checkov report.
   * Gitleaks report.
   * ZAP baseline scan.
-* **Retention Policy:** SecObserve retains:
-  * Critical findings: 7 years.
-  * High/Medium: 2 years.
-  * Low: 1 year.
-* **Read-Only Auditor Role:** Auditors get read-only access to SecObserve with no delete/modify permissions.
+
+
+* **Retention Policy:** Both **SecObserve** and **OpenObserve** retain data according to severity requirements:
+  * Critical findings & Kernel security logs: 7 years.
+  * High/Medium alerts: 2 years.
+  * Low/Informational: 1 year.
+
+
+* **Read-Only Auditor Role:** External auditors are provisioned with dedicated, read-only access to SecObserve dashboards and OpenObserve SQL query consoles with zero modify or delete permissions.
+
+---
 
 ### **Our Immediate Action Plan**
 
@@ -302,8 +315,22 @@ Even with these tools, we have a few gaps to close. Here is the roadmap for the 
 | 🔴 **Critical** | Secrets stored in plain text. | Rolling out HashiCorp Vault. |
 | 🔴 **Critical** | Unverified container images. | Enforcing Cosign image signing + Kyverno verification. |
 | 🔴 **Critical** | Flat network (easy for hackers to spread). | Rolling out Cilium/Calico Network Policies to contain breaches. |
+| 🔴 **Critical** | Attackers can run arbitrary commands if an application container is compromised. | Deploying **Tetragon TracingPolicies** to instantly `SIGKILL` unapproved binary executions or namespace changes. |
 | 🟠 **High** | SecObserve needs a backup plan. | Implementing nightly DB backups and tested restore drills. |
-| 🟡 **Medium** | Need longer log storage. | Centralizing logs in Loki/ELK for long-term audit history. |
+| 🟡 **Medium** | Logging environments consume excessive memory and storage space on our local nodes. | Discarding traditional Java-based ELK and Loki architectures. Deploying **OpenObserve** as a unified telemetry backend to combine security logs and metrics using our chosen **Log Shipper**. |
+
+---
+
+### **Resilience Controls**
+
+* **Backup Test Automation:** Quarterly restore tests are:
+  * Automated via scripts.
+  * Logged in SecObserve with pass/fail status.
+
+
+* **RPO/RSL Definitions:** Define Recovery Point Objective (RPO) and Recovery Service Level (RSL) per workload:
+  * Critical Data Components: RPO < 15 minutes, RSL < 4 hours.
+  * Non-critical Platform services: RPO < 24 hours, RSL < 24 hours.
 
 ---
 
@@ -400,18 +427,64 @@ This loop is limited to low-blast-radius tasks: dependency bumps and static-anal
 
 ---
 
+Here is the fully revised and integrated **Chapter 9** for your DevSecOps guide.
+
+The timeline has been reorganized logically to account for the new architecture, ensuring you build your security posture from foundational team requirements up to advanced kernel-level enforcement and unified observability.
+
+---
+
 ## **9. Step-by-Step Implementation Checklist**
 
-Here is the exact order we are rolling this out:
+Our implementation strategy is broken into progressive milestones to ensure platform stability while incrementally shifting our security left and locking down live runtime environments.
 
-* **Phase 1 (Basics):** Enable MFA org-wide and branch protections (2 reviewers, signed commits, CODEOWNERS). Add a shared .gitignore baseline and SECURITY.md. Install SonarLint, Bearer, and Gitleaks locally. Enforce pre-commit hooks and shared IDE configs.
-* **Phase 2 (CI/CD):** Make Checkov and Gitleaks required steps in the pipeline. Set up dep-scan and SecObserve. Require SBOM generation in CI.
-* **Phase 3 (Testing):** Deploy OWASP ZAP in staging. Start doing Threat Dragon design reviews. Automate ZAP baseline scans on each staging deploy.
-* **Phase 4 (Live Cluster):** Turn on Kyverno, Falco, and NetworkPolicies (Cilium/Calico). Configure ingress/load balancer for HTTPS redirect, HSTS, CSP, TLS 1.3, and security.txt. Run OpenSCAP. Document network segmentation and policy review cadence.
-* **Phase 5 (Images):** Set up HashiCorp Vault. Enable Cosign image signing. Enforce image digests and key rotation.
-* **Phase 6 (Backups):** Finalize and test etcd, Velero, and SecObserve backups. Automate backup restore tests and define RPO/RSL.
-* **Phase 7 (AI):** Connect our AI agents for triage and auto-drafting PRs. Add agent identity logging and PR checklists.
+### **Phase 1: Foundations & Code Security Gatekeeping**
 
+* [ ] **Org-Wide MFA Implementation:** Enforce mandatory multi-factor authentication across all Source Control Management (GitHub/GitLab) accounts.
+* [ ] **Branch Protection Engineering:** Codify repository protection rules requiring signed commits, two authorized peer reviews, and strict alignment with a `CODEOWNERS` validation file.
+* [ ] **Local Security Tooling:** Mandate local laptop installations of SonarLint, Bearer CLI, and Gitleaks. Configure a shared `.gitignore` baseline repository policy.
+* [ ] **Pre-Commit Enforcement:** Distribute a shared `.pre-commit-config.yaml` layout and verify in CI that hooks ran on all files prior to code integration.
+* [ ] **Vulnerability Management Engine:** Spin up **SecObserve** as our centralized static reporting hub to store point-in-time scanning metadata.
+
+### **Phase 2: CI/CD Guardrails & Software Supply Chain**
+
+* [ ] **Pipeline Manifest Scanning:** Integrate Checkov and Gitleaks into the unskippable CI validation loops to reject hardcoded credentials or misconfigured IaC.
+* [ ] **Dependency Triage Setup:** Establish OWASP dep-scan (`--deep`) within build pipelines to capture vulnerabilities inside application libraries and underlying base operating systems.
+* [ ] **Software Bill of Materials (SBOM):** Force the automated generation of CycloneDX or SPDX SBOM artifacts for every successful production build.
+* [ ] **Dynamic Application Testing:** Deploy OWASP ZAP within the staging zone to automate baseline external web application vulnerability testing on every deploy.
+
+### **Phase 3: Core Platform Ingress & Cluster Admission**
+
+* [ ] **Edge Hardening:** Configure the ingress/load balancer tier to enforce strict HTTPS redirection, HSTS headers, Content Security Policies (CSP), and TLS 1.3 protocol requirements.
+* [ ] **Security Vulnerability Disclosure:** Publish a standardized `SECURITY.md` file across all code repositories and set up a public-facing `security.txt` configuration on active web properties.
+* [ ] **Admission Control Engine:** Deploy Kyverno to act as the primary cluster bouncer, validating incoming manifests and rejecting non-compliant workloads before execution.
+* [ ] **Network Micro-Segmentation:** Introduce Cilium or Calico network policies to transition the cluster away from a flat internal network layer into isolated application and data tiers.
+
+### **Phase 4: Unified Observability Infrastructure**
+
+* [ ] **Log Optimization Engine:** Deploy **OpenObserve** using its official Kubernetes Helm chart, configuring it to save data onto compressed, append-only local block directories or a secure on-premise MinIO bucket.
+* [ ] **Platform Metric Scraping:** Spin up the embedded OpenObserve Collector DaemonSet across the cluster to map core hardware usage and `kube-state-metrics` natively via PromQL channels.
+* [ ] **Cluster Logging Architecture:** Deploy your team's chosen, lightweight **Log Shipper** framework (e.g., Vector, FluentBit, or Promtail) to scrape node container runtimes and send standard log output formatting directly to OpenObserve endpoints.
+
+### **Phase 5: Runtime Shielding & Kernel Enforcement**
+
+* [ ] **Behavioral Auditing Platform:** Deploy Falco paired with Falcosidekick to continuously evaluate user-space system call anomalies and route immediate webhook warning alerts straight to team messaging apps.
+* [ ] **Kernel Security Engine:** Deploy **Tetragon** across all nodes to intercept runtime exploit workflows at the lowest operating system execution layer.
+* [ ] **Tetragon Profiling Baseline:** Run Tetragon in active **Audit Mode** for a minimum of 7 days to baseline valid production data platform behaviors without applying rigid block constraints.
+* [ ] **Active Containment Enforcement:** Apply targeted Tetragon `TracingPolicy` definitions to critical application namespaces, converting the engine into active **Enforcement Mode** to forcefully issue a `SIGKILL` termination to any unauthorized background script executions or hostile namespace alterations.
+
+### **Phase 6: Image Provenance & Platform Hardening**
+
+* [ ] **Secrets Lifecycle Automation:** Roll out HashiCorp Vault inside the environment and remove any remaining plain-text configurations from static manifests.
+* [ ] **Image Trust Framework:** Establish Cosign image signing pipelines inside our container builds and enforce key validation directly at the Kyverno admission ring.
+* [ ] **Immutable Base Layers:** Migrate core container workloads over to secure, stripped-down base configurations using zero-utility alternatives like `dhi.io` or Google Distroless options.
+* [ ] **Host Compliance Auditing:** Deploy OpenSCAP across physical node hosting structures to measure server baseline configuration drift against benchmark industry hardening standards.
+
+### **Phase 7: Disaster Resilience & Autonomous Operations**
+
+* [ ] **Disaster Recovery Pipelines:** Configure daily automated snapshots for cluster states (`etcd`), application storage volumes via Velero, and core databases using native point-in-time utilities.
+* [ ] **Immutable Storage Controls:** Enable Write-Once, Read-Many (**WORM**) object locking on back-end storage servers to insulate backups from malicious administrative deletion.
+* [ ] **Disaster Drill Verification:** Execute automated quarterly test-restores onto completely separate sandbox clusters, automatically recording pass/fail states directly back into SecObserve metrics.
+* [ ] **Agentic AI Assistance Integration:** Connect approved local LLM interfaces to automate code-reachability triage tasks, auto-generate standard policy manifests, and map initial alert correlation patterns using secure service account tokens.
 ---
 
 ## **10. Cheat Sheet (Acronyms)**
