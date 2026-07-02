@@ -196,8 +196,10 @@ Here's how our tools map out across the work environment:
 * **Staging Zone:** OWASP ZAP attacks our staging app to find runtime holes.
 * **Edge Zone (Ingress / Load Balancer):** Before traffic ever reaches the cluster, we enforce HTTPS redirect, HSTS, CSP, and TLS 1.3 here, and publish security.txt so anyone who finds a live issue knows how to reach us. This is baseline config, not a scan — set once per app, and it closes the exact holes ZAP would otherwise keep flagging in Staging.
 * **Management Hubs:**
-* **SecObserve (Static Vulnerability Hub):** Acts as our central portal for point-in-time security scans, container vulnerability databases, and build-time compliance scores.
-* **OpenObserve (Live Streaming Telemetry Hub):** A single-binary, Rust-based system that captures and aggregates our high-velocity streaming security logs and time-series metrics into highly compressed storage without requiring heavy database backends.
+  
+     * **SecObserve (Static Vulnerability Hub)**: Acts as our central portal for point-in-time security scans, container vulnerability databases, and build-time compliance scores. For developers, this is the payoff: a built-in rule engine auto-filters out false positives and low-risk findings, so your queue stays signal, not noise. It also normalizes results from any scanner into one consistent view, so the dashboard stays familiar even as tools change.
+       
+     * **OpenObserve (Live Streaming Telemetry Hub)**: A single-binary, Rust-based system that captures and aggregates our high-velocity streaming security logs and time-series metrics into highly compressed storage without requiring heavy database backends.
 
 
 * **Live Kubernetes Zone:** Kyverno enforces security rules at the admission door. Falco acts as our broad monitoring camera, tracking behavior anomalies across user space. Tetragon hooks directly into the Linux kernel using eBPF to enforce strict, zero-trust runtime boundaries and instantly terminates unauthorized processes before they can reach our data platform storage. Cilium/Calico segments our network.
@@ -256,7 +258,7 @@ The runtime environment splits logs and metrics at the source to maximize perfor
 ## **6. Proving It: Audit & Evidence**
 
 It's not enough to say we're secure; we have to prove it to auditors and ourselves. Every tool we use generates evidence, and it all feeds directly into our two centralized management hubs: **SecObserve** (for static, point-in-time build findings) and **OpenObserve** (for live, high-velocity stream analytics).
-
+SecObserve's biggest win for developers is trust: its rule engine auto-clears known false positives and accepted low-risk findings, so what's left in the queue is worth acting on. Less time triaging noise, more confidence in what the audit trail actually flags.
 Here is exactly how each tool proves we are doing our jobs:
 
 ### **The Evidence Matrix**
