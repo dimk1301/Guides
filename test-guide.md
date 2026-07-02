@@ -96,17 +96,17 @@ flowchart TD
 
 ### **Pipeline Controls**
 
-* **SBOM Generation:** Every CI build must generate a CycloneDX or SPDX SBOM artifact, stored alongside the image.
-* **Branch-Protection Rules:** Use Terraform or similar to codify:
-* Requires signed commits.
-* Requires 2 approvals.
-* Requires a match between CODEOWNERS.
-* Blocks force-pushes and deletion of protected branches.
+**SBOM Generation:** Every CI build must generate a CycloneDX or SPDX SBOM artifact, stored alongside the image.
 
+**Branch-Protection Rules:** Use Terraform or similar to codify:
+*  Requires signed commits.
+*  Requires 2 approvals.
+*  Requires a match between CODEOWNERS.
+*  Blocks force-pushes and deletion of protected branches.
 
-* **Pre-Commit Hooks:** Pre-commit hooks are mandatory and enforced via:
-* A shared `.pre-commit-config.yaml` in the repo.
-* CI validating that hooks ran (e.g., `pre-commit run --all-files`).
+**Pre-Commit Hooks:** Pre-commit hooks are mandatory and enforced via:
+*  A shared `.pre-commit-config.yaml` in the repo.
+*  CI validating that hooks ran (e.g., `pre-commit run --all-files`).
 
 ---
 
@@ -201,20 +201,61 @@ Here's how our tools map out across the work environment:
 * **Pipeline Zone (CI/CD):** Checkov scans our Terraform/Helm files, Gitleaks double-checks for passwords, and OWASP dep-scan (`--deep`) checks our libraries and base image operating system for known flaws.
 * **Staging Zone:** OWASP ZAP attacks our staging app to find runtime holes.
 * **Edge Zone (Ingress / Load Balancer):** Before traffic ever reaches the cluster, we enforce HTTPS redirect, HSTS, CSP, and TLS 1.3 here, and publish security.txt so anyone who finds a live issue knows how to reach us. This is baseline config, not a scan — set once per app, and it closes the exact holes ZAP would otherwise keep flagging in Staging.
-* **Management Hub:** SecObserve acts as our central dashboard for all alerts.
-* **Live Kubernetes Zone:** Kyverno enforces rules at the door. Falco watches for weird behavior inside. Cilium/Calico segments our network.
-* **Compliance:** OpenSCAP makes sure the underlying servers are up to code.
+* **Management Hubs:**
+* **SecObserve (Static Vulnerability Hub):** Acts as our central portal for point-in-time security scans, container vulnerability databases, and build-time compliance scores.
+* **OpenObserve (Live Streaming Telemetry Hub):** A single-binary, Rust-based system that captures and aggregates our high-velocity streaming security logs and time-series metrics into highly compressed storage without requiring heavy database backends.
+
+
+* **Live Kubernetes Zone:** Kyverno enforces security rules at the admission door. Falco acts as our broad monitoring camera, tracking behavior anomalies across user space. Tetragon hooks directly into the Linux kernel using eBPF to enforce strict, zero-trust runtime boundaries and instantly terminates unauthorized processes before they can reach our data platform storage. Cilium/Calico segments our network.
+* **Compliance:** OpenSCAP makes sure the underlying host operating systems are up to code.
 
 *Note: Automation bots might suggest fixes on your PRs, but only human engineers can approve them.*
 
+---
+
+### **Runtime Telemetry Flow**
+
+The runtime environment splits logs and metrics at the source to maximize performance, then routes them into a unified, low-overhead analytics backend:
+
+```text
+                  KUBERNETES WORKLOAD ZONE
+     ┌──────────────────────────────────────────────────┐
+     │       Pod Workloads / Node Linux Kernel          │
+     └────────┬────────────────────────────────┬────────┘
+              │                                │
+  (Live JSON Events & Logs)           (Time-Series Metrics)
+              ▼                                ▼
+       [ Log Shipper ]             [ OpenObserve Collector ]
+  (e.g., Vector, FluentBit)                    │
+              │                                │
+              └───────────────┬────────────────┘
+                              │
+                              ▼ (OTLP / HTTP JSON)
+     ┌──────────────────────────────────────────────────┐
+     │                   OPENOBSERVE                    │
+     │           (Single-Binary Rust Engine)            │
+     ├──────────────────────────────────────────────────┤
+     │  - Columnar Parquet File Engine (MinIO/Local)    │
+     │  - Built-In Visual Dashboards (Zero-Grafana)     │
+     │  - Real-Time SQL Alert & PromQL Engine           │
+     └──────────────────────────────────────────────────┘
+
+```
+
+> **Data Flow Mapping:** A lightweight **Log Shipper** (teams may choose Vector, FluentBit, Promtail, etc.) continuously monitors stdout and system sockets to transport high-velocity security events from Falco and Tetragon. Simultaneously, the **OpenObserve Collector** tracks cluster state configurations and Tetragon metric counters. Both streams converge directly inside OpenObserve, combining logs and metrics into unified security dashboards.
+
+---
+
 ### **Infrastructure Controls**
 
-* **Network Segmentation Diagram:** Add a simple diagram showing:
-  * Ingress → DMZ → App tier → Data tier.
-  * Where Cilium/Calico policies sit.
-* **Explicit Logging of Policy Decisions:** All Kyverno policy changes are:
-  * Logged to SecObserve.
-  * Reviewed annually for drift against CIS/ASVS.
+**Network Segmentation Diagram:** Add a simple diagram showing:
+* Ingress → DMZ → App tier → Data tier.
+* Where Cilium/Calico policies sit.
+
+
+**Explicit Logging of Policy Decisions:** All Kyverno policy changes, runtime logs from Falco, and kernel termination alerts from Tetragon are securely streamed directly into OpenObserve using your team's chosen log shipper to preserve node memory.
+
+**Policy Review Cadence:** All cluster access rules and kernel tracing policies are reviewed annually for configuration drift against current CIS and ASVS baselines.
 
 ---
 
