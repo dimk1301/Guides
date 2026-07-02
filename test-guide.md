@@ -31,6 +31,12 @@ To make this work, we all need to follow a few basic ground rules:
 
 ---
 
+Here is the fully revised and integrated **Chapter 2** for your DevSecOps guide.
+
+This version replaces all references to traditional, resource-heavy observability tools with the unified, Rust-based **OpenObserve** framework, and updates the lifecycle to show exactly how **Tetragon** acts as your final runtime containment engine.
+
+---
+
 ## **2. The Game Plan: "Shift Left"**
 
 Our core strategy is simple: **catch bugs early**. Instead of waiting for a security audit right before launch, our tools check for issues while you're designing, coding, and building.
@@ -39,7 +45,6 @@ We use free, community-driven tools and invest our time in setting them up well,
 
 ```mermaid
 flowchart TD
-    %% Define font size AND exact dimensions so all boxes match
     classDef uniformSize font-size:28px;
 
     subgraph Row1 [" "]
@@ -51,16 +56,14 @@ flowchart TD
 
     subgraph Row2 [" "]
         direction LR
-        7[7. GOVERN<br/>SecObserve <br/><br/>] --> 8[8. DEPLOY<br/>Kyverno + Cosign] --> 9[9. RUNTIME<br/>Falco + Falcosidekick] --> 10[10. AUDIT<br/>Kube-bench <br/><br/>] --> 11[11. COMPLIANCE<br/>OpenSCAP]
+        7[7. GOVERN<br/>SecObserve <br/><br/>] --> 8[8. DEPLOY<br/>Kyverno + Cosign] --> 9[9. RUNTIME<br/>Falco + Tetragon] --> 10[10. AUDIT<br/>Kube-bench <br/><br/>] --> 11[11. STREAM HUB<br/>OpenObserve]
     end
 
     style Row1 fill:none,stroke:none
     style Row2 fill:none,stroke:none
 
-    %% Apply the uniform sizing class to all nodes
     class 1,2,3,4,5,6,7,8,9,10,11 uniformSize;
 
-    %% Your original color styling remains intact
     style 1 fill:#1E293B,stroke:#0F172A,stroke-width:2px,color:#fff
     style 2 fill:#4B5563,stroke:#1F2937,stroke-width:2px,color:#fff
     style 3 fill:#3B82F6,stroke:#1D4ED8,stroke-width:2px,color:#fff
@@ -72,35 +75,38 @@ flowchart TD
     style 9 fill:#EF4444,stroke:#DC2626,stroke-width:2px,color:#fff
     style 10 fill:#8B5CF6,stroke:#7C3AED,stroke-width:2px,color:#fff
     style 11 fill:#06B6D4,stroke:#0891B2,stroke-width:2px,color:#fff
+
 ```
 
 ### **The Lifecycle, Step-by-Step**
 
 | **Phase** | **Tool** | **What it Does** | **Why it Matters** |
 | --- | --- | --- | --- |
-| **1.&nbsp;Requirements** | OWASP ASVS | Creates security checklists. | Sets clear security goals before we even write code. |
-| **2.&nbsp;Design** | Threat Dragon | Helps us map out potential threats. | Flushes out bad architectural ideas early. |
-| **3.&nbsp;Code** | SonarLint & Bearer CLI | Scans your code right in your IDE. | Acts like a spellchecker for bugs and data leaks. |
-| **4.&nbsp;Pre-Commit** | Checkov + Gitleaks | Checks for bad infrastructure configs and accidentally pasted passwords. | Stops silly mistakes before they reach the main codebase. |
-| **5.&nbsp;Build** | OWASP dep-scan (`--deep`) | Scans our app libraries AND the container's operating system. | Gives us a single report of all the ingredients we use and any known vulnerabilities. |
-| **6.&nbsp;Validate** | OWASP ZAP | Tests the running app in staging (Dynamic Testing). | Catches things code-scanners miss, like broken login flows. |
-| **7.&nbsp;Govern** | SecObserve | A central dashboard for all security alerts. | Keeps us organized so bugs actually get fixed. |
-| **8.&nbsp;Deploy** | Kyverno + Cosign | Checks our Kubernetes setup and verifies image signatures. | Acts as a bouncer, rejecting code that breaks our security rules. |
-| **9.&nbsp;Runtime** | Falco + Falcosidekick | Watches the live system for weird behavior. | Pings us in chat/pager if something looks like a hack. |
-| **10.&nbsp;Audit** | Kube-bench | Checks our Kubernetes settings against CIS standards. | Makes sure our platform is locked down tight. |
-| **11.&nbsp;Compliance** | OpenSCAP | Scans the actual host operating system. | Gives auditors the reports they love to see. |
+| **1. Requirements** | OWASP ASVS | Creates security checklists. | Sets clear security goals before we even write code. |
+| **2. Design** | Threat Dragon | Helps us map out potential threats. | Flushes out bad architectural ideas early. |
+| **3. Code** | SonarLint & Bearer CLI | Scans your code right in your IDE. | Acts like a spellchecker for bugs and data leaks. |
+| **4. Pre-Commit** | Checkov + Gitleaks | Checks for bad infrastructure configs and accidentally pasted passwords. | Stops silly mistakes before they reach the main codebase. |
+| **5. Build** | OWASP dep-scan (`--deep`) | Scans our app libraries AND the container's operating system. | Gives us a single report of all the ingredients we use and any known vulnerabilities. |
+| **6. Validate** | OWASP ZAP | Tests the running app in staging (Dynamic Testing). | Catches things code-scanners miss, like broken login flows. |
+| **7. Govern** | SecObserve | A central dashboard for all static security alerts. | Keeps build-time and dependency bugs organized so they actually get fixed. |
+| **8. Deploy** | Kyverno + Cosign | Checks our Kubernetes setup and verifies image signatures. | Acts as a bouncer, rejecting deployment manifests that break our cluster security rules. |
+| **9. Runtime** | **Falco + Tetragon** | Watches system call paths and actively enforces kernel boundaries. | **Falco** handles broad macro-behavior alerts; **Tetragon** provides our final line of defense by forcefully killing malicious process threads in the kernel. |
+| **10. Audit** | Kube-bench | Checks our Kubernetes settings against CIS standards. | Makes sure our core platform architecture is locked down tight. |
+| **11. Stream Hub** | **OpenObserve** | Consolidated, low-resource database for logs and metrics. | Collects live streams from FluentBit and OTel collectors into cheap Parquet storage using 10x less RAM than traditional setups. |
 
 ### **Pipeline Controls**
 
 * **SBOM Generation:** Every CI build must generate a CycloneDX or SPDX SBOM artifact, stored alongside the image.
 * **Branch-Protection Rules:** Use Terraform or similar to codify:
-  * Requires signed commits.
-  * Requires 2 approvals.
-  * Requires a match between CODEOWNERS.
-  * Blocks force-pushes and deletion of protected branches.
+* Requires signed commits.
+* Requires 2 approvals.
+* Requires a match between CODEOWNERS.
+* Blocks force-pushes and deletion of protected branches.
+
+
 * **Pre-Commit Hooks:** Pre-commit hooks are mandatory and enforced via:
-  * A shared `.pre-commit-config.yaml` in the repo.
-  * CI validating that hooks ran (e.g., `pre-commit run --all-files`).
+* A shared `.pre-commit-config.yaml` in the repo.
+* CI validating that hooks ran (e.g., `pre-commit run --all-files`).
 
 ---
 
