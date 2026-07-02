@@ -31,12 +31,6 @@ To make this work, we all need to follow a few basic ground rules:
 
 ---
 
-Here is the fully revised and integrated **Chapter 2** for your DevSecOps guide.
-
-This version replaces all references to traditional, resource-heavy observability tools with the unified, Rust-based **OpenObserve** framework, and updates the lifecycle to show exactly how **Tetragon** acts as your final runtime containment engine.
-
----
-
 ## **2. The Game Plan: "Shift Left"**
 
 Our core strategy is simple: **catch bugs early**. Instead of waiting for a security audit right before launch, our tools check for issues while you're designing, coding, and building.
