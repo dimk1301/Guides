@@ -100,15 +100,15 @@
   .rail{display:flex;flex-direction:column;gap:3px;}
   .rail-row{display:flex;}
   .rail-seg{
-    position:relative;flex:1;padding:12px 18px 12px 26px;min-height:58px;
+    position:relative;flex:1;padding:14px 18px 14px 26px;min-height:64px;
     display:flex;flex-direction:column;justify-content:center;text-decoration:none;
     clip-path:polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%, 14px 50%);
     margin-left:-13px;transition:filter .15s ease,transform .15s ease;
   }
   .rail-seg:first-child{margin-left:0;clip-path:polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%);}
   .rail-seg:hover{filter:brightness(1.12);transform:translateY(-1px);}
-  .rail-seg .num{font-family:var(--sans);font-weight:600;font-size:9.5px;color:rgba(255,255,255,0.72);letter-spacing:.06em;text-transform:uppercase;}
-  .rail-seg .lbl{font-family:var(--display);font-size:12.5px;color:#fff;font-weight:600;margin-top:2px;line-height:1.2;}
+  .rail-seg .num{font-family:var(--sans);font-weight:700;font-size:11.5px;color:rgba(255,255,255,0.85);letter-spacing:.04em;text-transform:uppercase;}
+  .rail-seg .lbl{font-family:var(--display);font-size:14px;color:#fff;font-weight:700;margin-top:3px;line-height:1.25;}
 
   /* ---------- content sections ---------- */
   section.chapter{margin-bottom:68px;scroll-margin-top:24px;}
@@ -198,12 +198,11 @@
   .hub-card.open .hname{color:var(--p11);}
   .hub-card p{font-size:14px;color:var(--text-muted);margin:0;}
 
-  /* acronym grid */
-  .acronym-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:16px;}
-  .acro{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px 14px;}
-  .acro .term{font-family:var(--display);font-weight:700;color:var(--accent);font-size:14px;}
-  .acro .def{font-size:14px;color:var(--text-muted);margin-top:3px;}
-  .acro .ctx{font-size:12px;color:var(--text-faint);margin-top:4px;}
+  /* glossary */
+  .glossary{columns:2;column-gap:56px;margin:22px 0 4px;}
+  .gterm{break-inside:avoid;display:flex;align-items:baseline;gap:20px;padding:14px 0;border-bottom:1px solid var(--border-soft);}
+  .gterm dt{flex:0 0 88px;margin:0;font-family:var(--display);font-weight:700;font-size:15px;color:var(--accent);letter-spacing:.01em;}
+  .gterm dd{flex:1;margin:0;font-size:14.5px;color:var(--text-muted);}
 
   /* diagram frame */
   .diagram{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin:20px 0;overflow-x:auto;}
@@ -226,6 +225,8 @@
     .step{gap:14px;}
     .step-marker{width:38px;height:38px;font-size:15px;}
     .roadmap-line{left:18px;}
+    .glossary{columns:1;}
+    .gterm dt{flex:0 0 78px;}
   }
 </style>
 </head>
@@ -433,40 +434,40 @@
 
           <!-- satellite nodes -->
           <g>
-            <rect x="285" y="20" width="130" height="54" rx="10" fill="#161F30" stroke="#3B82F6" stroke-width="1.5"/>
+            <rect x="280" y="18" width="140" height="58" rx="10" fill="#161F30" stroke="#3B82F6" stroke-width="1.5"/>
             <text x="350" y="42" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">Bearer CLI</text>
-            <text x="350" y="59" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">privacy & data-leak scan</text>
+            <text x="350" y="59" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">privacy & data-leak scan</text>
           </g>
           <g>
-            <rect x="447" y="130" width="130" height="54" rx="10" fill="#161F30" stroke="#F59E0B" stroke-width="1.5"/>
+            <rect x="442" y="128" width="140" height="58" rx="10" fill="#161F30" stroke="#F59E0B" stroke-width="1.5"/>
             <text x="512" y="152" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">SonarLint</text>
-            <text x="512" y="169" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">code quality & bugs</text>
+            <text x="512" y="169" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">code quality & bugs</text>
           </g>
           <g>
-            <rect x="385" y="293" width="130" height="54" rx="10" fill="#161F30" stroke="#0EA5E9" stroke-width="1.5"/>
+            <rect x="380" y="291" width="140" height="58" rx="10" fill="#161F30" stroke="#0EA5E9" stroke-width="1.5"/>
             <text x="450" y="313" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">ESLint + Rules</text>
-            <text x="450" y="330" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">JS / React vuln scan</text>
+            <text x="450" y="330" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">JS / React vuln scan</text>
           </g>
           <g>
-            <rect x="185" y="293" width="130" height="54" rx="10" fill="#161F30" stroke="#64748B" stroke-width="1.5"/>
+            <rect x="180" y="291" width="140" height="58" rx="10" fill="#161F30" stroke="#64748B" stroke-width="1.5"/>
             <text x="250" y="313" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">FindSecBugs</text>
-            <text x="250" y="330" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">Java bytecode scan</text>
+            <text x="250" y="330" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">Java bytecode scan</text>
           </g>
           <g>
-            <rect x="123" y="130" width="130" height="54" rx="10" fill="#161F30" stroke="#F43F5E" stroke-width="1.5"/>
+            <rect x="118" y="128" width="140" height="58" rx="10" fill="#161F30" stroke="#F43F5E" stroke-width="1.5"/>
             <text x="188" y="152" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">Gitleaks</text>
-            <text x="188" y="169" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">secret & credential scan</text>
+            <text x="188" y="169" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">secret & credential scan</text>
           </g>
 
           <!-- hub -->
           <rect x="270" y="165" width="160" height="90" rx="14" fill="#8B5CF6" opacity="0.15" stroke="#8B5CF6" stroke-width="1.5"/>
           <text x="350" y="200" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13.5" font-weight="700">Developer's</text>
           <text x="350" y="220" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13.5" font-weight="700">IDE</text>
-          <text x="350" y="240" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">all five run here</text>
+          <text x="350" y="240" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">all five run here</text>
 
           <!-- output -->
           <line x1="350" y1="255" x2="350" y2="410" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrow4)"/>
-          <text x="370" y="335" fill="#95A1BC" font-family="Inter" font-size="10.5" font-style="italic">fixed before commit</text>
+          <text x="370" y="335" fill="#95A1BC" font-family="Inter" font-size="12" font-style="italic">fixed before commit</text>
           <rect x="230" y="416" width="240" height="50" rx="25" fill="#10B981" opacity="0.15" stroke="#10B981" stroke-width="1.5"/>
           <text x="350" y="447" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">Commit-Ready Code</text>
         </svg>
@@ -542,38 +543,38 @@
 
           <rect x="190" y="10" width="320" height="56" rx="10" fill="#161F30" stroke="#25314A" stroke-width="1.5"/>
           <text x="350" y="33" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">KUBERNETES WORKLOAD ZONE</text>
-          <text x="350" y="50" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">Pod Workloads / Node Linux Kernel</text>
+          <text x="350" y="50" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11.5">Pod Workloads / Node Linux Kernel</text>
 
           <line x1="350" y1="66" x2="350" y2="110" stroke="#5A6480" stroke-width="2"/>
           <line x1="350" y1="110" x2="200" y2="132" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow5)"/>
           <line x1="350" y1="110" x2="500" y2="132" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow5)"/>
-          <text x="230" y="96" fill="#95A1BC" font-family="Inter" font-size="10" font-style="italic">live JSON events</text>
-          <text x="440" y="96" fill="#95A1BC" font-family="Inter" font-size="10" font-style="italic">time-series metrics</text>
+          <text x="230" y="96" fill="#95A1BC" font-family="Inter" font-size="11.5" font-style="italic">live JSON events</text>
+          <text x="440" y="96" fill="#95A1BC" font-family="Inter" font-size="11.5" font-style="italic">time-series metrics</text>
 
           <rect x="70" y="136" width="260" height="60" rx="10" fill="#161F30" stroke="#22D3EE" stroke-width="1.5"/>
           <text x="200" y="163" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">Log Shipper</text>
-          <text x="200" y="180" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">Vector · FluentBit · Promtail</text>
+          <text x="200" y="180" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">Vector · FluentBit · Promtail</text>
 
           <rect x="370" y="136" width="260" height="60" rx="10" fill="#161F30" stroke="#22D3EE" stroke-width="1.5"/>
           <text x="500" y="163" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">OpenObserve Collector</text>
-          <text x="500" y="180" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">cluster state + Tetragon counters</text>
+          <text x="500" y="180" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">cluster state + Tetragon counters</text>
 
           <line x1="200" y1="196" x2="350" y2="234" stroke="#22D3EE" stroke-width="2" opacity="0.7"/>
           <line x1="500" y1="196" x2="350" y2="234" stroke="#22D3EE" stroke-width="2" opacity="0.7"/>
           <line x1="350" y1="234" x2="350" y2="264" stroke="#22D3EE" stroke-width="2.5" marker-end="url(#arrow5)"/>
-          <text x="380" y="220" fill="#95A1BC" font-family="Inter" font-size="10" font-style="italic">OTLP / HTTP JSON</text>
+          <text x="380" y="220" fill="#95A1BC" font-family="Inter" font-size="11.5" font-style="italic">OTLP / HTTP JSON</text>
 
           <rect x="90" y="266" width="520" height="195" rx="14" fill="#22D3EE" opacity="0.08" stroke="#22D3EE" stroke-width="1.5"/>
           <text x="350" y="298" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="16" font-weight="700">OPENOBSERVE</text>
-          <text x="350" y="317" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">Single-Binary Rust Engine</text>
+          <text x="350" y="317" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">Single-Binary Rust Engine</text>
           <line x1="130" y1="332" x2="570" y2="332" stroke="#25314A" stroke-width="1"/>
 
           <circle cx="140" cy="365" r="3" fill="#22D3EE"/>
-          <text x="155" y="370" fill="#EAEEF7" font-family="Inter" font-size="12.5">Columnar Parquet file engine (MinIO / local)</text>
+          <text x="155" y="370" fill="#EAEEF7" font-family="Inter" font-size="13.5">Columnar Parquet file engine (MinIO / local)</text>
           <circle cx="140" cy="398" r="3" fill="#22D3EE"/>
-          <text x="155" y="403" fill="#EAEEF7" font-family="Inter" font-size="12.5">Built-in visual dashboards (zero Grafana)</text>
+          <text x="155" y="403" fill="#EAEEF7" font-family="Inter" font-size="13.5">Built-in visual dashboards (zero Grafana)</text>
           <circle cx="140" cy="431" r="3" fill="#22D3EE"/>
-          <text x="155" y="436" fill="#EAEEF7" font-family="Inter" font-size="12.5">Real-time SQL alerting & PromQL engine</text>
+          <text x="155" y="436" fill="#EAEEF7" font-family="Inter" font-size="13.5">Real-time SQL alerting & PromQL engine</text>
         </svg>
         <p class="diagram-caption">A lightweight Log Shipper and the OpenObserve Collector converge into one analytics backend.</p>
       </div>
@@ -716,28 +717,28 @@
 
           <rect x="30" y="40" width="160" height="70" rx="12" fill="#EF4444" opacity="0.15" stroke="#EF4444" stroke-width="1.5"/>
           <text x="110" y="68" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">1 · FIND</text>
-          <text x="110" y="86" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">Scanner flags issue</text>
+          <text x="110" y="86" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11.5">Scanner flags issue</text>
 
           <line x1="190" y1="75" x2="248" y2="75" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow8)"/>
 
           <rect x="250" y="40" width="160" height="70" rx="12" fill="#EC4899" opacity="0.15" stroke="#EC4899" stroke-width="1.5"/>
           <text x="330" y="68" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">2 · FIX</text>
-          <text x="330" y="86" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">Agent applies change</text>
+          <text x="330" y="86" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11.5">Agent applies change</text>
 
           <line x1="410" y1="75" x2="468" y2="75" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow8)"/>
 
           <rect x="470" y="40" width="160" height="70" rx="12" fill="#3B82F6" opacity="0.15" stroke="#3B82F6" stroke-width="1.5"/>
           <text x="550" y="68" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">3 · VERIFY</text>
-          <text x="550" y="86" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">Tests & policies</text>
+          <text x="550" y="86" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11.5">Tests & policies</text>
 
           <line x1="630" y1="75" x2="688" y2="75" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow8)"/>
 
           <rect x="690" y="40" width="160" height="70" rx="12" fill="#10B981" opacity="0.15" stroke="#10B981" stroke-width="1.5"/>
           <text x="770" y="68" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">4 · APPROVE</text>
-          <text x="770" y="86" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">Human reviews & merges</text>
+          <text x="770" y="86" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11.5">Human reviews & merges</text>
 
           <path d="M 770 112 C 770 200, 110 200, 110 112" fill="none" stroke="#8B96AC" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow8b)"/>
-          <text x="440" y="205" text-anchor="middle" fill="#8B96AC" font-family="Inter" font-size="11" font-style="italic">repeats for the next low-risk, low-blast-radius change — never skips step 4</text>
+          <text x="440" y="205" text-anchor="middle" fill="#8B96AC" font-family="Inter" font-size="12" font-style="italic">repeats for the next low-risk, low-blast-radius change — never skips step 4</text>
         </svg>
         <p class="diagram-caption">Constrained loop for dependency bumps and static-analysis refactors — human approval every cycle.</p>
       </div>
@@ -872,27 +873,27 @@
     <!-- CHAPTER 10 -->
     <section class="chapter" id="ch10">
       <div class="chapter-head"><div class="chapter-num">10</div><h2>Acronyms</h2></div>
-      <div class="acronym-grid">
-        <div class="acro"><div class="term">API</div><div class="def">Application Programming Interface</div><div class="ctx">Where Kyverno intercepts code heading into Kubernetes.</div></div>
-        <div class="acro"><div class="term">ASVS</div><div class="def">Application Security Verification Standard</div><div class="ctx">Our security checklist for planning.</div></div>
-        <div class="acro"><div class="term">CI/CD</div><div class="def">Continuous Integration / Deployment</div><div class="ctx">Our automated build/test pipeline.</div></div>
-        <div class="acro"><div class="term">CIS</div><div class="def">Center for Internet Security</div><div class="ctx">Writes the rules Kube-bench checks for.</div></div>
-        <div class="acro"><div class="term">CSP</div><div class="def">Content Security Policy</div><div class="ctx">Edge rule blocking malicious scripts in-browser.</div></div>
-        <div class="acro"><div class="term">CVE</div><div class="def">Common Vulnerabilities and Exposures</div><div class="ctx">Public list of known exploits.</div></div>
-        <div class="acro"><div class="term">DAST</div><div class="def">Dynamic Application Security Testing</div><div class="ctx">Attacking a live staging app (ZAP).</div></div>
-        <div class="acro"><div class="term">HSTS</div><div class="def">HTTP Strict Transport Security</div><div class="ctx">Forces HTTPS for our apps.</div></div>
-        <div class="acro"><div class="term">IaC</div><div class="def">Infrastructure as Code</div><div class="ctx">Helm/Terraform configs scanned by Checkov.</div></div>
-        <div class="acro"><div class="term">LLM</div><div class="def">Large Language Model</div><div class="ctx">The local AI brains powering our SRE assistants.</div></div>
-        <div class="acro"><div class="term">MFA</div><div class="def">Multi-Factor Authentication</div><div class="ctx">Required on every SCM account.</div></div>
-        <div class="acro"><div class="term">PR</div><div class="def">Pull Request</div><div class="ctx">Where humans approve code and security changes.</div></div>
-        <div class="acro"><div class="term">RBAC</div><div class="def">Role-Based Access Control</div><div class="ctx">Decides who has admin powers in the cluster.</div></div>
-        <div class="acro"><div class="term">RPO</div><div class="def">Recovery Point Objective</div><div class="ctx">Acceptable data loss in a disaster.</div></div>
-        <div class="acro"><div class="term">RSL</div><div class="def">Recovery Service Level</div><div class="ctx">How quickly services must be restored.</div></div>
-        <div class="acro"><div class="term">SAST</div><div class="def">Static Application Security Testing</div><div class="ctx">Scanners looking at raw code without running it.</div></div>
-        <div class="acro"><div class="term">SCA</div><div class="def">Software Composition Analysis</div><div class="ctx">Checking third-party libraries for flaws.</div></div>
-        <div class="acro"><div class="term">SBOM</div><div class="def">Software Bill of Materials</div><div class="ctx">The "ingredients list" of our apps.</div></div>
-        <div class="acro"><div class="term">VEX</div><div class="def">Vulnerability Exploitability eXchange</div><div class="ctx">Tells us if a known bug is actually dangerous to us.</div></div>
-      </div>
+      <dl class="glossary">
+        <div class="gterm"><dt>API</dt><dd>Application Programming Interface</dd></div>
+        <div class="gterm"><dt>ASVS</dt><dd>Application Security Verification Standard</dd></div>
+        <div class="gterm"><dt>CI/CD</dt><dd>Continuous Integration / Deployment</dd></div>
+        <div class="gterm"><dt>CIS</dt><dd>Center for Internet Security</dd></div>
+        <div class="gterm"><dt>CSP</dt><dd>Content Security Policy</dd></div>
+        <div class="gterm"><dt>CVE</dt><dd>Common Vulnerabilities and Exposures</dd></div>
+        <div class="gterm"><dt>DAST</dt><dd>Dynamic Application Security Testing</dd></div>
+        <div class="gterm"><dt>HSTS</dt><dd>HTTP Strict Transport Security</dd></div>
+        <div class="gterm"><dt>IaC</dt><dd>Infrastructure as Code</dd></div>
+        <div class="gterm"><dt>LLM</dt><dd>Large Language Model</dd></div>
+        <div class="gterm"><dt>MFA</dt><dd>Multi-Factor Authentication</dd></div>
+        <div class="gterm"><dt>PR</dt><dd>Pull Request</dd></div>
+        <div class="gterm"><dt>RBAC</dt><dd>Role-Based Access Control</dd></div>
+        <div class="gterm"><dt>RPO</dt><dd>Recovery Point Objective</dd></div>
+        <div class="gterm"><dt>RSL</dt><dd>Recovery Service Level</dd></div>
+        <div class="gterm"><dt>SAST</dt><dd>Static Application Security Testing</dd></div>
+        <div class="gterm"><dt>SBOM</dt><dd>Software Bill of Materials</dd></div>
+        <div class="gterm"><dt>SCA</dt><dd>Software Composition Analysis</dd></div>
+        <div class="gterm"><dt>VEX</dt><dd>Vulnerability Exploitability eXchange</dd></div>
+      </dl>
     </section>
 
   </main>
