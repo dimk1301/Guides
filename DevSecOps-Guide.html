@@ -6,7 +6,7 @@
 <title>The Developer's Guide to DevSecOps</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#0A0E17;
@@ -19,7 +19,7 @@
     --text-faint:#5A6480;
 
     --p1:#334155; --p2:#64748B; --p3:#3B82F6; --p4:#F59E0B; --p5:#F97316;
-    --p6:#84CC16; --p7:#6366F1; --p8:#10B981; --p9:#EF4444; --p10:#8B5CF6; --p11:#22D3EE;
+    --p6:#84CC16; --p7:#6366F1; --p8:#10B981; --p9:#EF4444; --p10:#8B5CF6; --p11:#22D3EE; --p12:#92400E;
 
     --accent:#4C7EF3;
     --amber:#F0B429;
@@ -157,13 +157,13 @@
   tbody td:first-child{font-family:var(--sans);font-weight:600;color:var(--text);white-space:nowrap;font-size:14px;}
 
   /* risk badges */
-  .badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--sans);font-weight:700;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;padding:3px 9px;border-radius:20px;}
-  .badge::before{content:"";width:6px;height:6px;border-radius:50%;}
-  .badge--crit{color:#FF9A9A;background:rgba(240,71,71,0.12);border:1px solid rgba(240,71,71,0.35);}
+  .badge{display:inline-flex;align-items:center;gap:7px;font-family:var(--sans);font-weight:700;font-size:12px;letter-spacing:.03em;text-transform:uppercase;}
+  .badge::before{content:"";width:7px;height:7px;border-radius:50%;flex:none;}
+  .badge--crit{color:#FF9A9A;}
   .badge--crit::before{background:#F04747;}
-  .badge--high{color:#FFC98A;background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.35);}
+  .badge--high{color:#FFC98A;}
   .badge--high::before{background:#F97316;}
-  .badge--med{color:#FFE28A;background:rgba(240,180,41,0.12);border:1px solid rgba(240,180,41,0.35);}
+  .badge--med{color:#FFE28A;}
   .badge--med::before{background:#F0B429;}
 
   /* implementation roadmap */
@@ -179,14 +179,14 @@
   .step-content{flex:1;min-width:0;padding-top:9px;}
   .step-title{font-family:var(--display);font-weight:700;font-size:16.5px;color:var(--text);margin-bottom:14px;}
   .step-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;}
-  .step-list li{display:flex;gap:11px;align-items:flex-start;font-size:15px;color:var(--text);}
+  .step-list li{display:flex;gap:11px;align-items:flex-start;font-size:15.5px;color:var(--text);}
   .step-check{flex:none;width:15px;height:15px;border-radius:4px;border:1.5px solid var(--border);margin-top:3px;background:var(--panel);}
   .step-list b{color:var(--text);font-weight:600;}
 
   /* zone cards */
   .zone-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0;}
   .zone{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:15px 17px;}
-  .zone .zname{font-family:var(--display);font-size:12.5px;font-weight:600;color:var(--accent);letter-spacing:.02em;margin-bottom:6px;display:block;}
+  .zone .zname{font-family:var(--display);font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.02em;margin-bottom:6px;display:block;}
   .zone p{font-size:14px;margin:0;color:var(--text-muted);}
 
   .hub-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin:14px 0;position:relative;overflow:hidden;}
@@ -194,7 +194,7 @@
   .hub-card.sec::before{background:var(--p7);}
   .hub-card.open::before{background:var(--p11);}
   .hub-card .hname{font-family:var(--display);font-weight:700;font-size:15px;margin-bottom:6px;display:block;}
-  .hub-card.sec .hname{color:var(--p7);}
+  .hub-card.sec .hname{color:#9297FF;}
   .hub-card.open .hname{color:var(--p11);}
   .hub-card p{font-size:14px;color:var(--text-muted);margin:0;}
 
@@ -266,22 +266,25 @@
         <p>We are building a secure, automated pipeline for our on-premise Kubernetes data platform. It costs zero dollars in licensing fees and follows industry gold standards like NIST, OWASP, and CIS.</p>
       </div>
 
-      <p class="rail-label">The Pipeline — 11 Stages, Requirements to Runtime</p>
+      <p class="rail-label">The Pipeline — 12 Stages, Requirements to Runtime</p>
       <div class="rail">
         <div class="rail-row">
           <a class="rail-seg" style="background:var(--p1)" href="#ch2"><span class="num">01 · REQUIREMENTS</span><span class="lbl">OWASP ASVS</span></a>
           <a class="rail-seg" style="background:var(--p2)" href="#ch2"><span class="num">02 · DESIGN</span><span class="lbl">Threat Dragon</span></a>
-          <a class="rail-seg" style="background:var(--p3)" href="#ch4"><span class="num">03 · CODE</span><span class="lbl">SonarLint / Bearer</span></a>
-          <a class="rail-seg" style="background:var(--p4)" href="#ch4"><span class="num">04 · PRE-COMMIT</span><span class="lbl">Checkov + Gitleaks</span></a>
-          <a class="rail-seg" style="background:var(--p5)" href="#ch2"><span class="num">05 · BUILD</span><span class="lbl">dep-scan --deep</span></a>
-          <a class="rail-seg" style="background:var(--p6);color:#0A0E17" href="#ch2"><span class="num" style="color:#0A0E1799">06 · VALIDATE</span><span class="lbl" style="color:#0A0E17">OWASP ZAP</span></a>
+          <a class="rail-seg" style="background:var(--p3);color:#0A0E17" href="#ch4"><span class="num" style="color:#0A0E1799">03 · CODE</span><span class="lbl" style="color:#0A0E17">SonarLint / Bearer</span></a>
+          <a class="rail-seg" style="background:var(--p4);color:#0A0E17" href="#ch4"><span class="num" style="color:#0A0E1799">04 · PRE-COMMIT</span><span class="lbl" style="color:#0A0E17">Checkov + Gitleaks</span></a>
         </div>
         <div class="rail-row">
+          <a class="rail-seg" style="background:var(--p5);color:#0A0E17" href="#ch2"><span class="num" style="color:#0A0E1799">05 · BUILD</span><span class="lbl" style="color:#0A0E17">dep-scan --deep</span></a>
+          <a class="rail-seg" style="background:var(--p6);color:#0A0E17" href="#ch2"><span class="num" style="color:#0A0E1799">06 · VALIDATE</span><span class="lbl" style="color:#0A0E17">OWASP ZAP</span></a>
           <a class="rail-seg" style="background:var(--p7)" href="#ch6"><span class="num">07 · GOVERN</span><span class="lbl">SecObserve</span></a>
-          <a class="rail-seg" style="background:var(--p8)" href="#ch3"><span class="num">08 · DEPLOY</span><span class="lbl">Kyverno + Cosign</span></a>
-          <a class="rail-seg" style="background:var(--p9)" href="#ch5"><span class="num">09 · RUNTIME</span><span class="lbl">Falco + Tetragon</span></a>
-          <a class="rail-seg" style="background:var(--p10)" href="#ch5"><span class="num">10 · AUDIT</span><span class="lbl">Kube-bench</span></a>
-          <a class="rail-seg" style="background:var(--p11);color:#0A0E17" href="#ch5"><span class="num" style="color:#0A0E1799">11 · STREAM HUB</span><span class="lbl" style="color:#0A0E17">OpenObserve</span></a>
+          <a class="rail-seg" style="background:var(--p8);color:#0A0E17" href="#ch3"><span class="num" style="color:#0A0E1799">08 · DEPLOY</span><span class="lbl" style="color:#0A0E17">Kyverno + Cosign</span></a>
+        </div>
+        <div class="rail-row">
+          <a class="rail-seg" style="background:var(--p9);color:#0A0E17" href="#ch5"><span class="num" style="color:#0A0E1799">09 · RUNTIME</span><span class="lbl" style="color:#0A0E17">Falco + Tetragon</span></a>
+          <a class="rail-seg" style="background:var(--p10);color:#0A0E17" href="#ch5"><span class="num" style="color:#0A0E1799">10 · AUDIT</span><span class="lbl" style="color:#0A0E17">Kube-bench</span></a>
+          <a class="rail-seg" style="background:var(--p12)" href="#ch5"><span class="num">11 · COMPLIANCE</span><span class="lbl">OpenSCAP + STIG Viewer</span></a>
+          <a class="rail-seg" style="background:var(--p11);color:#0A0E17" href="#ch5"><span class="num" style="color:#0A0E1799">12 · STREAM HUB</span><span class="lbl" style="color:#0A0E17">OpenObserve</span></a>
         </div>
       </div>
     </div>
@@ -348,7 +351,8 @@
             <tr><td>8. Deploy</td><td>Kyverno + Cosign</td><td>Checks K8s manifests, verifies image signatures.</td><td>A bouncer that rejects manifests breaking cluster rules.</td></tr>
             <tr><td>9. Runtime</td><td>Falco + Tetragon</td><td>Watches syscalls, enforces kernel boundaries.</td><td>Falco alerts on macro-behavior; Tetragon kills malicious threads in-kernel.</td></tr>
             <tr><td>10. Audit</td><td>Kube-bench</td><td>Checks K8s settings against CIS standards.</td><td>Confirms our core platform is locked down tight.</td></tr>
-            <tr><td>11. Stream Hub</td><td>OpenObserve</td><td>Consolidated, low-resource log/metric database.</td><td>Ingests FluentBit/OTel streams into cheap Parquet storage at 10x less RAM.</td></tr>
+            <tr><td>11. Compliance</td><td>OpenSCAP + STIG Viewer</td><td>Audit-ready reporting.</td><td>Produces reports auditors already recognize.</td></tr>
+            <tr><td>12. Stream Hub</td><td>OpenObserve</td><td>Consolidated, low-resource log/metric database.</td><td>Ingests FluentBit/OTel streams into cheap Parquet storage at 10x less RAM.</td></tr>
           </tbody>
         </table>
       </div>
@@ -425,12 +429,12 @@
           <defs>
             <marker id="arrow4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5A6480"/></marker>
           </defs>
-          <!-- connecting lines -->
-          <line x1="350" y1="67" x2="350" y2="151" stroke="#3B82F6" stroke-width="2" opacity="0.55"/>
-          <line x1="350" y1="67" x2="512" y2="157" stroke="#F59E0B" stroke-width="2" opacity="0.55"/>
-          <line x1="350" y1="67" x2="450" y2="320" stroke="#0EA5E9" stroke-width="2" opacity="0.55"/>
-          <line x1="350" y1="67" x2="250" y2="320" stroke="#64748B" stroke-width="2" opacity="0.55"/>
-          <line x1="350" y1="67" x2="188" y2="157" stroke="#F43F5E" stroke-width="2" opacity="0.55"/>
+          <!-- connecting lines: hub center (350,210) to each tool node -->
+          <line x1="350" y1="210" x2="350" y2="76" stroke="#3B82F6" stroke-width="2" opacity="0.55"/>
+          <line x1="350" y1="210" x2="512" y2="157" stroke="#F59E0B" stroke-width="2" opacity="0.55"/>
+          <line x1="350" y1="210" x2="450" y2="320" stroke="#0EA5E9" stroke-width="2" opacity="0.55"/>
+          <line x1="350" y1="210" x2="250" y2="320" stroke="#64748B" stroke-width="2" opacity="0.55"/>
+          <line x1="350" y1="210" x2="188" y2="157" stroke="#F43F5E" stroke-width="2" opacity="0.55"/>
 
           <!-- satellite nodes -->
           <g>
@@ -467,7 +471,7 @@
 
           <!-- output -->
           <line x1="350" y1="255" x2="350" y2="410" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrow4)"/>
-          <text x="370" y="335" fill="#95A1BC" font-family="Inter" font-size="12" font-style="italic">fixed before commit</text>
+          <text x="350" y="385" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12" font-style="italic">fixed before commit</text>
           <rect x="230" y="416" width="240" height="50" rx="25" fill="#10B981" opacity="0.15" stroke="#10B981" stroke-width="1.5"/>
           <text x="350" y="447" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">Commit-Ready Code</text>
         </svg>
@@ -527,7 +531,7 @@
 
       <div class="zone-grid" style="margin-top:14px;">
         <div class="zone" style="grid-column:1 / -1;"><span class="zname">Live Kubernetes Zone</span><p>Kyverno enforces rules at the admission door. Falco is our broad monitoring camera across user space. Tetragon hooks into the Linux kernel via eBPF to enforce zero-trust runtime boundaries and instantly terminate unauthorized processes. Cilium/Calico segments the network.</p></div>
-        <div class="zone" style="grid-column:1 / -1;"><span class="zname">Compliance</span><p>OpenSCAP keeps the underlying host operating systems up to code.</p></div>
+        <div class="zone" style="grid-column:1 / -1;"><span class="zname">Compliance</span><p>OpenSCAP + STIG Viewer keeps the underlying host operating systems up to code and produces audit-ready reports auditors already recognize.</p></div>
       </div>
 
       <p class="sub">Note: automation bots might suggest fixes on your PRs, but only human engineers can approve them.</p>
@@ -604,7 +608,8 @@
           <tbody>
             <tr><td>ASVS & Threat Dragon</td><td>Planning & Design</td><td>Checklists and threat models tracked as tickets before coding begins.</td><td>Project Board</td></tr>
             <tr><td>SonarLint / Bearer / ESLint / FindSecBugs</td><td>Local Code Safety</td><td>Local scan histories proving bugs were fixed before commit.</td><td>SCM / PR Logs</td></tr>
-            <tr><td>Kube-bench / Checkov / OpenSCAP</td><td>Config & Compliance</td><td>Audit-ready reports on configs, K8s settings, host OS.</td><td>SecObserve</td></tr>
+            <tr><td>Kube-bench / Checkov</td><td>Config & Compliance</td><td>Audit-ready reports on our app configs and Kubernetes settings.</td><td>SecObserve</td></tr>
+            <tr><td>OpenSCAP + STIG Viewer</td><td>Host Compliance</td><td>Audit-ready reports auditors already recognize.</td><td>SecObserve</td></tr>
             <tr><td>Gitleaks</td><td>Secrets</td><td>Pipeline logs proving exposed keys were caught and rotated.</td><td>SecObserve</td></tr>
             <tr><td>dep-scan <code>--deep</code></td><td>Supply Chain</td><td>SBOMs and vulnerability reports for libraries + base OS.</td><td>SecObserve</td></tr>
             <tr><td>OWASP ZAP</td><td>Staging / DAST</td><td>Baseline scan reports proving the app was attack-tested.</td><td>SecObserve</td></tr>
@@ -847,7 +852,7 @@
               <li><span class="step-check"></span><span><b>Secrets Lifecycle</b> — roll out HashiCorp Vault, remove plain-text configs.</span></li>
               <li><span class="step-check"></span><span><b>Image Trust Framework</b> — Cosign signing + Kyverno key validation.</span></li>
               <li><span class="step-check"></span><span><b>Immutable Base Layers</b> — migrate to dhi.io or Distroless.</span></li>
-              <li><span class="step-check"></span><span><b>Host Compliance Auditing</b> — OpenSCAP across node hosts.</span></li>
+              <li><span class="step-check"></span><span><b>Host Compliance Auditing</b> — OpenSCAP + STIG Viewer across node hosts, producing audit-ready reports auditors already recognize.</span></li>
             </ul>
           </div>
         </div>
@@ -892,6 +897,7 @@
         <div class="gterm"><dt>SAST</dt><dd>Static Application Security Testing</dd></div>
         <div class="gterm"><dt>SBOM</dt><dd>Software Bill of Materials</dd></div>
         <div class="gterm"><dt>SCA</dt><dd>Software Composition Analysis</dd></div>
+        <div class="gterm"><dt>STIG</dt><dd>Security Technical Implementation Guide</dd></div>
         <div class="gterm"><dt>VEX</dt><dd>Vulnerability Exploitability eXchange</dd></div>
       </dl>
     </section>
