@@ -425,57 +425,68 @@
       <p class="sub"><b>Repo Rules:</b> signed commits, a CODEOWNERS file, a shared <code>.gitignore</code> baseline, and a second reviewer on every PR.</p>
 
       <div class="diagram">
-        <svg viewBox="0 0 700 480" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 760 380" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <marker id="arrow4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5A6480"/></marker>
           </defs>
-          <!-- connecting lines: hub center (350,210) to each tool node -->
-          <line x1="350" y1="210" x2="350" y2="76" stroke="#3B82F6" stroke-width="2" opacity="0.55"/>
-          <line x1="350" y1="210" x2="512" y2="157" stroke="#F59E0B" stroke-width="2" opacity="0.55"/>
-          <line x1="350" y1="210" x2="450" y2="320" stroke="#0EA5E9" stroke-width="2" opacity="0.55"/>
-          <line x1="350" y1="210" x2="250" y2="320" stroke="#64748B" stroke-width="2" opacity="0.55"/>
-          <line x1="350" y1="210" x2="188" y2="157" stroke="#F43F5E" stroke-width="2" opacity="0.55"/>
 
-          <!-- satellite nodes -->
+          <!-- container -->
+          <rect x="20" y="16" width="720" height="214" rx="14" fill="#111826" stroke="#25314A" stroke-width="1.5"/>
+          <text x="400" y="36" text-anchor="middle" fill="#5A6480" font-family="Inter" font-size="10.5" font-weight="700" style="letter-spacing:1px">LOCAL DEV TOOLING — IDE &amp; PRE-COMMIT</text>
+
+          <text x="400" y="58" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11" font-weight="600">General-purpose</text>
           <g>
-            <rect x="280" y="18" width="140" height="58" rx="10" fill="#161F30" stroke="#3B82F6" stroke-width="1.5"/>
-            <text x="350" y="42" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">Bearer CLI</text>
-            <text x="350" y="59" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">privacy & data-leak scan</text>
+            <rect x="140" y="66" width="150" height="50" rx="8" fill="#161F30" stroke="#3B82F6" stroke-width="1.5"/>
+            <text x="215" y="87" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">Bearer CLI</text>
+            <text x="215" y="103" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">privacy & data-leak scan</text>
           </g>
           <g>
-            <rect x="442" y="128" width="140" height="58" rx="10" fill="#161F30" stroke="#F59E0B" stroke-width="1.5"/>
-            <text x="512" y="152" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">SonarLint</text>
-            <text x="512" y="169" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">code quality & bugs</text>
+            <rect x="305" y="66" width="150" height="50" rx="8" fill="#161F30" stroke="#F59E0B" stroke-width="1.5"/>
+            <text x="380" y="87" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">SonarLint</text>
+            <text x="380" y="103" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">code quality & bugs</text>
           </g>
           <g>
-            <rect x="380" y="291" width="140" height="58" rx="10" fill="#161F30" stroke="#0EA5E9" stroke-width="1.5"/>
-            <text x="450" y="313" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">ESLint + Rules</text>
-            <text x="450" y="330" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">JS / React vuln scan</text>
-          </g>
-          <g>
-            <rect x="180" y="291" width="140" height="58" rx="10" fill="#161F30" stroke="#64748B" stroke-width="1.5"/>
-            <text x="250" y="313" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">FindSecBugs</text>
-            <text x="250" y="330" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">Java bytecode scan</text>
-          </g>
-          <g>
-            <rect x="118" y="128" width="140" height="58" rx="10" fill="#161F30" stroke="#F43F5E" stroke-width="1.5"/>
-            <text x="188" y="152" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">Gitleaks</text>
-            <text x="188" y="169" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">secret & credential scan</text>
+            <rect x="470" y="66" width="150" height="50" rx="8" fill="#161F30" stroke="#F43F5E" stroke-width="1.5"/>
+            <text x="545" y="87" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">Gitleaks</text>
+            <text x="545" y="103" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">secret & credential scan</text>
           </g>
 
-          <!-- hub -->
-          <rect x="270" y="165" width="160" height="90" rx="14" fill="#8B5CF6" opacity="0.15" stroke="#8B5CF6" stroke-width="1.5"/>
-          <text x="350" y="200" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13.5" font-weight="700">Developer's</text>
-          <text x="350" y="220" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13.5" font-weight="700">IDE</text>
-          <text x="350" y="240" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">all five run here</text>
+          <line x1="40" y1="132" x2="720" y2="132" stroke="#1B2434" stroke-width="1"/>
 
-          <!-- output -->
-          <line x1="350" y1="255" x2="350" y2="410" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrow4)"/>
-          <text x="350" y="385" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12" font-style="italic">fixed before commit</text>
-          <rect x="230" y="416" width="240" height="50" rx="25" fill="#10B981" opacity="0.15" stroke="#10B981" stroke-width="1.5"/>
-          <text x="350" y="447" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">Commit-Ready Code</text>
+          <text x="400" y="152" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11" font-weight="600">Language-specific</text>
+          <g>
+            <rect x="27" y="160" width="130" height="50" rx="8" fill="#161F30" stroke="#0EA5E9" stroke-width="1.5"/>
+            <text x="92" y="181" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="11.5" font-weight="700">ESLint</text>
+            <text x="92" y="197" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">JS / React scan</text>
+          </g>
+          <g>
+            <rect x="171" y="160" width="130" height="50" rx="8" fill="#161F30" stroke="#64748B" stroke-width="1.5"/>
+            <text x="236" y="181" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="11.5" font-weight="700">FindSecBugs</text>
+            <text x="236" y="197" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">Java bytecode scan</text>
+          </g>
+          <g>
+            <rect x="315" y="160" width="130" height="50" rx="8" fill="#161F30" stroke="#22D3EE" stroke-width="1.5"/>
+            <text x="380" y="181" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="11.5" font-weight="700">Bandit</text>
+            <text x="380" y="197" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">Python linter</text>
+          </g>
+          <g>
+            <rect x="459" y="160" width="130" height="50" rx="8" fill="#161F30" stroke="#38BDF8" stroke-width="1.5"/>
+            <text x="524" y="181" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="11.5" font-weight="700">gosec</text>
+            <text x="524" y="197" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">Go security linter</text>
+          </g>
+          <g>
+            <rect x="603" y="160" width="130" height="50" rx="8" fill="#161F30" stroke="#FACC15" stroke-width="1.5"/>
+            <text x="668" y="181" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="11.5" font-weight="700">ShellCheck</text>
+            <text x="668" y="197" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">shell script linter</text>
+          </g>
+
+          <!-- single output flow -->
+          <line x1="400" y1="230" x2="400" y2="300" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrow4)"/>
+          <text x="400" y="270" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12" font-style="italic">auto-runs on save & at commit time</text>
+          <rect x="280" y="300" width="240" height="50" rx="25" fill="#10B981" opacity="0.15" stroke="#10B981" stroke-width="1.5"/>
+          <text x="400" y="331" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">Commit-Ready Code</text>
         </svg>
-        <p class="diagram-caption">Five local scanners feed the same IDE — nothing reaches your commit unfixed.</p>
+        <p class="diagram-caption">Eight local scanners, grouped by scope — nothing reaches your commit unfixed.</p>
       </div>
 
       <h3>What These Tools Do For You</h3>
@@ -488,14 +499,20 @@
             <tr><td>SonarLint</td><td>Common bugs and bad code patterns.</td><td>Right in your code editor.</td></tr>
             <tr><td>ESLint</td><td>Security bugs specific to JavaScript/React.</td><td>IDE and build phase.</td></tr>
             <tr><td>FindSecBugs</td><td>Security bugs specific to compiled Java code.</td><td>IDE and build phase.</td></tr>
+            <tr><td>Bandit</td><td>Security bugs specific to Python — hardcoded passwords, unsafe <code>eval</code>/<code>pickle</code>, weak crypto, SQL/command injection patterns.</td><td>IDE and pre-commit hook.</td></tr>
+            <tr><td>gosec</td><td>Security bugs specific to Go — hardcoded credentials, SQL injection, weak crypto, unsafe file permissions, unchecked errors on security-relevant calls.</td><td>IDE and pre-commit hook.</td></tr>
+            <tr><td>ShellCheck</td><td>Injection-prone patterns in shell scripts — unquoted variables, unsafe <code>eval</code>, risky <code>$()</code> expansion in pipeline glue and entrypoint scripts.</td><td>IDE and pre-commit hook.</td></tr>
           </tbody>
         </table>
       </div>
 
       <h3>Developer Environment Controls</h3>
       <ul>
-        <li><b>IDE Config-as-Code</b> — share SonarLint/ESLint rules as code in <code>.vscode/</code> or <code>.idea/</code>.</li>
+        <li><b>IDE Config-as-Code</b> — share SonarLint/ESLint/Bandit/gosec rules as code in <code>.vscode/</code> or <code>.idea/</code>.</li>
         <li><b>Secret-Detection in CI is Mandatory</b> — CI fails on any Gitleaks hit; remediation requires rotating the secret, adding it to Vault, and updating the code.</li>
+        <li><b>Python Baseline</b> — <code>bandit -r .</code> runs as a pre-commit hook and again in CI via <code>.pre-commit-config.yaml</code>, same unskippable pattern as Checkov and Gitleaks.</li>
+        <li><b>Go Baseline</b> — <code>gosec ./...</code> runs alongside <code>go vet</code> as a pre-commit hook and again in CI; findings block the merge the same way a Gitleaks hit does.</li>
+        <li><b>Shell Script Baseline</b> — <code>shellcheck</code> runs on every <code>.sh</code> file touched in a commit, catching injection-prone patterns in the CI glue and entrypoint scripts the platform relies on.</li>
       </ul>
     </section>
 
@@ -507,7 +524,7 @@
 
       <div class="zone-grid">
         <div class="zone"><span class="zname">Planning Zone</span><p>OWASP ASVS and Threat Dragon figure out what needs to be secured before we start typing.</p></div>
-        <div class="zone"><span class="zname">Workstation Zone — Your Laptop</span><p>SonarLint, Bearer CLI, and Gitleaks keep your local environment safe.</p></div>
+        <div class="zone"><span class="zname">Workstation Zone — Your Laptop</span><p>SonarLint, Bearer CLI, Bandit, gosec, ShellCheck, and Gitleaks keep your local environment safe.</p></div>
         <div class="zone"><span class="zname">Pipeline Zone — CI/CD</span><p>Checkov scans Terraform/Helm, Gitleaks double-checks for passwords, dep-scan <code>--deep</code> checks libraries and the base image OS.</p></div>
         <div class="zone"><span class="zname">Staging Zone</span><p>OWASP ZAP attacks our staging app to find runtime holes.</p></div>
         <div class="zone" style="grid-column:1 / -1;"><span class="zname">Edge Zone — Ingress / Load Balancer</span><p>Before traffic reaches the cluster we enforce HTTPS redirect, HSTS, CSP, and TLS 1.3, and publish <code>security.txt</code>. Baseline config, not a scan — set once per app, closing the exact holes ZAP would otherwise keep flagging in Staging.</p></div>
@@ -607,7 +624,7 @@
           <thead><tr><th>Tool</th><th>What it Protects</th><th>The Proof it Creates</th><th>Where It Lives</th></tr></thead>
           <tbody>
             <tr><td>ASVS & Threat Dragon</td><td>Planning & Design</td><td>Checklists and threat models tracked as tickets before coding begins.</td><td>Project Board</td></tr>
-            <tr><td>SonarLint / Bearer / ESLint / FindSecBugs</td><td>Local Code Safety</td><td>Local scan histories proving bugs were fixed before commit.</td><td>SCM / PR Logs</td></tr>
+            <tr><td>SonarLint / Bearer / ESLint / FindSecBugs / Bandit / gosec / ShellCheck</td><td>Local Code Safety</td><td>Local scan histories proving bugs were fixed before commit.</td><td>SCM / PR Logs</td></tr>
             <tr><td>Kube-bench / Checkov</td><td>Config & Compliance</td><td>Audit-ready reports on our app configs and Kubernetes settings.</td><td>SecObserve</td></tr>
             <tr><td>OpenSCAP + STIG Viewer</td><td>Host Compliance</td><td>Audit-ready reports auditors already recognize.</td><td>SecObserve</td></tr>
             <tr><td>Gitleaks</td><td>Secrets</td><td>Pipeline logs proving exposed keys were caught and rotated.</td><td>SecObserve</td></tr>
@@ -786,7 +803,7 @@
             <ul class="step-list">
               <li><span class="step-check"></span><span><b>Org-Wide MFA</b> — across all SCM accounts.</span></li>
               <li><span class="step-check"></span><span><b>Branch Protection</b> — signed commits, two reviews, CODEOWNERS validation.</span></li>
-              <li><span class="step-check"></span><span><b>Local Security Tooling</b> — SonarLint, Bearer CLI, Gitleaks; shared <code>.gitignore</code> baseline.</span></li>
+              <li><span class="step-check"></span><span><b>Local Security Tooling</b> — SonarLint, Bearer CLI, Bandit, gosec, ShellCheck, Gitleaks; shared <code>.gitignore</code> baseline.</span></li>
               <li><span class="step-check"></span><span><b>Pre-Commit Enforcement</b> — shared config, CI verifies hooks ran.</span></li>
               <li><span class="step-check"></span><span><b>Vulnerability Management Engine</b> — stand up SecObserve as the central static reporting hub.</span></li>
             </ul>
