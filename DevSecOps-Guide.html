@@ -358,7 +358,7 @@
       </div>
 
       <h3>Pipeline Controls</h3>
-      <p><b>SBOM Generation</b> — Every CI build must generate a CycloneDX or SPDX SBOM artifact, stored alongside the image.</p>
+      <p><b>SBOM Generation</b> — Every CI build must generate a CycloneDX or SPDX SBOM artifact, stored alongside the image. That same artifact is what makes app-level EOL checking free: the framework versions are already listed in it, so checking Django, Spring, or Express against endoflife.date needs no new scan — just a lookup against data you already produce.</p>
       <p><b>Branch-Protection Rules</b> — Codified via Terraform or similar:</p>
       <ul>
         <li>Requires signed commits</li>
@@ -366,6 +366,7 @@
         <li>Requires a match between CODEOWNERS</li>
         <li>Blocks force-pushes and deletion of protected branches</li>
       </ul>
+      <p><b>Pinned GitHub Actions</b> — every marketplace action referenced in a workflow is pinned to a full-length commit SHA, not a tag (<code>uses: org/action@a1b2c3d...</code>); CI fails on a floating tag. Same principle as the digest-pinning rule for container images in Chapter 3 — a tag can move to point at compromised code without warning, a commit SHA can't.</p>
       <p><b>Pre-Commit Hooks</b> — Mandatory, enforced via:</p>
       <ul>
         <li>A shared <code>.pre-commit-config.yaml</code> in the repo</li>
@@ -407,8 +408,9 @@
       <h3>Additional Image Controls</h3>
       <ul>
         <li><b>Pinned Digests</b> — all image references use a digest, not a tag (<code>image: dhi.io/app@sha256:...</code>); CI fails on tags.</li>
-        <li><b>Base-Image Update Automation</b> — automated weekly PRs update base images via Renovate or Dependabot.</li>
+        <li><b>Base-Image Update Automation</b> — automated weekly PRs update base images, with a minimum release age of at least a few days before a new version is even proposed. A same-day auto-bump is how several 2025 supply-chain attacks (npm's Shai-Hulud among them) got pulled into production before anyone noticed the compromised release.</li>
         <li><b>Cosign Key Rotation</b> — keys rotate annually; old keys revoked in Kyverno policy.</li>
+        <li><b>EOL Awareness</b> — a monthly job checks the base OS and language runtime against <a href="https://endoflife.date" target="_blank" rel="noopener">endoflife.date</a> and flags anything within 90 days of end-of-life. This is a different question from a CVE scan: an EOL version can show zero known vulnerabilities simply because no one is looking for new ones anymore, and the fix is usually a planned upgrade, not a patch. The same check applies one layer down to the host OS (Chapter 5) and one layer up to app frameworks (Chapter 2) — same question, asked at every layer that has its own release calendar.</li>
       </ul>
     </section>
 
@@ -537,7 +539,7 @@
       <p class="sub" style="margin-top:14px;">Everything above catches problems that are already <i>known</i> — a bad pattern, a leaked secret, a missing header. Once the workload is actually deployed, a different class of problem shows up: things that were fine at build time but aren't anymore, and behavior that only reveals itself under real traffic. Two more zones keep watching for that:</p>
 <div class="zone-grid" style="margin-top:12px;">
         <div class="zone" style="grid-column:1 / -1;"><span class="zname">Live Kubernetes Zone</span><p>Kyverno enforces rules at the admission door. Falco is our broad monitoring camera across user space. Tetragon hooks into the Linux kernel via eBPF to enforce zero-trust runtime boundaries and instantly terminate unauthorized processes. Cilium/Calico segments the network. A scheduled <code>dep-scan</code> job continuously re-scans running images for newly disclosed CVEs and feeds results back into SecObserve — see the CVE Lifecycle below.</p></div>
-        <div class="zone" style="grid-column:1 / -1;"><span class="zname">Compliance</span><p>OpenSCAP + STIG Viewer keeps the underlying host operating systems up to code and produces audit-ready reports auditors already recognize, on a cadence independent of any single app's release schedule.</p></div>
+        <div class="zone" style="grid-column:1 / -1;"><span class="zname">Compliance</span><p>OpenSCAP + STIG Viewer keeps the underlying host operating systems up to code and produces audit-ready reports auditors already recognize, on a cadence independent of any single app's release schedule. The same pass checks that host OS version itself against endoflife.date — a node can be fully patched and still be running a release that's about to lose support entirely.</p></div>
       </div>
 
       <p class="sub" style="margin-top:14px;">Nine zones, but only two places any of it actually gets read. Static findings — a scan result, a CVE, a config drift — and live telemetry — a syscall, a rejected deployment, a kernel-enforced kill — are fundamentally different shapes of data, so rather than force them into one tool, we split them across two purpose-built hubs.</p>
@@ -562,85 +564,78 @@
 
 
 <h3>The CVE Lifecycle <span class="sub-inline">— management by exception, not by meeting</span></h3>
-      <p class="sub">The flow below is a leaner variant of the pattern in <a href="https://senacor.blog/cve-management-more-efficient-with-the-right-tooling/" target="_blank" rel="noopener">Senacor's write-up on SecObserve-based CVE tooling</a>, which assumes separate assessor/approver roles — sensible for a larger org, but overhead for a small team. Here, SecObserve's rule engine auto-clears anything already known or accepted, so most artifacts never involve a human at all. A <b>Security Champion</b> — the same role from Chapter 1, not a separate title — only gets pulled in when a genuinely new HIGH or CRITICAL finding has no matching rule.</p>
+      <p class="sub">Here's how a CVE actually moves through the system, start to finish. A commit — often just Renovate bumping a dependency — triggers a build-time scan, and SecObserve checks the result against every rule it already knows. If the finding is already accepted or matches something on file, it clears automatically; no one is notified, no one has to look at it. Only a genuinely new HIGH or CRITICAL finding with no matching rule breaks that pattern, dropping down to the Security Champion for one decision: fix it, suppress it with a reason, or turn that reason into a rule so it never escalates again. From there, Rollout splits in two — non-productive deployments go through regardless of open findings, productive ones only once the verdict is clean. And once something is actually running, a scheduled <code>dep-scan</code> job keeps re-checking it against newly disclosed CVEs, feeding straight back into the same rule engine rather than starting a separate process.</p>
 
       <div class="diagram">
-        <svg viewBox="0 0 1160 580" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 1020 480" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <marker id="arrowCve2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5A6480"/></marker>
+            <marker id="arrowCve3" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#5A6480"/></marker>
           </defs>
 
           <!-- main pipeline -->
-          <line x1="140" y1="192" x2="170" y2="192" stroke="#5A6480" stroke-width="2" marker-end="url(#arrowCve2)"/>
-          <line x1="360" y1="192" x2="390" y2="192" stroke="#5A6480" stroke-width="2" marker-end="url(#arrowCve2)"/>
-          <line x1="590" y1="192" x2="600" y2="192" stroke="#5A6480" stroke-width="2" marker-end="url(#arrowCve2)"/>
-          <line x1="740" y1="192" x2="760" y2="128" stroke="#22D3EE" stroke-width="2" marker-end="url(#arrowCve2)"/>
-          <line x1="740" y1="192" x2="760" y2="320" stroke="#10B981" stroke-width="2" marker-end="url(#arrowCve2)"/>
-          <line x1="970" y1="320" x2="1000" y2="320" stroke="#5A6480" stroke-width="2" marker-end="url(#arrowCve2)"/>
+          <line x1="160" y1="172" x2="175" y2="172" stroke="#5A6480" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
+          <line x1="365" y1="172" x2="380" y2="172" stroke="#5A6480" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
+          <line x1="590" y1="172" x2="605" y2="172" stroke="#5A6480" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
+          <line x1="745" y1="172" x2="760" y2="105" stroke="#22D3EE" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
+          <line x1="745" y1="172" x2="760" y2="282" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
 
           <!-- exception path -->
-          <line x1="430" y1="234" x2="400" y2="340" stroke="#F59E0B" stroke-width="2" marker-end="url(#arrowCve2)"/>
-          <text x="300" y="280" fill="#95A1BC" font-family="Inter" font-size="11" font-style="italic">new HIGH/CRITICAL,</text>
-          <text x="300" y="294" fill="#95A1BC" font-family="Inter" font-size="11" font-style="italic">no rule match</text>
+          <line x1="450" y1="216" x2="450" y2="310" stroke="#F59E0B" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
+          <text x="450" y="266" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12" font-style="italic">no rule match</text>
 
-          <line x1="500" y1="340" x2="560" y2="234" stroke="#F59E0B" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrowCve2)"/>
-          <text x="540" y="296" fill="#95A1BC" font-family="Inter" font-size="11" font-style="italic">adds a rule —</text>
-          <text x="540" y="310" fill="#95A1BC" font-family="Inter" font-size="11" font-style="italic">auto-clears next time</text>
+          <line x1="560" y1="310" x2="560" y2="216" stroke="#F59E0B" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#arrowCve3)"/>
+          <text x="560" y="266" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12" font-style="italic">adds rule</text>
 
-          <path d="M 290 372 C 170 372, 90 300, 80 226" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrowCve2)"/>
-          <text x="185" y="335" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11" font-style="italic">no easy suppression — sent back to fix</text>
+          <path d="M 380 342 C 220 342, 110 280, 90 208" fill="none" stroke="#94A3B8" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#arrowCve3)"/>
+          <text x="230" y="300" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12" font-style="italic">no easy fix — sent back to Commit</text>
 
           <!-- scheduled rescan feedback loop -->
-          <path d="M 1065 350 C 1065 485, 700 495, 490 234" fill="none" stroke="#3B82F6" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrowCve2)"/>
-          <text x="790" y="500" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11.5" font-style="italic">scheduled rescan · OWASP dep-scan</text>
+          <path d="M 760 300 C 640 340, 610 260, 590 205" fill="none" stroke="#3B82F6" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#arrowCve3)"/>
+          <text x="700" y="365" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12.5" font-style="italic">scheduled rescan</text>
+          <text x="700" y="382" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12.5" font-style="italic">OWASP dep-scan</text>
 
           <!-- Commit -->
-          <rect x="20" y="160" width="120" height="64" rx="10" fill="#161F30" stroke="#F97316" stroke-width="1.5"/>
-          <text x="80" y="184" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">Commit</text>
-          <text x="80" y="201" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">Renovate auto-bumps</text>
+          <rect x="20" y="140" width="140" height="64" rx="10" fill="#161F30" stroke="#F97316" stroke-width="1.5"/>
+          <text x="90" y="168" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Commit</text>
+          <text x="90" y="187" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">Renovate auto-bumps</text>
 
           <!-- Build & Scan -->
-          <rect x="170" y="160" width="190" height="64" rx="10" fill="#161F30" stroke="#3B82F6" stroke-width="1.5"/>
-          <text x="265" y="184" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">Build & Scan</text>
-          <text x="265" y="201" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">OWASP dep-scan --deep</text>
+          <rect x="175" y="140" width="190" height="64" rx="10" fill="#161F30" stroke="#3B82F6" stroke-width="1.5"/>
+          <text x="270" y="168" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Build & Scan</text>
+          <text x="270" y="187" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">OWASP dep-scan --deep</text>
 
           <!-- SecObserve auto-triage hub -->
-          <rect x="390" y="150" width="200" height="84" rx="14" fill="#8B5CF6" opacity="0.15" stroke="#8B5CF6" stroke-width="1.5"/>
-          <text x="490" y="176" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13.5" font-weight="700">SecObserve</text>
-          <text x="490" y="194" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">auto-triage · rule engine</text>
-          <text x="490" y="211" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">known → clears · new HIGH+ → escalate ↓</text>
+          <rect x="380" y="128" width="210" height="88" rx="14" fill="#8B5CF6" opacity="0.15" stroke="#8B5CF6" stroke-width="1.5"/>
+          <text x="485" y="160" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="15" font-weight="700">SecObserve</text>
+          <text x="485" y="180" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11.5">auto-triage · rule engine</text>
+          <text x="485" y="197" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11.5">only new HIGH+ escalates ↓</text>
 
           <!-- Rollout fork -->
-          <polygon points="670,155 740,192 670,229 600,192" fill="#161F30" stroke="#94A3B8" stroke-width="1.5"/>
-          <text x="670" y="197" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">Rollout</text>
+          <polygon points="675,136 745,172 675,208 605,172" fill="#161F30" stroke="#94A3B8" stroke-width="1.5"/>
+          <text x="675" y="178" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13.5" font-weight="700">Rollout</text>
 
           <!-- Non-Productive -->
-          <rect x="760" y="98" width="210" height="60" rx="10" fill="#161F30" stroke="#22D3EE" stroke-width="1.5" stroke-dasharray="6 4"/>
-          <text x="865" y="122" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">Non-Productive</text>
-          <text x="865" y="139" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">no gate — always rolls out</text>
+          <rect x="760" y="70" width="230" height="64" rx="10" fill="#161F30" stroke="#22D3EE" stroke-width="1.5" stroke-dasharray="6 4"/>
+          <text x="875" y="98" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Non-Productive</text>
+          <text x="875" y="117" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">no gate — always rolls out</text>
 
           <!-- Productive -->
-          <rect x="760" y="290" width="210" height="60" rx="10" fill="#161F30" stroke="#10B981" stroke-width="1.5"/>
-          <text x="865" y="314" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">Productive</text>
-          <text x="865" y="331" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">reached only on a clean verdict</text>
-
-          <!-- Running Workload -->
-          <rect x="1000" y="290" width="130" height="60" rx="10" fill="#161F30" stroke="#6366F1" stroke-width="1.5"/>
-          <text x="1065" y="314" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">Running</text>
-          <text x="1065" y="331" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">live in cluster</text>
+          <rect x="760" y="250" width="230" height="64" rx="10" fill="#161F30" stroke="#10B981" stroke-width="1.5"/>
+          <text x="875" y="278" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Productive</text>
+          <text x="875" y="297" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">gated on CVE verdict</text>
 
           <!-- Security Champion -->
-          <rect x="290" y="340" width="240" height="64" rx="10" fill="#161F30" stroke="#F59E0B" stroke-width="1.5"/>
-          <text x="410" y="365" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">Security Champion</text>
-          <text x="410" y="382" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">one quick call: fix or suppress</text>
+          <rect x="380" y="310" width="230" height="64" rx="10" fill="#161F30" stroke="#F59E0B" stroke-width="1.5"/>
+          <text x="495" y="338" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Security Champion</text>
+          <text x="495" y="357" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">one quick call: fix or suppress</text>
 
           <!-- legend -->
-          <line x1="40" y1="550" x2="70" y2="550" stroke="#5A6480" stroke-width="2"/>
-          <text x="78" y="554" fill="#95A1BC" font-family="Inter" font-size="10.5">automatic flow (most artifacts)</text>
-          <line x1="400" y1="550" x2="430" y2="550" stroke="#F59E0B" stroke-width="2"/>
-          <text x="438" y="554" fill="#95A1BC" font-family="Inter" font-size="10.5">escalation (rare)</text>
-          <line x1="700" y1="550" x2="730" y2="550" stroke="#94A3B8" stroke-width="2" stroke-dasharray="5 4"/>
-          <text x="738" y="554" fill="#95A1BC" font-family="Inter" font-size="10.5">feedback (rule added / rescan)</text>
+          <line x1="40" y1="440" x2="72" y2="440" stroke="#5A6480" stroke-width="2.5"/>
+          <text x="80" y="444" fill="#95A1BC" font-family="Inter" font-size="12">automatic flow</text>
+          <line x1="290" y1="440" x2="322" y2="440" stroke="#F59E0B" stroke-width="2.5"/>
+          <text x="330" y="444" fill="#95A1BC" font-family="Inter" font-size="12">escalation (rare)</text>
+          <line x1="560" y1="440" x2="592" y2="440" stroke="#94A3B8" stroke-width="2.5" stroke-dasharray="6 5"/>
+          <text x="600" y="444" fill="#95A1BC" font-family="Inter" font-size="12">feedback loop</text>
         </svg>
         <p class="diagram-caption">Most artifacts flow straight through, auto-cleared by rules already on file. Only a new HIGH/CRITICAL finding with no matching rule ever reaches the Security Champion — and resolving it once means the rule engine catches every future occurrence automatically.</p>
       </div>
@@ -651,8 +646,8 @@
       </div>
 
       <div class="callout callout--dev">
-        <span class="tag">Why This Is the Efficient Version</span>
-        <p>The two-role, assess-then-approve version works for larger orgs with true segregation of duties, but it makes every finding a meeting. For a small team, collapse it to one step: the Security Champion fixes it, suppresses it with a reason, or — better — writes a rule so the same CVE never needs a second look. The second-reviewer habit from Chapter 1 still applies to that rule change itself (someone else merges the PR), so nothing gets suppressed unilaterally; it just stops requiring a dedicated approval round-trip for every single finding.</p>
+        <span class="tag">What You Actually Do</span>
+        <p>See a new finding in SecObserve? Check whether a rule already covers it before doing anything — most do. If it's genuinely new and HIGH or above, message the Security Champion directly instead of filing a ticket; the resolution is almost always one of three things: bump the dependency, suppress it with a documented reason, or — if it's likely to show up again — turn that reason into a rule. Whichever you pick, the second-reviewer habit from Chapter 1 still applies: someone else merges that change.</p>
       </div>
 
       <p class="sub">One note on the CVE workflow above before moving on: automation bots might suggest fixes on your PRs, but only human engineers can approve them — the Security Champion's judgment call is never automated away, only the noise around it is.</p>
@@ -975,6 +970,7 @@
               <li><span class="step-check"></span><span><b>Image Trust Framework</b> — Cosign signing + Kyverno key validation.</span></li>
               <li><span class="step-check"></span><span><b>Immutable Base Layers</b> — migrate to dhi.io or Distroless.</span></li>
               <li><span class="step-check"></span><span><b>Host Compliance Auditing</b> — OpenSCAP + STIG Viewer across node hosts, producing audit-ready reports auditors already recognize.</span></li>
+              <li><span class="step-check"></span><span><b>EOL Tracking</b> — scheduled check of base OS and language runtime versions against endoflife.date, flagging anything nearing end-of-life.</span></li>
             </ul>
           </div>
         </div>
