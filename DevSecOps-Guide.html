@@ -522,18 +522,30 @@
     <section class="chapter" id="ch5">
       <div class="chapter-head"><div class="chapter-num">05</div><h2>Our Security Toolkit & Where Everything Lives</h2></div>
 
-      <div class="zone-grid">
-        <div class="zone"><span class="zname">Planning Zone</span><p>OWASP ASVS and Threat Dragon figure out what needs to be secured before we start typing.</p></div>
-        <div class="zone"><span class="zname">Workstation Zone — Your Laptop</span><p>SonarLint, Bearer CLI, Bandit, gosec, ShellCheck, and Gitleaks keep your local environment safe.</p></div>
-        <div class="zone"><span class="zname">Pipeline Zone — CI/CD</span><p>Checkov scans Terraform/Helm, Gitleaks double-checks for passwords, dep-scan <code>--deep</code> checks libraries and the base image OS.</p></div>
-        <div class="zone"><span class="zname">Staging Zone</span><p>OWASP ZAP attacks our staging app to find runtime holes.</p></div>
+      <p class="sub">This chapter maps every tool from Chapters 2–4 to the zone it runs in, then unpacks the two hubs everything ultimately reports into — and, since SecObserve is the one developers touch daily, a closer look at how its CVE workflow actually runs day-to-day.</p>
+
+      <h3>Where Each Tool Runs</h3>
+      <p class="sub">Every scanner from Chapters 2–4 runs somewhere specific, catching a specific class of problem at the point where fixing it is still cheap. Here's the path from writing code to a running pod, zone by zone:</p>
+<div class="zone-grid">
+        <div class="zone"><span class="zname">Planning Zone</span><p>OWASP ASVS and Threat Dragon figure out what needs to be secured before we start typing — the checklist and threat model a PR gets judged against later.</p></div>
+        <div class="zone"><span class="zname">Workstation Zone — Your Laptop</span><p>SonarLint, Bearer CLI, Bandit, gosec, ShellCheck, and Gitleaks keep your local environment safe, catching the same classes of bug CI would — just before you've pushed anything.</p></div>
+        <div class="zone"><span class="zname">Pipeline Zone — CI/CD</span><p>Checkov scans Terraform/Helm, Gitleaks double-checks for passwords, dep-scan <code>--deep</code> checks libraries and the base image OS. Nothing here is optional — this is the unskippable gate from Chapter 4.</p></div>
+        <div class="zone"><span class="zname">Staging Zone</span><p>OWASP ZAP attacks our staging app to find runtime holes — broken auth flows, misconfigured headers, injection points — that no static scanner upstream can see, because they only exist once the app is actually running.</p></div>
         <div class="zone" style="grid-column:1 / -1;"><span class="zname">Edge Zone — Ingress / Load Balancer</span><p>Before traffic reaches the cluster we enforce HTTPS redirect, HSTS, CSP, and TLS 1.3, and publish <code>security.txt</code>. Baseline config, not a scan — set once per app, closing the exact holes ZAP would otherwise keep flagging in Staging.</p></div>
       </div>
 
+      <p class="sub" style="margin-top:14px;">Everything above catches problems that are already <i>known</i> — a bad pattern, a leaked secret, a missing header. Once the workload is actually deployed, a different class of problem shows up: things that were fine at build time but aren't anymore, and behavior that only reveals itself under real traffic. Two more zones keep watching for that:</p>
+<div class="zone-grid" style="margin-top:12px;">
+        <div class="zone" style="grid-column:1 / -1;"><span class="zname">Live Kubernetes Zone</span><p>Kyverno enforces rules at the admission door. Falco is our broad monitoring camera across user space. Tetragon hooks into the Linux kernel via eBPF to enforce zero-trust runtime boundaries and instantly terminate unauthorized processes. Cilium/Calico segments the network. A scheduled <code>dep-scan</code> job continuously re-scans running images for newly disclosed CVEs and feeds results back into SecObserve — see the CVE Lifecycle below.</p></div>
+        <div class="zone" style="grid-column:1 / -1;"><span class="zname">Compliance</span><p>OpenSCAP + STIG Viewer keeps the underlying host operating systems up to code and produces audit-ready reports auditors already recognize, on a cadence independent of any single app's release schedule.</p></div>
+      </div>
+
+      <p class="sub" style="margin-top:14px;">Nine zones, but only two places any of it actually gets read. Static findings — a scan result, a CVE, a config drift — and live telemetry — a syscall, a rejected deployment, a kernel-enforced kill — are fundamentally different shapes of data, so rather than force them into one tool, we split them across two purpose-built hubs.</p>
+
       <h3>Management Hubs</h3>
-      <div class="hub-card sec">
+<div class="hub-card sec">
         <span class="hname">SecObserve — Static Vulnerability Hub</span>
-        <p>Our central portal for point-in-time security scans, container vulnerability databases, and build-time compliance scores.</p>
+        <p>Our central portal for point-in-time security scans, container vulnerability databases, and build-time compliance scores. Every scanner from the Pipeline Zone reports here, so there's one queue to check rather than nine.</p>
       </div>
 
       <div class="callout callout--dev">
@@ -541,20 +553,112 @@
         <p>This is where the tool earns its keep day to day: a built-in <b>rule engine</b> auto-filters out known false positives and low-risk findings, so your queue stays signal, not noise. It also <b>normalizes results from any scanner</b> into one consistent view, so the dashboard stays familiar even as our tool list changes.</p>
       </div>
 
-      <div class="hub-card open">
+<div class="hub-card open">
         <span class="hname">OpenObserve — Live Streaming Telemetry Hub</span>
-        <p>A single-binary, Rust-based system that captures and aggregates high-velocity streaming security logs and time-series metrics into highly compressed storage — no heavy database backends required.</p>
+        <p>A single-binary, Rust-based system that captures and aggregates high-velocity streaming security logs and time-series metrics into highly compressed storage — no heavy database backends required. It's also the reason we could retire our old Java-based ELK/Loki stack (Chapter 6): same visibility, a fraction of the memory footprint.</p>
       </div>
 
-      <div class="zone-grid" style="margin-top:14px;">
-        <div class="zone" style="grid-column:1 / -1;"><span class="zname">Live Kubernetes Zone</span><p>Kyverno enforces rules at the admission door. Falco is our broad monitoring camera across user space. Tetragon hooks into the Linux kernel via eBPF to enforce zero-trust runtime boundaries and instantly terminate unauthorized processes. Cilium/Calico segments the network.</p></div>
-        <div class="zone" style="grid-column:1 / -1;"><span class="zname">Compliance</span><p>OpenSCAP + STIG Viewer keeps the underlying host operating systems up to code and produces audit-ready reports auditors already recognize.</p></div>
+      <p class="sub">Both hubs feed forward into later chapters: SecObserve's findings become the audit trail in Chapter 6, and OpenObserve's retention settings are what make the disaster-recovery drills in Chapter 7 provable rather than just assumed.</p>
+
+
+<h3>The CVE Lifecycle <span class="sub-inline">— management by exception, not by meeting</span></h3>
+      <p class="sub">The flow below is a leaner variant of the pattern in <a href="https://senacor.blog/cve-management-more-efficient-with-the-right-tooling/" target="_blank" rel="noopener">Senacor's write-up on SecObserve-based CVE tooling</a>, which assumes separate assessor/approver roles — sensible for a larger org, but overhead for a small team. Here, SecObserve's rule engine auto-clears anything already known or accepted, so most artifacts never involve a human at all. A <b>Security Champion</b> — the same role from Chapter 1, not a separate title — only gets pulled in when a genuinely new HIGH or CRITICAL finding has no matching rule.</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 1160 580" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrowCve2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5A6480"/></marker>
+          </defs>
+
+          <!-- main pipeline -->
+          <line x1="140" y1="192" x2="170" y2="192" stroke="#5A6480" stroke-width="2" marker-end="url(#arrowCve2)"/>
+          <line x1="360" y1="192" x2="390" y2="192" stroke="#5A6480" stroke-width="2" marker-end="url(#arrowCve2)"/>
+          <line x1="590" y1="192" x2="600" y2="192" stroke="#5A6480" stroke-width="2" marker-end="url(#arrowCve2)"/>
+          <line x1="740" y1="192" x2="760" y2="128" stroke="#22D3EE" stroke-width="2" marker-end="url(#arrowCve2)"/>
+          <line x1="740" y1="192" x2="760" y2="320" stroke="#10B981" stroke-width="2" marker-end="url(#arrowCve2)"/>
+          <line x1="970" y1="320" x2="1000" y2="320" stroke="#5A6480" stroke-width="2" marker-end="url(#arrowCve2)"/>
+
+          <!-- exception path -->
+          <line x1="430" y1="234" x2="400" y2="340" stroke="#F59E0B" stroke-width="2" marker-end="url(#arrowCve2)"/>
+          <text x="300" y="280" fill="#95A1BC" font-family="Inter" font-size="11" font-style="italic">new HIGH/CRITICAL,</text>
+          <text x="300" y="294" fill="#95A1BC" font-family="Inter" font-size="11" font-style="italic">no rule match</text>
+
+          <line x1="500" y1="340" x2="560" y2="234" stroke="#F59E0B" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrowCve2)"/>
+          <text x="540" y="296" fill="#95A1BC" font-family="Inter" font-size="11" font-style="italic">adds a rule —</text>
+          <text x="540" y="310" fill="#95A1BC" font-family="Inter" font-size="11" font-style="italic">auto-clears next time</text>
+
+          <path d="M 290 372 C 170 372, 90 300, 80 226" fill="none" stroke="#94A3B8" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrowCve2)"/>
+          <text x="185" y="335" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11" font-style="italic">no easy suppression — sent back to fix</text>
+
+          <!-- scheduled rescan feedback loop -->
+          <path d="M 1065 350 C 1065 485, 700 495, 490 234" fill="none" stroke="#3B82F6" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrowCve2)"/>
+          <text x="790" y="500" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11.5" font-style="italic">scheduled rescan · OWASP dep-scan</text>
+
+          <!-- Commit -->
+          <rect x="20" y="160" width="120" height="64" rx="10" fill="#161F30" stroke="#F97316" stroke-width="1.5"/>
+          <text x="80" y="184" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">Commit</text>
+          <text x="80" y="201" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">Renovate auto-bumps</text>
+
+          <!-- Build & Scan -->
+          <rect x="170" y="160" width="190" height="64" rx="10" fill="#161F30" stroke="#3B82F6" stroke-width="1.5"/>
+          <text x="265" y="184" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">Build & Scan</text>
+          <text x="265" y="201" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">OWASP dep-scan --deep</text>
+
+          <!-- SecObserve auto-triage hub -->
+          <rect x="390" y="150" width="200" height="84" rx="14" fill="#8B5CF6" opacity="0.15" stroke="#8B5CF6" stroke-width="1.5"/>
+          <text x="490" y="176" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13.5" font-weight="700">SecObserve</text>
+          <text x="490" y="194" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">auto-triage · rule engine</text>
+          <text x="490" y="211" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">known → clears · new HIGH+ → escalate ↓</text>
+
+          <!-- Rollout fork -->
+          <polygon points="670,155 740,192 670,229 600,192" fill="#161F30" stroke="#94A3B8" stroke-width="1.5"/>
+          <text x="670" y="197" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">Rollout</text>
+
+          <!-- Non-Productive -->
+          <rect x="760" y="98" width="210" height="60" rx="10" fill="#161F30" stroke="#22D3EE" stroke-width="1.5" stroke-dasharray="6 4"/>
+          <text x="865" y="122" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">Non-Productive</text>
+          <text x="865" y="139" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">no gate — always rolls out</text>
+
+          <!-- Productive -->
+          <rect x="760" y="290" width="210" height="60" rx="10" fill="#161F30" stroke="#10B981" stroke-width="1.5"/>
+          <text x="865" y="314" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">Productive</text>
+          <text x="865" y="331" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">reached only on a clean verdict</text>
+
+          <!-- Running Workload -->
+          <rect x="1000" y="290" width="130" height="60" rx="10" fill="#161F30" stroke="#6366F1" stroke-width="1.5"/>
+          <text x="1065" y="314" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">Running</text>
+          <text x="1065" y="331" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">live in cluster</text>
+
+          <!-- Security Champion -->
+          <rect x="290" y="340" width="240" height="64" rx="10" fill="#161F30" stroke="#F59E0B" stroke-width="1.5"/>
+          <text x="410" y="365" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">Security Champion</text>
+          <text x="410" y="382" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">one quick call: fix or suppress</text>
+
+          <!-- legend -->
+          <line x1="40" y1="550" x2="70" y2="550" stroke="#5A6480" stroke-width="2"/>
+          <text x="78" y="554" fill="#95A1BC" font-family="Inter" font-size="10.5">automatic flow (most artifacts)</text>
+          <line x1="400" y1="550" x2="430" y2="550" stroke="#F59E0B" stroke-width="2"/>
+          <text x="438" y="554" fill="#95A1BC" font-family="Inter" font-size="10.5">escalation (rare)</text>
+          <line x1="700" y1="550" x2="730" y2="550" stroke="#94A3B8" stroke-width="2" stroke-dasharray="5 4"/>
+          <text x="738" y="554" fill="#95A1BC" font-family="Inter" font-size="10.5">feedback (rule added / rescan)</text>
+        </svg>
+        <p class="diagram-caption">Most artifacts flow straight through, auto-cleared by rules already on file. Only a new HIGH/CRITICAL finding with no matching rule ever reaches the Security Champion — and resolving it once means the rule engine catches every future occurrence automatically.</p>
       </div>
 
-      <p class="sub">Note: automation bots might suggest fixes on your PRs, but only human engineers can approve them.</p>
+      <div class="callout callout--info">
+        <span class="tag">Security Gate — Non-Productive vs Productive</span>
+        <p>Findings never block a test or staging rollout — developers need room to iterate. Only a <b>productive</b> rollout enforces the rule, e.g. "no unresolved CVE with criticality HIGH or higher." That gives the team the time between the first scan and the productive release to fix or formally suppress a finding, without slowing down everyday testing.</p>
+      </div>
 
-      <h3>Runtime Telemetry Flow</h3>
-      <p class="sub">Logs and metrics split at the source to maximize performance, then converge into a unified, low-overhead analytics backend:</p>
+      <div class="callout callout--dev">
+        <span class="tag">Why This Is the Efficient Version</span>
+        <p>The two-role, assess-then-approve version works for larger orgs with true segregation of duties, but it makes every finding a meeting. For a small team, collapse it to one step: the Security Champion fixes it, suppresses it with a reason, or — better — writes a rule so the same CVE never needs a second look. The second-reviewer habit from Chapter 1 still applies to that rule change itself (someone else merges the PR), so nothing gets suppressed unilaterally; it just stops requiring a dedicated approval round-trip for every single finding.</p>
+      </div>
+
+      <p class="sub">One note on the CVE workflow above before moving on: automation bots might suggest fixes on your PRs, but only human engineers can approve them — the Security Champion's judgment call is never automated away, only the noise around it is.</p>
+
+<h3>Runtime Telemetry Flow</h3>
+      <p class="sub">SecObserve covers point-in-time findings, but a running cluster generates a constant stream of logs and metrics too — every Kyverno rejection, every Falco alert, every Tetragon kill needs somewhere to land. That's OpenObserve's job. Logs and metrics split at the source into two lightweight collectors to maximize performance, then converge into one unified, low-overhead analytics backend rather than the heavier ELK/Loki + Grafana stack this replaced:</p>
 
       <div class="diagram">
         <svg viewBox="0 0 700 480" xmlns="http://www.w3.org/2000/svg">
@@ -601,9 +705,10 @@
       </div>
 
       <h3>Infrastructure Controls</h3>
-      <p><b>Network Segmentation Diagram</b> — Ingress → DMZ → App tier → Data tier, with Cilium/Calico policy placement marked.</p>
-      <p><b>Explicit Logging of Policy Decisions</b> — all Kyverno policy changes, Falco runtime logs, and Tetragon kernel termination alerts stream directly into OpenObserve via the team's chosen log shipper.</p>
-      <p><b>Policy Review Cadence</b> — cluster access rules and kernel tracing policies are reviewed annually against current CIS and ASVS baselines.</p>
+      <p class="sub">Three standing controls keep the two hubs above trustworthy and the network they watch actually segmented — worth having in place before you rely on either dashboard during an incident:</p>
+      <p><b>Network Segmentation Diagram</b> — Ingress → DMZ → App tier → Data tier, with Cilium/Calico policy placement marked. Without this on paper somewhere, "segmented" is just a claim; with it, a reviewer can check a proposed change against the actual trust boundaries in minutes.</p>
+      <p><b>Explicit Logging of Policy Decisions</b> — all Kyverno policy changes, Falco runtime logs, and Tetragon kernel termination alerts stream directly into OpenObserve via the team's chosen log shipper. If a deployment gets rejected or a process gets killed, that decision is queryable, not just something that happened and vanished.</p>
+      <p><b>Policy Review Cadence</b> — cluster access rules and kernel tracing policies are reviewed annually against current CIS and ASVS baselines, so the rules enforcing zones like Edge and Live Kubernetes don't quietly drift out of date while the standards they're based on keep evolving.</p>
     </section>
 
     <hr class="div">
