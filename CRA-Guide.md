@@ -1,7 +1,4 @@
 # The CRA Guide: What It Is, and How to Actually Build for It
-*A combined guide synthesizing "Aligning Software Security Practices with the EU CRA Requirements" (Tripwire) and "From SBOMs to Trust Boundaries" (OpenNovations) — deduplicated, structured for a tech lead / security champion.*
-
----
 
 # Part 1 — What the CRA Is
 
