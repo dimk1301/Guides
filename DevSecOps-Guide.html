@@ -298,10 +298,13 @@
       <ul>
         <li><b>Security Training</b> — Every engineer completes annual secure coding training (OWASP Top 10) before getting CI/CD pipeline access.</li>
         <li><b>Lock Every Account</b> — MFA is mandatory on every SCM (GitHub/GitLab) account. Stolen or reused passwords are still the #1 way real breaches start, and this one setting blocks most of them before any tool below ever fires.</li>
+        <li><b>Vet New Dependencies Before They Land</b> — Adding a brand-new third-party library takes 30 seconds of sanity-checking first: is it actively maintained, does the latest release look recent and healthy, and does it already carry known critical CVEs. Catching a bad dependency here is far cheaper than removing it after five other packages depend on it.</li>
         <li><b>Don't Skip the Gates</b> — Bypassing automated checks (Checkov, Gitleaks, Kyverno) is forbidden unless you have a documented exception signed by a Security Lead.</li>
         <li><b>Treat Security Rules Like Code</b> — Changing a security rule (Kyverno policy, Falco alert) goes through the same PR process as application code: two reviewers, one signed commit.</li>
         <li><b>Make It Safe to Report Bugs</b> — <code>SECURITY.md</code> in every repo, <code>security.txt</code> on every live app, so researchers report privately.</li>
       </ul>
+
+      <p class="sub">This isn't just good habit-forming — it's about to become the law. Starting in 2026–2027, the EU's Cyber Resilience Act (CRA) will require most of what's below for anyone shipping software into the EU. Building these habits now means we're ready, not scrambling, when that day comes.</p>
 
       <h3>Security Champions</h3>
       <ul>
@@ -566,6 +569,11 @@
 <h3>The CVE Lifecycle <span class="sub-inline">— management by exception, not by meeting</span></h3>
       <p class="sub">Here's how a CVE actually moves through the system, start to finish. A commit — often just Renovate bumping a dependency — triggers a build-time scan, and SecObserve checks the result against every rule it already knows. If the finding is already accepted or matches something on file, it clears automatically; no one is notified, no one has to look at it. Only a genuinely new HIGH or CRITICAL finding with no matching rule breaks that pattern, dropping down to the Security Champion for one decision: fix it, suppress it with a reason, or turn that reason into a rule so it never escalates again. From there, Rollout splits in two — non-productive deployments go through regardless of open findings, productive ones only once the verdict is clean. And once something is actually running, a scheduled <code>dep-scan</code> job keeps re-checking it against newly disclosed CVEs, feeding straight back into the same rule engine rather than starting a separate process.</p>
 
+      <div class="callout callout--rule">
+        <span class="tag">One Exception to "No One Has to Look"</span>
+        <p>If a newly disclosed CVE is flagged as <b>actively exploited in the wild</b> — not just theoretically possible, but actually being used in real attacks — it skips the normal queue entirely and goes straight to the Security Champion, regardless of severity rating or whether a rule already exists. This is the one case with a real clock attached: once CRA fully applies, actively-exploited vulnerabilities carry mandatory reporting deadlines, so treating this as routine backlog isn't an option.</p>
+      </div>
+
       <div class="diagram">
         <svg viewBox="0 0 1020 480" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -734,6 +742,7 @@
             <tr><td>Falco + Falcosidekick</td><td>Live Environment</td><td>Real-time anomaly and threat alerts routed to incident response.</td><td>OpenObserve</td></tr>
             <tr><td>Tetragon</td><td>Kernel & Process Integrity</td><td>Execution lineage, namespace logs, kernel-enforced <code>SIGKILL</code> trails.</td><td>OpenObserve</td></tr>
             <tr><td>Velero & etcd Snapshots</td><td>Disaster Recovery</td><td>Successful restore-drill logs as Proof of Protection.</td><td>SecObserve</td></tr>
+            <tr><td>VEX Statements</td><td>Vulnerability Impact</td><td>A formal record of why a flagged CVE does or doesn't actually affect us — so "we saw it and made a call" is provable, not just assumed.</td><td>SecObserve</td></tr>
           </tbody>
         </table>
       </div>
@@ -1001,6 +1010,7 @@
         <div class="gterm"><dt>ASVS</dt><dd>Application Security Verification Standard</dd></div>
         <div class="gterm"><dt>CI/CD</dt><dd>Continuous Integration / Deployment</dd></div>
         <div class="gterm"><dt>CIS</dt><dd>Center for Internet Security</dd></div>
+        <div class="gterm"><dt>CRA</dt><dd>Cyber Resilience Act (EU)</dd></div>
         <div class="gterm"><dt>CSP</dt><dd>Content Security Policy</dd></div>
         <div class="gterm"><dt>CVE</dt><dd>Common Vulnerabilities and Exposures</dd></div>
         <div class="gterm"><dt>DAST</dt><dd>Dynamic Application Security Testing</dd></div>
