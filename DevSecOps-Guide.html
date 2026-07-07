@@ -362,6 +362,7 @@
 
       <h3>Pipeline Controls</h3>
       <p><b>SBOM Generation</b> — Every CI build must generate a CycloneDX or SPDX SBOM artifact, stored alongside the image. That same artifact is what makes app-level EOL checking free: the framework versions are already listed in it, so checking Django, Spring, or Express against endoflife.date needs no new scan — just a lookup against data you already produce.</p>
+      <p class="sub"><i>Optional, if you want more confidence in your SBOMs later:</i> a free tool called <b>sbomqs</b> can score how complete and well-formed a generated SBOM actually is. Not something to set up on day one — but worth a look if you ever suspect an SBOM is missing components rather than just showing "zero vulnerabilities found."</p>
       <p><b>Branch-Protection Rules</b> — Codified via Terraform or similar:</p>
       <ul>
         <li>Requires signed commits</li>
