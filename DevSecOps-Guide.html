@@ -943,8 +943,7 @@
     <!-- CHAPTER 9 -->
     <section class="chapter" id="ch9">
       <div class="chapter-head"><div class="chapter-num">09</div><h2>Step-by-Step Implementation Checklist</h2></div>
-      <p class="sub">Progressive milestones — platform stability while incrementally shifting security left and locking down runtime.</p>
-      <p class="sub"><i>Note on ordering:</i> these steps are sequenced by rollout dependency — what needs to exist before the next thing can safely go in — not by the order the chapters above were presented in. For example, Image Provenance shows up as step 6 here even though container images were covered back in Chapter 3, because signing/provenance enforcement depends on several earlier steps (Vault, admission control) being in place first. Each phase title links back to the chapter with the full explanation.</p>
+      <p class="sub"><i>Note on ordering:</i> these steps follow rollout dependency, not the chapter order above — e.g., Image Provenance is step 6 even though Chapter 3 covered container images, because it depends on Vault and admission control being in place first. Each phase title links back to its source chapter.</p>
 
       <div class="roadmap">
         <div class="roadmap-line"></div>
