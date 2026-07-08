@@ -259,7 +259,7 @@
     <div class="hero">
       <p class="eyebrow">Internal Engineering Handbook</p>
       <h1 class="title">The Developer's Guide<br>to DevSecOps</h1>
-      <p class="lede">A secure, automated pipeline for our on-premise Kubernetes data platform — zero dollars in licensing, built on NIST, OWASP, and CIS.</p>
+      <p class="lede">A secure, automated pipeline for our on-premise Kubernetes data platform — zero cost in licensing, built on NIST, OWASP, and CIS.</p>
 
       <div class="mission">
         <span class="tag">GOAL</span>
@@ -298,7 +298,7 @@
       <ul>
         <li><b>Security Training</b> — Every engineer completes annual secure coding training (OWASP Top 10) before getting CI/CD pipeline access.</li>
         <li><b>Lock Every Account</b> — MFA is mandatory on every SCM (GitHub/GitLab) account. Stolen or reused passwords are still the #1 way real breaches start, and this one setting blocks most of them before any tool below ever fires.</li>
-        <li><b>Vet New Dependencies Before They Land</b> — Adding a brand-new third-party library takes 30 seconds of sanity-checking first: check the repo's last commit date and open issues, glance at its GitHub "Security" tab for known advisories, and run a quick <code>dep-scan</code> against it — the same tool our build pipeline already uses, works the same way regardless of language. Catching a bad dependency here is far cheaper than removing it after five other packages depend on it.</li>
+        <li><b>Vet New Dependencies Before They Land</b> — Adding a brand-new third-party library takes 30 seconds of sanity-checking first: check the repo's last commit date and open issues, glance at its GitHub "Security" tab for known advisories, look up its <a href="https://deps.dev" target="_blank" rel="noopener">OpenSSF Scorecard</a> on deps.dev for a single 0–10 trust signal, and run a quick <code>dep-scan</code> against it — the same tool our build pipeline already uses, works the same way regardless of language. Catching a bad dependency here is far cheaper than removing it after five other packages depend on it.</li>
         <li><b>Don't Skip the Gates</b> — Bypassing automated checks (Checkov, Gitleaks, Kyverno) is forbidden unless you have a documented exception signed by a Security Lead.</li>
         <li><b>Treat Security Rules Like Code</b> — Changing a security rule (Kyverno policy, Falco alert) goes through the same PR process as application code: two reviewers, one signed commit.</li>
         <li><b>Make It Safe to Report Bugs</b> — <code>SECURITY.md</code> in every repo, <code>security.txt</code> on every live app, so researchers report privately.</li>
@@ -936,6 +936,29 @@
         <li><b>Identity and Audit Trail</b> — dedicated service account, logged with <code>service=ai-agent</code>, human approval required for production changes.</li>
         <li><b>Agent-Generated Code Review Checklist</b> — secrets scanned, CVEs triaged, policy changes reviewed, humans check off before merge.</li>
       </ul>
+
+      <h3>Securing Your Own AI Assistant <span class="sub-inline">— what to put in your Claude.md / Copilot / Cursor rules file</span></h3>
+      <p class="sub">Everything above covers AI agents acting inside our pipeline. But most of us also use an AI assistant directly in the IDE every day — Copilot, Cursor, Claude Code, and similar. That assistant reads a project instructions file (<code>CLAUDE.md</code>, a Copilot instructions file, Cursor rules, etc.), and a few lines in that file measurably reduce the vulnerabilities it suggests.</p>
+
+      <div class="callout callout--dev">
+        <span class="tag">Watch For: Package Hallucination</span>
+        <p>AI assistants sometimes suggest a dependency that doesn't actually exist. Attackers know this and pre-register those exact hallucinated names on npm/PyPI with malicious code inside — a technique called <b>"slopsquatting."</b> This is one more reason the <b>Vet New Dependencies</b> habit from Chapter 1 applies double to anything an AI suggests: don't add a package just because the assistant named it with confidence.</p>
+      </div>
+
+      <p class="sub">A starting instructions snippet worth adding to your project's AI assistant config:</p>
+      <ul>
+        <li>Validate all inputs; use parameterized queries, never string-built SQL.</li>
+        <li>Never hard-code secrets, API keys, or passwords — use environment variables or Vault references.</li>
+        <li>Handle errors gracefully; don't leak stack traces or internal details in user-facing messages.</li>
+        <li>Prefer well-known, actively-maintained libraries; never add a dependency you can't verify actually exists.</li>
+        <li>Pin container images by digest, not tag; use minimal/distroless base images (see Chapter 3).</li>
+        <li>Flag any AI-generated placeholder or <code>TODO</code> code as needing a security review before merge.</li>
+      </ul>
+
+      <div class="callout callout--info">
+        <span class="tag">Free Technique: Ask It to Check Its Own Work</span>
+        <p>After the AI generates code, ask: <i>"Review your previous answer and find problems with it,"</i> then <i>"Based on the problems you found, improve your answer."</i> This two-step loop (sometimes called RCI — Recursive Criticism and Improvement) measurably reduces vulnerabilities, costs nothing, and takes 30 seconds.</p>
+      </div>
     </section>
 
     <hr class="div">
