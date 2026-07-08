@@ -298,7 +298,7 @@
       <ul>
         <li><b>Security Training</b> — Every engineer completes annual secure coding training (OWASP Top 10) before getting CI/CD pipeline access.</li>
         <li><b>Lock Every Account</b> — MFA is mandatory on every SCM (GitHub/GitLab) account. Stolen or reused passwords are still the #1 way real breaches start, and this one setting blocks most of them before any tool below ever fires.</li>
-        <li><b>Vet New Dependencies Before They Land</b> — Adding a brand-new third-party library takes 30 seconds of sanity-checking first: is it actively maintained, does the latest release look recent and healthy, and does it already carry known critical CVEs. Catching a bad dependency here is far cheaper than removing it after five other packages depend on it.</li>
+        <li><b>Vet New Dependencies Before They Land</b> — Adding a brand-new third-party library takes 30 seconds of sanity-checking first: check the repo's last commit date and open issues, glance at its GitHub "Security" tab for known advisories, and run a quick <code>npm audit</code> / <code>pip-audit</code> / <code>osv-scanner</code> against it. Catching a bad dependency here is far cheaper than removing it after five other packages depend on it.</li>
         <li><b>Don't Skip the Gates</b> — Bypassing automated checks (Checkov, Gitleaks, Kyverno) is forbidden unless you have a documented exception signed by a Security Lead.</li>
         <li><b>Treat Security Rules Like Code</b> — Changing a security rule (Kyverno policy, Falco alert) goes through the same PR process as application code: two reviewers, one signed commit.</li>
         <li><b>Make It Safe to Report Bugs</b> — <code>SECURITY.md</code> in every repo, <code>security.txt</code> on every live app, so researchers report privately.</li>
@@ -319,7 +319,7 @@
         <li>A clear description</li>
         <li>Mitigations in place</li>
         <li>A time-bound expiry (e.g., 30 days)</li>
-        <li>An automatic SecObserve ticket</li>
+        <li>An automatic ticket in SecObserve — our central vulnerability dashboard, covered fully in Chapter 5</li>
       </ul>
 
       <h3>Annual Tabletop Exercise</h3>
@@ -362,7 +362,7 @@
 
       <h3>Pipeline Controls</h3>
       <p><b>SBOM Generation</b> — Every CI build must generate a CycloneDX or SPDX SBOM artifact, stored alongside the image. That same artifact is what makes app-level EOL checking free: the framework versions are already listed in it, so checking Django, Spring, or Express against endoflife.date needs no new scan — just a lookup against data you already produce.</p>
-      <p class="sub"><i>Optional, if you want more confidence in your SBOMs later:</i> a free tool called <b>sbomqs</b> can score how complete and well-formed a generated SBOM actually is. Not something to set up on day one — but worth a look if you ever suspect an SBOM is missing components rather than just showing "zero vulnerabilities found."</p>
+      <p class="sub"><i>Optional, if you want more confidence in your SBOMs later:</i> a free tool called <b>sbomqs</b> can score how complete and well-formed a generated SBOM actually is — <code>sbomqs score sbom.json</code>. Not something to set up on day one — but worth a look if you ever suspect an SBOM is missing components rather than just showing "zero vulnerabilities found."</p>
       <p><b>Branch-Protection Rules</b> — Codified via Terraform or similar:</p>
       <ul>
         <li>Requires signed commits</li>
@@ -429,6 +429,24 @@
         <li><b>In CI/CD</b> — the unskippable automated gate. A hardcoded password or critical flaw <i>will</i> block the merge.</li>
       </ol>
       <p class="sub"><b>Repo Rules:</b> signed commits, a CODEOWNERS file, a shared <code>.gitignore</code> baseline, and a second reviewer on every PR.</p>
+
+      <div class="callout callout--info">
+        <span class="tag">What "Blocking" Actually Means</span>
+        <p>"Unskippable gate" doesn't mean one tool stops everything — three different checkpoints block three different things, each enforced by a different mechanism underneath:</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Checkpoint</th><th>What Gets Blocked</th><th>Enforced By</th></tr></thead>
+          <tbody>
+            <tr><td>Pre-commit hooks</td><td>The <code>git commit</code> itself, on your laptop</td><td>Local git hook (<code>.pre-commit-config.yaml</code>) — a failing check makes <code>git commit</code> exit with an error before the commit is even created</td></tr>
+            <tr><td>CI checks (Checkov, Gitleaks, dep-scan)</td><td>The merge, not the commit — the commit can still exist on a branch</td><td>GitHub branch protection — configured to require these checks pass before the "Merge" button is clickable at all</td></tr>
+            <tr><td>Kyverno</td><td>The deployment — has nothing to do with git or PRs</td><td>Kubernetes' own admission webhook system — intercepts <code>kubectl apply</code> at the API server and rejects it outright if the manifest violates policy</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="sub">In short: <b>commit → merge → deploy</b> is one continuous chain, but each arrow in that chain has its own gatekeeper. A change has to clear all three to reach production.</p>
 
       <div class="diagram">
         <svg viewBox="0 0 760 380" xmlns="http://www.w3.org/2000/svg">
@@ -530,8 +548,13 @@
 
       <p class="sub">This chapter maps every tool from Chapters 2–4 to the zone it runs in, then unpacks the two hubs everything ultimately reports into — and, since SecObserve is the one developers touch daily, a closer look at how its CVE workflow actually runs day-to-day.</p>
 
+      <div class="callout callout--info">
+        <span class="tag">In Short</span>
+        <p>Every tool from Chapters 2–4 runs at a specific checkpoint on the way from your laptop to a live server. This chapter shows where each one sits, the two dashboards everything eventually reports to, and exactly what happens when a vulnerability is found — you don't need to memorize every tool, just trust that your code passes through these checkpoints automatically.</p>
+      </div>
+
       <h3>Where Each Tool Runs</h3>
-      <p class="sub">Every scanner from Chapters 2–4 runs somewhere specific, catching a specific class of problem at the point where fixing it is still cheap. Here's the path from writing code to a running pod, zone by zone:</p>
+      <p class="sub">Think of a <b>zone</b> as a checkpoint — a specific place in the journey from writing code to a running pod where a specific kind of check happens. Every scanner from Chapters 2–4 runs in one of these, catching a specific class of problem at the point where fixing it is still cheap. Here's that path, checkpoint by checkpoint:</p>
 <div class="zone-grid">
         <div class="zone"><span class="zname">Planning Zone</span><p>OWASP ASVS and Threat Dragon figure out what needs to be secured before we start typing — the checklist and threat model a PR gets judged against later.</p></div>
         <div class="zone"><span class="zname">Workstation Zone — Your Laptop</span><p>SonarLint, Bearer CLI, Bandit, gosec, ShellCheck, and Gitleaks keep your local environment safe, catching the same classes of bug CI would — just before you've pushed anything.</p></div>
@@ -540,15 +563,16 @@
         <div class="zone" style="grid-column:1 / -1;"><span class="zname">Edge Zone — Ingress / Load Balancer</span><p>Before traffic reaches the cluster we enforce HTTPS redirect, HSTS, CSP, and TLS 1.3, and publish <code>security.txt</code>. Baseline config, not a scan — set once per app, closing the exact holes ZAP would otherwise keep flagging in Staging.</p></div>
       </div>
 
-      <p class="sub" style="margin-top:14px;">Everything above catches problems that are already <i>known</i> — a bad pattern, a leaked secret, a missing header. Once the workload is actually deployed, a different class of problem shows up: things that were fine at build time but aren't anymore, and behavior that only reveals itself under real traffic. Two more zones keep watching for that:</p>
+      <p class="sub" style="margin-top:14px;">Everything above catches problems we already know about — a bad pattern, a leaked secret, a missing header. But once the workload is live, a different kind of problem can appear: some things were fine at build time but aren't anymore, and others only show up once there's real traffic hitting the app. Two more zones keep watching for that:</p>
 <div class="zone-grid" style="margin-top:12px;">
-        <div class="zone" style="grid-column:1 / -1;"><span class="zname">Live Kubernetes Zone</span><p>Kyverno enforces rules at the admission door. Falco is our broad monitoring camera across user space. Tetragon hooks into the Linux kernel via eBPF to enforce zero-trust runtime boundaries and instantly terminate unauthorized processes. Cilium/Calico segments the network. A scheduled <code>dep-scan</code> job continuously re-scans running images for newly disclosed CVEs and feeds results back into SecObserve — see the CVE Lifecycle below.</p></div>
+        <div class="zone" style="grid-column:1 / -1;"><span class="zname">Live Kubernetes Zone</span><p>Kyverno enforces rules at the <b>admission door</b> — think of it as a bouncer checking ID at the entrance, the one moment before a workload is allowed to actually start running. Falco is our broad monitoring camera across user space. Tetragon hooks into the Linux kernel via eBPF to enforce zero-trust runtime boundaries and instantly terminate unauthorized processes — a <b>trust boundary</b> here just means "the line between code we've already checked and code we haven't." Cilium/Calico segments the network. A scheduled <code>dep-scan</code> job continuously re-scans running images for newly disclosed CVEs and feeds results back into SecObserve — see the CVE Lifecycle below.</p></div>
         <div class="zone" style="grid-column:1 / -1;"><span class="zname">Compliance</span><p>OpenSCAP + STIG Viewer keeps the underlying host operating systems up to code and produces audit-ready reports auditors already recognize, on a cadence independent of any single app's release schedule. The same pass checks that host OS version itself against endoflife.date — a node can be fully patched and still be running a release that's about to lose support entirely.</p></div>
       </div>
 
-      <p class="sub" style="margin-top:14px;">Nine zones, but only two places any of it actually gets read. Static findings — a scan result, a CVE, a config drift — and live telemetry — a syscall, a rejected deployment, a kernel-enforced kill — are fundamentally different shapes of data, so rather than force them into one tool, we split them across two purpose-built hubs.</p>
+      <p class="sub" style="margin-top:14px;">Nine zones, but only two places where any of it actually gets read. Static findings (a scan result, a CVE, a config drift) and live telemetry (a syscall, a rejected deployment, a kernel-enforced kill) are very different shapes of data. So instead of forcing them into one tool, we split them across two purpose-built hubs.</p>
 
       <h3>Management Hubs</h3>
+      <p class="sub"><i>In plain terms:</i> think of SecObserve as your inbox for things found before shipping, and OpenObserve as the live camera feed for what's happening right now.</p>
 <div class="hub-card sec">
         <span class="hname">SecObserve — Static Vulnerability Hub</span>
         <p>Our central portal for point-in-time security scans, container vulnerability databases, and build-time compliance scores. Every scanner from the Pipeline Zone reports here, so there's one queue to check rather than nine.</p>
@@ -568,15 +592,24 @@
 
 
 <h3>The CVE Lifecycle <span class="sub-inline">— management by exception, not by meeting</span></h3>
-      <p class="sub">Here's how a CVE actually moves through the system, start to finish. A commit — often just Renovate bumping a dependency — triggers a build-time scan, and SecObserve checks the result against every rule it already knows. If the finding is already accepted or matches something on file, it clears automatically; no one is notified, no one has to look at it. Only a genuinely new HIGH or CRITICAL finding with no matching rule breaks that pattern, dropping down to the Security Champion for one decision: fix it, suppress it with a reason, or turn that reason into a rule so it never escalates again. From there, Rollout splits in two — non-productive deployments go through regardless of open findings, productive ones only once the verdict is clean. And once something is actually running, a scheduled <code>dep-scan</code> job keeps re-checking it against newly disclosed CVEs, feeding straight back into the same rule engine rather than starting a separate process.</p>
+      <p class="sub"><i>30-second version:</i> most CVEs clear themselves automatically. Only a genuinely new HIGH/CRITICAL finding with no existing rule ever reaches a human.</p>
+      <p class="sub"><b>How it actually works:</b></p>
+      <ol>
+        <li><b>Trigger</b> — A commit (e.g., an automated dependency bump) kicks off a build-time scan.</li>
+        <li><b>Auto-check</b> — SecObserve compares the result against every rule already on file. Match found → it clears silently. No alert, no ticket, nobody looks at it.</li>
+        <li><b>Escalation (rare)</b> — Only a new HIGH/CRITICAL finding with <i>no</i> matching rule breaks the pattern. It goes to the Security Champion for one call: fix it, suppress it with a reason, or turn that reason into a rule so it never escalates again.</li>
+        <li><b>Rollout gate</b> — Non-production deployments always proceed, regardless of open findings. Production deployments only proceed once the verdict is clean.</li>
+        <li><b>Ongoing</b> — A scheduled <code>dep-scan</code> job keeps re-checking live deployments against newly disclosed CVEs, feeding results back into the same rule engine — not a separate process.</li>
+      </ol>
 
       <div class="callout callout--rule">
         <span class="tag">One Exception to "No One Has to Look"</span>
         <p>If a newly disclosed CVE is flagged as <b>actively exploited in the wild</b> — not just theoretically possible, but actually being used in real attacks — it skips the normal queue entirely and goes straight to the Security Champion, regardless of severity rating or whether a rule already exists. This is the one case with a real clock attached: once CRA fully applies, actively-exploited vulnerabilities carry mandatory reporting deadlines, so treating this as routine backlog isn't an option.</p>
       </div>
 
+      <p class="sub" style="margin-bottom:8px;"><i>How to read it:</i> follow the grey arrows left to right for the normal path — most CVEs never leave that line. The colored dashed lines are the exceptions, explained in the legend below the diagram.</p>
       <div class="diagram">
-        <svg viewBox="0 0 1020 480" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 1020 500" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <marker id="arrowCve3" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#5A6480"/></marker>
           </defs>
@@ -606,7 +639,7 @@
           <!-- Commit -->
           <rect x="20" y="140" width="140" height="64" rx="10" fill="#161F30" stroke="#F97316" stroke-width="1.5"/>
           <text x="90" y="168" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Commit</text>
-          <text x="90" y="187" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">Renovate auto-bumps</text>
+          <text x="90" y="187" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">dependency bump</text>
 
           <!-- Build & Scan -->
           <rect x="175" y="140" width="190" height="64" rx="10" fill="#161F30" stroke="#3B82F6" stroke-width="1.5"/>
@@ -643,8 +676,10 @@
           <text x="80" y="444" fill="#95A1BC" font-family="Inter" font-size="12">automatic flow</text>
           <line x1="290" y1="440" x2="322" y2="440" stroke="#F59E0B" stroke-width="2.5"/>
           <text x="330" y="444" fill="#95A1BC" font-family="Inter" font-size="12">escalation (rare)</text>
-          <line x1="560" y1="440" x2="592" y2="440" stroke="#94A3B8" stroke-width="2.5" stroke-dasharray="6 5"/>
-          <text x="600" y="444" fill="#95A1BC" font-family="Inter" font-size="12">feedback loop</text>
+          <line x1="40" y1="470" x2="72" y2="470" stroke="#94A3B8" stroke-width="2.5" stroke-dasharray="6 5"/>
+          <text x="80" y="474" fill="#95A1BC" font-family="Inter" font-size="12">no easy fix — back to Commit</text>
+          <line x1="380" y1="470" x2="412" y2="470" stroke="#3B82F6" stroke-width="2.5" stroke-dasharray="6 5"/>
+          <text x="420" y="474" fill="#95A1BC" font-family="Inter" font-size="12">scheduled rescan (already running)</text>
         </svg>
         <p class="diagram-caption">Most artifacts flow straight through, auto-cleared by rules already on file. Only a new HIGH/CRITICAL finding with no matching rule ever reaches the Security Champion — and resolving it once means the rule engine catches every future occurrence automatically.</p>
       </div>
@@ -661,8 +696,12 @@
 
       <p class="sub">One note on the CVE workflow above before moving on: automation bots might suggest fixes on your PRs, but only human engineers can approve them — the Security Champion's judgment call is never automated away, only the noise around it is.</p>
 
-<h3>Runtime Telemetry Flow</h3>
-      <p class="sub">SecObserve covers point-in-time findings, but a running cluster generates a constant stream of logs and metrics too — every Kyverno rejection, every Falco alert, every Tetragon kill needs somewhere to land. That's OpenObserve's job. Logs and metrics split at the source into two lightweight collectors to maximize performance, then converge into one unified, low-overhead analytics backend rather than the heavier ELK/Loki + Grafana stack this replaced:</p>
+<h3>Runtime Telemetry Flow <span class="sub-inline">— platform-team reference</span></h3>
+      <div class="callout callout--info">
+        <span class="tag">Skip Ahead If You Just Need the Takeaway</span>
+        <p>As a developer you don't configure any of this. The short version: <b>every Kyverno rejection, Falco alert, and Tetragon kill is captured automatically by OpenObserve</b> — nothing gets lost. The rest of this section is for anyone curious how that actually works under the hood.</p>
+      </div>
+      <p class="sub">Logs and metrics split at the source into two lightweight collectors, then converge into one unified, low-overhead analytics backend — replacing the heavier ELK/Loki + Grafana stack this used to run on:</p>
 
       <div class="diagram">
         <svg viewBox="0 0 700 480" xmlns="http://www.w3.org/2000/svg">
@@ -708,11 +747,13 @@
         <p class="diagram-caption">A lightweight Log Shipper and the OpenObserve Collector converge into one analytics backend.</p>
       </div>
 
-      <h3>Infrastructure Controls</h3>
-      <p class="sub">Three standing controls keep the two hubs above trustworthy and the network they watch actually segmented — worth having in place before you rely on either dashboard during an incident:</p>
-      <p><b>Network Segmentation Diagram</b> — Ingress → DMZ → App tier → Data tier, with Cilium/Calico policy placement marked. Without this on paper somewhere, "segmented" is just a claim; with it, a reviewer can check a proposed change against the actual trust boundaries in minutes.</p>
-      <p><b>Explicit Logging of Policy Decisions</b> — all Kyverno policy changes, Falco runtime logs, and Tetragon kernel termination alerts stream directly into OpenObserve via the team's chosen log shipper. If a deployment gets rejected or a process gets killed, that decision is queryable, not just something that happened and vanished.</p>
-      <p><b>Policy Review Cadence</b> — cluster access rules and kernel tracing policies are reviewed annually against current CIS and ASVS baselines, so the rules enforcing zones like Edge and Live Kubernetes don't quietly drift out of date while the standards they're based on keep evolving.</p>
+      <h3>Infrastructure Controls <span class="sub-inline">— platform-team reference</span></h3>
+      <p class="sub">Three standing controls keep the hubs above trustworthy. You don't manage these day to day — just know they exist:</p>
+      <ul>
+        <li><b>Network segmentation is documented, not just assumed</b> — Ingress → DMZ → App tier → Data tier, with Cilium/Calico policy placement marked on paper, so a reviewer can check a proposed change against the real trust boundaries in minutes.</li>
+        <li><b>Every policy decision is logged</b> — a rejected deployment or a killed process is queryable in OpenObserve, never just something that happened and vanished.</li>
+        <li><b>Policies are reviewed annually</b> against current CIS/ASVS baselines, so the rules enforcing zones like Edge and Live Kubernetes don't quietly drift out of date.</li>
+      </ul>
     </section>
 
     <hr class="div">
@@ -818,6 +859,7 @@
     <!-- CHAPTER 8 -->
     <section class="chapter" id="ch8">
       <div class="chapter-head"><div class="chapter-num">08</div><h2>AI Assistants <span class="sub-inline">— helping, not taking over</span></h2></div>
+      <p class="sub"><i>In plain terms:</i> the AI can suggest a fix, draft a policy, or group related alerts together — but it never gets to click the final "approve," "merge," or "deploy" button. That's always a person.</p>
       <p>We use AI agents to move faster, but <b>humans are always in control of the big decisions</b>. This section is the floor, not the ceiling — anchored to the <b>OWASP Top 10 for Agentic Applications (ASI Top 10)</b> and two guiding ideas: <b>Least-Agency</b> (only the autonomy a task actually needs) and <b>Strong Observability</b> (always know what it did, why, under which identity).</p>
 
       <h3>The Agent Responsibility Model</h3>
@@ -902,6 +944,8 @@
     <section class="chapter" id="ch9">
       <div class="chapter-head"><div class="chapter-num">09</div><h2>Step-by-Step Implementation Checklist</h2></div>
       <p class="sub">Progressive milestones — platform stability while incrementally shifting security left and locking down runtime.</p>
+      <p class="sub"><i>Note on ordering:</i> these steps are sequenced by rollout dependency — what needs to exist before the next thing can work — not by the order the chapters above were presented in. For example, Image Provenance shows up as step 6 here even though container images were covered back in Chapter 3, because signing/provenance enforcement depends on several earlier steps (Vault, admission control) being in place first.</p>
+      <p class="sub"><i>Note on ordering:</i> these steps are sequenced by rollout dependency — what needs to exist before the next thing can safely go in — not by the order chapters appear above. Each item links back to the chapter with the full explanation.</p>
 
       <div class="roadmap">
         <div class="roadmap-line"></div>
@@ -909,7 +953,7 @@
         <div class="step">
           <div class="step-marker">1</div>
           <div class="step-content">
-            <div class="step-title">Foundations & Code Security Gatekeeping</div>
+            <div class="step-title">Foundations & Code Security Gatekeeping <a href="#ch1" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.1 & Ch.4</a></div>
             <ul class="step-list">
               <li><span class="step-check"></span><span><b>Org-Wide MFA</b> — across all SCM accounts.</span></li>
               <li><span class="step-check"></span><span><b>Branch Protection</b> — signed commits, two reviews, CODEOWNERS validation.</span></li>
@@ -923,7 +967,7 @@
         <div class="step">
           <div class="step-marker">2</div>
           <div class="step-content">
-            <div class="step-title">CI/CD Guardrails & Software Supply Chain</div>
+            <div class="step-title">CI/CD Guardrails & Software Supply Chain <a href="#ch2" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.2</a></div>
             <ul class="step-list">
               <li><span class="step-check"></span><span><b>Pipeline Manifest Scanning</b> — Checkov + Gitleaks in unskippable CI loops.</span></li>
               <li><span class="step-check"></span><span><b>Dependency Triage</b> — OWASP dep-scan <code>--deep</code> in build pipelines.</span></li>
@@ -936,7 +980,7 @@
         <div class="step">
           <div class="step-marker">3</div>
           <div class="step-content">
-            <div class="step-title">Core Platform Ingress & Cluster Admission</div>
+            <div class="step-title">Core Platform Ingress & Cluster Admission <a href="#ch5" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.5</a></div>
             <ul class="step-list">
               <li><span class="step-check"></span><span><b>Edge Hardening</b> — HTTPS redirect, HSTS, CSP, TLS 1.3 at ingress.</span></li>
               <li><span class="step-check"></span><span><b>Vulnerability Disclosure</b> — <code>SECURITY.md</code> per repo, <code>security.txt</code> on live properties.</span></li>
@@ -949,7 +993,7 @@
         <div class="step">
           <div class="step-marker">4</div>
           <div class="step-content">
-            <div class="step-title">Unified Observability Infrastructure</div>
+            <div class="step-title">Unified Observability Infrastructure <a href="#ch5" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.5</a></div>
             <ul class="step-list">
               <li><span class="step-check"></span><span><b>Log Optimization Engine</b> — deploy OpenObserve via Helm, compressed append-only storage or MinIO.</span></li>
               <li><span class="step-check"></span><span><b>Platform Metric Scraping</b> — OpenObserve Collector DaemonSet across the cluster.</span></li>
@@ -961,7 +1005,7 @@
         <div class="step">
           <div class="step-marker">5</div>
           <div class="step-content">
-            <div class="step-title">Runtime Shielding & Kernel Enforcement</div>
+            <div class="step-title">Runtime Shielding & Kernel Enforcement <a href="#ch5" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.5</a></div>
             <ul class="step-list">
               <li><span class="step-check"></span><span><b>Behavioral Auditing</b> — Falco + Falcosidekick, alerts to team messaging.</span></li>
               <li><span class="step-check"></span><span><b>Kernel Security Engine</b> — deploy Tetragon across all nodes.</span></li>
@@ -974,7 +1018,7 @@
         <div class="step">
           <div class="step-marker">6</div>
           <div class="step-content">
-            <div class="step-title">Image Provenance & Platform Hardening</div>
+            <div class="step-title">Image Provenance & Platform Hardening <a href="#ch3" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.3</a></div>
             <ul class="step-list">
               <li><span class="step-check"></span><span><b>Secrets Lifecycle</b> — roll out HashiCorp Vault, remove plain-text configs.</span></li>
               <li><span class="step-check"></span><span><b>Image Trust Framework</b> — Cosign signing + Kyverno key validation.</span></li>
@@ -1018,16 +1062,24 @@
         <div class="gterm"><dt>HSTS</dt><dd>HTTP Strict Transport Security</dd></div>
         <div class="gterm"><dt>IaC</dt><dd>Infrastructure as Code</dd></div>
         <div class="gterm"><dt>LLM</dt><dd>Large Language Model</dd></div>
+        <div class="gterm"><dt>DMZ</dt><dd>Demilitarized Zone (a buffer network between untrusted and trusted zones)</dd></div>
+        <div class="gterm"><dt>eBPF</dt><dd>Extended Berkeley Packet Filter (lets tools like Tetragon watch/control the kernel safely)</dd></div>
         <div class="gterm"><dt>MFA</dt><dd>Multi-Factor Authentication</dd></div>
+        <div class="gterm"><dt>OWASP</dt><dd>Open Web Application Security Project (nonprofit behind most free security standards we use)</dd></div>
+        <div class="gterm"><dt>PII</dt><dd>Personally Identifiable Information</dd></div>
         <div class="gterm"><dt>PR</dt><dd>Pull Request</dd></div>
         <div class="gterm"><dt>RBAC</dt><dd>Role-Based Access Control</dd></div>
+        <div class="gterm"><dt>RCA</dt><dd>Root Cause Analysis</dd></div>
         <div class="gterm"><dt>RPO</dt><dd>Recovery Point Objective</dd></div>
         <div class="gterm"><dt>RSL</dt><dd>Recovery Service Level</dd></div>
         <div class="gterm"><dt>SAST</dt><dd>Static Application Security Testing</dd></div>
         <div class="gterm"><dt>SBOM</dt><dd>Software Bill of Materials</dd></div>
         <div class="gterm"><dt>SCA</dt><dd>Software Composition Analysis</dd></div>
+        <div class="gterm"><dt>SLA</dt><dd>Service Level Agreement</dd></div>
         <div class="gterm"><dt>STIG</dt><dd>Security Technical Implementation Guide</dd></div>
+        <div class="gterm"><dt>TLS</dt><dd>Transport Layer Security</dd></div>
         <div class="gterm"><dt>VEX</dt><dd>Vulnerability Exploitability eXchange</dd></div>
+        <div class="gterm"><dt>WORM</dt><dd>Write Once, Read Many (storage that can't be edited or deleted)</dd></div>
       </dl>
     </section>
 
