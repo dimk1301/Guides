@@ -850,7 +850,7 @@
       <h3>Resilience Controls</h3>
       <ul>
         <li><b>Backup Test Automation</b> — quarterly restore tests, automated via scripts, logged in SecObserve with pass/fail status.</li>
-        <li><b>RPO/RSL Definitions</b> — Critical: RPO &lt; 15 min, RSL &lt; 4 hrs. Non-critical: RPO &lt; 24 hrs, RSL &lt; 24 hrs.</li>
+        <li><b>RPO/RTO Definitions</b> — Critical: RPO &lt; 15 min, RTO &lt; 4 hrs. Non-critical: RPO &lt; 24 hrs, RTO &lt; 24 hrs.</li>
       </ul>
     </section>
 
@@ -944,8 +944,7 @@
     <section class="chapter" id="ch9">
       <div class="chapter-head"><div class="chapter-num">09</div><h2>Step-by-Step Implementation Checklist</h2></div>
       <p class="sub">Progressive milestones — platform stability while incrementally shifting security left and locking down runtime.</p>
-      <p class="sub"><i>Note on ordering:</i> these steps are sequenced by rollout dependency — what needs to exist before the next thing can work — not by the order the chapters above were presented in. For example, Image Provenance shows up as step 6 here even though container images were covered back in Chapter 3, because signing/provenance enforcement depends on several earlier steps (Vault, admission control) being in place first.</p>
-      <p class="sub"><i>Note on ordering:</i> these steps are sequenced by rollout dependency — what needs to exist before the next thing can safely go in — not by the order chapters appear above. Each item links back to the chapter with the full explanation.</p>
+      <p class="sub"><i>Note on ordering:</i> these steps are sequenced by rollout dependency — what needs to exist before the next thing can safely go in — not by the order the chapters above were presented in. For example, Image Provenance shows up as step 6 here even though container images were covered back in Chapter 3, because signing/provenance enforcement depends on several earlier steps (Vault, admission control) being in place first. Each phase title links back to the chapter with the full explanation.</p>
 
       <div class="roadmap">
         <div class="roadmap-line"></div>
@@ -954,6 +953,7 @@
           <div class="step-marker">1</div>
           <div class="step-content">
             <div class="step-title">Foundations & Code Security Gatekeeping <a href="#ch1" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.1 & Ch.4</a></div>
+            <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> make sure a bad commit can't quietly slip into the codebase. <span style="color:var(--text-faint);font-size:12px;">— Quick win, mostly configuration</span></p>
             <ul class="step-list">
               <li><span class="step-check"></span><span><b>Org-Wide MFA</b> — across all SCM accounts.</span></li>
               <li><span class="step-check"></span><span><b>Branch Protection</b> — signed commits, two reviews, CODEOWNERS validation.</span></li>
@@ -968,6 +968,7 @@
           <div class="step-marker">2</div>
           <div class="step-content">
             <div class="step-title">CI/CD Guardrails & Software Supply Chain <a href="#ch2" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.2</a></div>
+            <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> catch bad dependencies and missing SBOMs before they reach a build artifact. <span style="color:var(--text-faint);font-size:12px;">— 1–2 weeks</span></p>
             <ul class="step-list">
               <li><span class="step-check"></span><span><b>Pipeline Manifest Scanning</b> — Checkov + Gitleaks in unskippable CI loops.</span></li>
               <li><span class="step-check"></span><span><b>Dependency Triage</b> — OWASP dep-scan <code>--deep</code> in build pipelines.</span></li>
@@ -981,6 +982,7 @@
           <div class="step-marker">3</div>
           <div class="step-content">
             <div class="step-title">Core Platform Ingress & Cluster Admission <a href="#ch5" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.5</a></div>
+            <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> stop untrusted traffic and non-compliant deployments at the front door. <span style="color:var(--text-faint);font-size:12px;">— 1–2 weeks</span></p>
             <ul class="step-list">
               <li><span class="step-check"></span><span><b>Edge Hardening</b> — HTTPS redirect, HSTS, CSP, TLS 1.3 at ingress.</span></li>
               <li><span class="step-check"></span><span><b>Vulnerability Disclosure</b> — <code>SECURITY.md</code> per repo, <code>security.txt</code> on live properties.</span></li>
@@ -994,6 +996,7 @@
           <div class="step-marker">4</div>
           <div class="step-content">
             <div class="step-title">Unified Observability Infrastructure <a href="#ch5" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.5</a></div>
+            <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> give every later phase somewhere to send its logs and alerts. <span style="color:var(--text-faint);font-size:12px;">— ~1 week, mostly deployment</span></p>
             <ul class="step-list">
               <li><span class="step-check"></span><span><b>Log Optimization Engine</b> — deploy OpenObserve via Helm, compressed append-only storage or MinIO.</span></li>
               <li><span class="step-check"></span><span><b>Platform Metric Scraping</b> — OpenObserve Collector DaemonSet across the cluster.</span></li>
@@ -1006,6 +1009,7 @@
           <div class="step-marker">5</div>
           <div class="step-content">
             <div class="step-title">Runtime Shielding & Kernel Enforcement <a href="#ch5" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.5</a></div>
+            <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> detect and stop malicious behavior in a container that's already running. <span style="color:var(--text-faint);font-size:12px;">— 2–3 weeks, includes a 7-day observation period</span></p>
             <ul class="step-list">
               <li><span class="step-check"></span><span><b>Behavioral Auditing</b> — Falco + Falcosidekick, alerts to team messaging.</span></li>
               <li><span class="step-check"></span><span><b>Kernel Security Engine</b> — deploy Tetragon across all nodes.</span></li>
@@ -1019,6 +1023,7 @@
           <div class="step-marker">6</div>
           <div class="step-content">
             <div class="step-title">Image Provenance & Platform Hardening <a href="#ch3" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.3</a></div>
+            <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> prove every image is exactly what we built, and keep it patched. <span style="color:var(--text-faint);font-size:12px;">— 2–3 weeks</span></p>
             <ul class="step-list">
               <li><span class="step-check"></span><span><b>Secrets Lifecycle</b> — roll out HashiCorp Vault, remove plain-text configs.</span></li>
               <li><span class="step-check"></span><span><b>Image Trust Framework</b> — Cosign signing + Kyverno key validation.</span></li>
@@ -1032,7 +1037,8 @@
         <div class="step">
           <div class="step-marker">7</div>
           <div class="step-content">
-            <div class="step-title">Disaster Resilience & Autonomous Operations</div>
+            <div class="step-title">Disaster Resilience & Autonomous Operations <a href="#ch7" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.7 & Ch.8</a></div>
+            <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> make sure a bad day doesn't become a permanent loss, and set safe boundaries for AI helpers. <span style="color:var(--text-faint);font-size:12px;">— Ongoing</span></p>
             <ul class="step-list">
               <li><span class="step-check"></span><span><b>Disaster Recovery Pipelines</b> — daily snapshots for etcd, Velero volumes, databases.</span></li>
               <li><span class="step-check"></span><span><b>Immutable Storage Controls</b> — WORM object locking on backup storage.</span></li>
@@ -1051,35 +1057,49 @@
     <section class="chapter" id="ch10">
       <div class="chapter-head"><div class="chapter-num">10</div><h2>Acronyms</h2></div>
       <dl class="glossary">
+        <div class="gterm"><dt>AI</dt><dd>Artificial Intelligence</dd></div>
         <div class="gterm"><dt>API</dt><dd>Application Programming Interface</dd></div>
+        <div class="gterm"><dt>ASI</dt><dd>Agentic Security Initiative (OWASP's agentic-AI security project)</dd></div>
         <div class="gterm"><dt>ASVS</dt><dd>Application Security Verification Standard</dd></div>
         <div class="gterm"><dt>CI/CD</dt><dd>Continuous Integration / Deployment</dd></div>
         <div class="gterm"><dt>CIS</dt><dd>Center for Internet Security</dd></div>
+        <div class="gterm"><dt>CLI</dt><dd>Command Line Interface</dd></div>
         <div class="gterm"><dt>CRA</dt><dd>Cyber Resilience Act (EU)</dd></div>
         <div class="gterm"><dt>CSP</dt><dd>Content Security Policy</dd></div>
         <div class="gterm"><dt>CVE</dt><dd>Common Vulnerabilities and Exposures</dd></div>
         <div class="gterm"><dt>DAST</dt><dd>Dynamic Application Security Testing</dd></div>
-        <div class="gterm"><dt>HSTS</dt><dd>HTTP Strict Transport Security</dd></div>
-        <div class="gterm"><dt>IaC</dt><dd>Infrastructure as Code</dd></div>
-        <div class="gterm"><dt>LLM</dt><dd>Large Language Model</dd></div>
+        <div class="gterm"><dt>DB</dt><dd>Database</dd></div>
         <div class="gterm"><dt>DMZ</dt><dd>Demilitarized Zone (a buffer network between untrusted and trusted zones)</dd></div>
         <div class="gterm"><dt>eBPF</dt><dd>Extended Berkeley Packet Filter (lets tools like Tetragon watch/control the kernel safely)</dd></div>
+        <div class="gterm"><dt>ELK</dt><dd>Elasticsearch, Logstash, Kibana (the logging stack OpenObserve replaced)</dd></div>
+        <div class="gterm"><dt>EOL</dt><dd>End of Life (a software version no longer receiving updates)</dd></div>
+        <div class="gterm"><dt>FIPS</dt><dd>Federal Information Processing Standards (U.S. government-grade cryptography rules)</dd></div>
+        <div class="gterm"><dt>HSTS</dt><dd>HTTP Strict Transport Security</dd></div>
+        <div class="gterm"><dt>HTTP</dt><dd>HyperText Transfer Protocol</dd></div>
+        <div class="gterm"><dt>IaC</dt><dd>Infrastructure as Code</dd></div>
+        <div class="gterm"><dt>IDE</dt><dd>Integrated Development Environment (your code editor)</dd></div>
+        <div class="gterm"><dt>LLM</dt><dd>Large Language Model</dd></div>
         <div class="gterm"><dt>MFA</dt><dd>Multi-Factor Authentication</dd></div>
+        <div class="gterm"><dt>NIST</dt><dd>National Institute of Standards and Technology</dd></div>
+        <div class="gterm"><dt>OS</dt><dd>Operating System</dd></div>
+        <div class="gterm"><dt>OTLP</dt><dd>OpenTelemetry Protocol (a standard format for shipping logs/metrics)</dd></div>
         <div class="gterm"><dt>OWASP</dt><dd>Open Web Application Security Project (nonprofit behind most free security standards we use)</dd></div>
         <div class="gterm"><dt>PII</dt><dd>Personally Identifiable Information</dd></div>
         <div class="gterm"><dt>PR</dt><dd>Pull Request</dd></div>
-        <div class="gterm"><dt>RBAC</dt><dd>Role-Based Access Control</dd></div>
         <div class="gterm"><dt>RCA</dt><dd>Root Cause Analysis</dd></div>
         <div class="gterm"><dt>RPO</dt><dd>Recovery Point Objective</dd></div>
-        <div class="gterm"><dt>RSL</dt><dd>Recovery Service Level</dd></div>
+        <div class="gterm"><dt>RTO</dt><dd>Recovery Time Objective</dd></div>
         <div class="gterm"><dt>SAST</dt><dd>Static Application Security Testing</dd></div>
         <div class="gterm"><dt>SBOM</dt><dd>Software Bill of Materials</dd></div>
-        <div class="gterm"><dt>SCA</dt><dd>Software Composition Analysis</dd></div>
-        <div class="gterm"><dt>SLA</dt><dd>Service Level Agreement</dd></div>
+        <div class="gterm"><dt>SCM</dt><dd>Source Control Management (e.g., GitHub, GitLab)</dd></div>
+        <div class="gterm"><dt>SHA</dt><dd>Secure Hash Algorithm (used to uniquely identify a specific commit)</dd></div>
+        <div class="gterm"><dt>SPDX</dt><dd>Software Package Data Exchange (an SBOM format)</dd></div>
+        <div class="gterm"><dt>SSDF</dt><dd>Secure Software Development Framework (NIST)</dd></div>
         <div class="gterm"><dt>STIG</dt><dd>Security Technical Implementation Guide</dd></div>
         <div class="gterm"><dt>TLS</dt><dd>Transport Layer Security</dd></div>
         <div class="gterm"><dt>VEX</dt><dd>Vulnerability Exploitability eXchange</dd></div>
         <div class="gterm"><dt>WORM</dt><dd>Write Once, Read Many (storage that can't be edited or deleted)</dd></div>
+        <div class="gterm"><dt>ZAP</dt><dd>Zed Attack Proxy (OWASP ZAP's full name)</dd></div>
       </dl>
     </section>
 
