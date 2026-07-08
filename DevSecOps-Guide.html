@@ -545,6 +545,9 @@
     <!-- CHAPTER 5 -->
     <section class="chapter" id="ch5">
       <div class="chapter-head"><div class="chapter-num">05</div><h2>Our Security Toolkit & Where Everything Lives</h2></div>
+
+      <p class="sub">This chapter maps every tool from Chapters 2–4 to the zone it runs in, then unpacks the two hubs everything ultimately reports into — and, since SecObserve is the one developers touch daily, a closer look at how its CVE workflow actually runs day-to-day.</p>
+
       <div class="callout callout--info">
         <span class="tag">In Short</span>
         <p>Every tool from Chapters 2–4 runs at a specific checkpoint on the way from your laptop to a live server. This chapter shows where each one sits, the two dashboards everything eventually reports to, and exactly what happens when a vulnerability is found — you don't need to memorize every tool, just trust that your code passes through these checkpoints automatically.</p>
@@ -771,7 +774,7 @@
           <thead><tr><th>Tool</th><th>What it Protects</th><th>The Proof it Creates</th><th>Where It Lives</th></tr></thead>
           <tbody>
             <tr><td>ASVS & Threat Dragon</td><td>Planning & Design</td><td>Checklists and threat models tracked as tickets before coding begins.</td><td>Project Board</td></tr>
-            <tr><td>SonarLint / Bearer / ESLint / FindSecBugs / Bandit / gosec / ShellCheck</td><td>Local Code Safety</td><td>Local scan histories proving bugs were fixed before commit.</td><td>SCM / PR Logs</td></tr>
+            <tr><td style="white-space:normal;min-width:150px;line-height:1.5;">SonarLint · Bearer · ESLint · FindSecBugs · Bandit · gosec · ShellCheck</td><td>Local Code Safety</td><td>Local scan histories proving bugs were fixed before commit.</td><td>SCM / PR Logs</td></tr>
             <tr><td>Kube-bench / Checkov</td><td>Config & Compliance</td><td>Audit-ready reports on our app configs and Kubernetes settings.</td><td>SecObserve</td></tr>
             <tr><td>OpenSCAP + STIG Viewer</td><td>Host Compliance</td><td>Audit-ready reports auditors already recognize.</td><td>SecObserve</td></tr>
             <tr><td>Gitleaks</td><td>Secrets</td><td>Pipeline logs proving exposed keys were caught and rotated.</td><td>SecObserve</td></tr>
