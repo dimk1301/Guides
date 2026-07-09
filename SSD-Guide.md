@@ -29,16 +29,24 @@ Implementing an SDD workflow into a real engineering team exists on a spectrum o
 While tools differ slightly, a production-ready SDD architecture relies on a highly rigorous execution loop popularized by toolkits like GitHub Spec Kit.
 
 ```mermaid
-flowchart LR
-    A["1. SPECIFY<br/><br/>The Blueprint"] --> B["2. PLAN<br/><br/>Architecture"]
-    B --> C["3. TASKS<br/><br/>Task Board"]
-    C --> D["4. IMPLEMENT<br/><br/>Targeted Diff"]
-    D -.->|Continuous Validation Loop| A
+flowchart TD
+    %% Row (Left to Right)
+    subgraph Row1 [" "]
+        direction LR
+        1[1. SPECIFY<br/>The Blueprint] --> 2[2. PLAN<br/>Architecture] --> 3[3. TASKS<br/>Task Board] --> 4[4. IMPLEMENT<br/>Targeted Diff]
+    end
 
-    style A height:120px,width:200px
-    style B height:120px,width:200px
-    style C height:120px,width:200px
-    style D height:120px,width:200px
+    %% Loop arrow closing back to the start
+    4 -.->|Continuous Validation Loop| 1
+
+    %% Hide container box
+    style Row1 fill:none,stroke:none
+
+    %% Styling
+    style 1 fill:#1E293B,stroke:#0F172A,stroke-width:2px,color:#fff
+    style 2 fill:#3B82F6,stroke:#1D4ED8,stroke-width:2px,color:#fff
+    style 3 fill:#F59E0B,stroke:#D97706,stroke-width:2px,color:#fff
+    style 4 fill:#10B981,stroke:#059669,stroke-width:2px,color:#fff
 ```
 
 ### Phase 1: Specify (`/specify` & `/clarify`)
