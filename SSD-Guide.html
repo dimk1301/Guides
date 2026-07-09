@@ -135,20 +135,25 @@
     font-size: 12px;
   }
   nav.toc .wrap {
-    display: flex; gap: 22px; overflow-x: auto;
-    padding-top: 12px; padding-bottom: 12px; white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 18px;
+    padding-bottom: 18px;
   }
   nav.toc a {
     color: var(--ink-soft);
     text-decoration: none;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    padding-bottom: 4px;
-    border-bottom: 2px solid transparent;
+    padding: 4px 0;
+    border-left: 2px solid transparent;
+    padding-left: 10px;
+    transition: color 0.2s, border-color 0.2s;
   }
   nav.toc a:hover {
     color: var(--blue-deep);
-    border-bottom-color: var(--blue-mid);
+    border-left-color: var(--blue-mid);
   }
 
   /* ============ SECTIONS ============ */
@@ -218,28 +223,28 @@
 
   /* ============ MATURITY LADDER ============ */
   .ladder {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0;
-    margin: 36px 0 8px;
-    align-items: end;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 36px 0;
   }
   .step {
     border: 1.5px solid var(--blue-deep);
-    border-bottom: none;
-    padding: 20px 18px 26px;
-    position: relative;
     background: var(--paper);
+    padding: 20px 18px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
   }
-  .step:not(:last-child) { border-right: none; }
   .step .num {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 11px; color: var(--blue-mid);
     letter-spacing: 0.08em;
+    margin-bottom: 6px;
   }
   .step h4 {
     font-size: 1.02rem;
-    margin: 6px 0 10px;
+    margin: 0 0 10px;
     color: var(--ink);
   }
   .step p {
@@ -247,20 +252,13 @@
     color: var(--ink-soft);
     margin-bottom: 0;
   }
-  .step.l1 { height: 150px; }
-  .step.l2 { height: 190px; }
   .step.l3 {
-    height: 232px;
     background: var(--blue-deep);
+    color: var(--paper);
   }
   .step.l3 .num { color: var(--blue-line); }
   .step.l3 h4 { color: var(--paper); }
   .step.l3 p { color: #C6D5E2; }
-  .ladder-base {
-    height: 8px;
-    background: var(--blue-deep);
-    margin-bottom: 40px;
-  }
 
   /* ============ PHASE DIAGRAM ============ */
   .diagram-frame {
@@ -433,17 +431,16 @@
   .layers {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 16px;
     margin: 36px 0;
   }
   .layer {
     border: 1.5px solid var(--blue-deep);
     background: var(--paper);
-    padding: 16px 20px;
-    display: grid;
-    grid-template-columns: 180px 1fr;
-    gap: 16px;
-    align-items: center;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
   .layer .lname {
     font-family: 'IBM Plex Mono', monospace;
@@ -458,16 +455,8 @@
     font-size: 0.9rem;
     color: var(--ink-soft);
   }
-  .layer:nth-child(1) { margin-left: 0; }
-  .layer:nth-child(2) { margin-left: 24px; }
   .layer:nth-child(3) {
-    margin-left: 48px;
     background: var(--blue-pale);
-  }
-  @media (max-width: 600px) {
-    .layer { grid-template-columns: 1fr; }
-    .layer:nth-child(2) { margin-left: 12px; }
-    .layer:nth-child(3) { margin-left: 24px; }
   }
 
   /* risk list */
@@ -614,12 +603,12 @@
     <p class="section-intro">SDD isn't one practice — it's a spectrum. Where your team lands determines how much of the "modify code by hand" habit you're willing to give up.</p>
 
     <div class="ladder">
-      <div class="step l1">
+      <div class="step">
         <div class="num">LEVEL 01</div>
         <h4>Spec-First</h4>
         <p>A spec is fully drafted before engineering starts; AI writes the baseline. Humans then edit the code directly. The spec is highly likely to go stale after the first release.</p>
       </div>
-      <div class="step l2">
+      <div class="step">
         <div class="num">LEVEL 02</div>
         <h4>Spec-Anchored</h4>
         <p>Specs are living artifacts that evolve alongside features. Humans keep code and spec in sync deliberately, sprint over sprint, so both stay trustworthy.</p>
@@ -630,7 +619,6 @@
         <p>The spec is the only file a human edits. Generated code carries a header like <span class="mono">// GENERATED FROM SPEC — DO NOT EDIT</span>. Code is a compiled, disposable byproduct.</p>
       </div>
     </div>
-    <div class="ladder-base"></div>
 
     <div class="redline">
       <span class="tag">Where the industry actually is</span>
