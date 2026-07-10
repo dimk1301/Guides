@@ -11,22 +11,22 @@
   :root{
     --bg:#1b1a17;
     --bg-deep:#121110;
-    --panel:#262320;
-    --panel-2:#201e1b;
-    --card:#2a2621;
-    --grid:rgba(230,220,200,0.07);
-    --grid-strong:rgba(230,220,200,0.12);
-    --rule:rgba(214,201,181,0.20);
+    --panel:#221f1c;
+    --panel-2:#1e1c19;
+    --card:#221f1b;
+    --grid:rgba(230,220,200,0.03);
+    --grid-strong:rgba(230,220,200,0.05);
+    --rule:rgba(214,201,181,0.12);
     --ink:#e8e2d3;
     --ink-dim:#b7ae9e;
     --ink-faint:#8a8172;
     --cyan:#7fae95;
-    --cyan-dim:rgba(127,174,149,0.15);
+    --cyan-dim:rgba(127,174,149,0.08);
     --amber:#d9a153;
-    --amber-dim:rgba(217,161,83,0.14);
+    --amber-dim:rgba(217,161,83,0.08);
     --coral:#d98a6e;
-    --coral-dim:rgba(217,138,110,0.14);
-    --code-bg:#14120e;
+    --coral-dim:rgba(217,138,110,0.08);
+    --code-bg:#17140f;
     --radius:10px;
     --serif-display:'Space Grotesk',sans-serif;
     --sans:'IBM Plex Sans',sans-serif;
@@ -46,7 +46,7 @@
     background:
       linear-gradient(var(--grid) 1px, transparent 1px) 0 0/40px 40px,
       linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/40px 40px,
-      radial-gradient(ellipse 1200px 800px at 15% -10%, #332c22 0%, transparent 60%),
+      radial-gradient(ellipse 1200px 800px at 15% -10%, #241f19 0%, transparent 60%),
       var(--bg);
     background-color:var(--bg);
     color:var(--ink);
@@ -181,7 +181,7 @@
   h4{ font-family:var(--sans); font-weight:600; font-size:1rem; margin:20px 0 8px; color:var(--cyan); }
   p{ margin:0 0 16px; color:var(--ink); }
   p.lede{ font-size:1.1rem; color:var(--ink-dim); }
-  strong{ color:#f4efe3; font-weight:600; }
+  strong{ color:#ece5d6; font-weight:600; }
   em{ color:var(--ink); }
   ul,ol{ margin:0 0 18px; padding-left:22px; }
   li{ margin-bottom:8px; }
@@ -209,9 +209,9 @@
     letter-spacing:.04em;
     line-height:1.6;
   }
-  .callout.tip{ background:var(--cyan-dim); border-color:rgba(127,174,149,0.35); }
+  .callout.tip{ background:var(--cyan-dim); border-color:rgba(127,174,149,0.20); }
   .callout.tip .tag{ color:var(--cyan); }
-  .callout.warn{ background:var(--coral-dim); border-color:rgba(217,138,110,0.35); }
+  .callout.warn{ background:var(--coral-dim); border-color:rgba(217,138,110,0.20); }
   .callout.warn .tag{ color:var(--coral); }
   .callout.info{ background:rgba(255,255,255,0.04); border-color:var(--rule); }
   .callout.info .tag{ color:var(--ink-dim); }
@@ -382,9 +382,9 @@
         <div class="diagram-frame">
           <svg viewBox="0 0 720 190" role="img" aria-label="Maturity spectrum gauge from Spec-First to Spec-Anchored to Spec-As-Source">
             <line x1="60" y1="100" x2="660" y2="100" stroke="rgba(214,201,181,0.35)" stroke-width="2"/>
-            <circle cx="120" cy="100" r="7" fill="#262320" stroke="#7fae95" stroke-width="2.5"/>
-            <circle cx="360" cy="100" r="7" fill="#262320" stroke="#d9a153" stroke-width="2.5"/>
-            <circle cx="600" cy="100" r="7" fill="#262320" stroke="#d98a6e" stroke-width="2.5"/>
+            <circle cx="120" cy="100" r="7" fill="#221f1c" stroke="#7fae95" stroke-width="2.5"/>
+            <circle cx="360" cy="100" r="7" fill="#221f1c" stroke="#d9a153" stroke-width="2.5"/>
+            <circle cx="600" cy="100" r="7" fill="#221f1c" stroke="#d98a6e" stroke-width="2.5"/>
             <line x1="120" y1="100" x2="120" y2="72" stroke="rgba(214,201,181,0.35)"/>
             <line x1="360" y1="100" x2="360" y2="72" stroke="rgba(214,201,181,0.35)"/>
             <line x1="600" y1="100" x2="600" y2="72" stroke="rgba(214,201,181,0.35)"/>
@@ -451,22 +451,22 @@
             <path d="M800,120 V180 H100 V120" stroke="#d9a153" stroke-width="2" fill="none" stroke-dasharray="6 5" marker-end="url(#arrow2)"/>
 
             <g>
-              <rect x="25" y="55" width="150" height="70" rx="10" fill="#2a2621" stroke="#7fae95" stroke-width="1.6"/>
+              <rect x="25" y="55" width="150" height="70" rx="10" fill="#221f1b" stroke="#7fae95" stroke-width="1.6"/>
               <text x="100" y="82" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">01 · SPECIFY</text>
               <text x="100" y="102" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="15">The Blueprint</text>
             </g>
             <g>
-              <rect x="225" y="55" width="175" height="70" rx="10" fill="#2a2621" stroke="#7fae95" stroke-width="1.6"/>
+              <rect x="225" y="55" width="175" height="70" rx="10" fill="#221f1b" stroke="#7fae95" stroke-width="1.6"/>
               <text x="312" y="82" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">02 · PLAN</text>
               <text x="312" y="102" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="15">Architecture</text>
             </g>
             <g>
-              <rect x="450" y="55" width="175" height="70" rx="10" fill="#2a2621" stroke="#d9a153" stroke-width="1.6"/>
+              <rect x="450" y="55" width="175" height="70" rx="10" fill="#221f1b" stroke="#d9a153" stroke-width="1.6"/>
               <text x="537" y="82" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">03 · TASKS</text>
               <text x="537" y="102" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="15">Task Board</text>
             </g>
             <g>
-              <rect x="675" y="55" width="200" height="70" rx="10" fill="#2a2621" stroke="#9bc98f" stroke-width="1.6"/>
+              <rect x="675" y="55" width="200" height="70" rx="10" fill="#221f1b" stroke="#9bc98f" stroke-width="1.6"/>
               <text x="775" y="82" text-anchor="middle" fill="#9bc98f" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">04 · IMPLEMENT</text>
               <text x="775" y="102" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="15">Targeted Diff</text>
             </g>
@@ -684,13 +684,13 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
             </defs>
             <path d="M360,55 L200,120" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrow3)"/>
             <path d="M360,55 L520,120" stroke="#d9a153" stroke-width="2" fill="none" marker-end="url(#arrow4)"/>
-            <rect x="260" y="20" width="200" height="46" rx="8" fill="#2a2621" stroke="#e8e2d3" stroke-width="1.4"/>
+            <rect x="260" y="20" width="200" height="46" rx="8" fill="#221f1b" stroke="#e8e2d3" stroke-width="1.4"/>
             <text x="360" y="48" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="13">What are you building?</text>
 
-            <rect x="100" y="122" width="200" height="46" rx="8" fill="#2a2621" stroke="#7fae95" stroke-width="1.4"/>
+            <rect x="100" y="122" width="200" height="46" rx="8" fill="#221f1b" stroke="#7fae95" stroke-width="1.4"/>
             <text x="200" y="150" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Sans, sans-serif" font-size="12.5">Learning / Prototype</text>
 
-            <rect x="420" y="122" width="200" height="46" rx="8" fill="#2a2621" stroke="#d9a153" stroke-width="1.4"/>
+            <rect x="420" y="122" width="200" height="46" rx="8" fill="#221f1b" stroke="#d9a153" stroke-width="1.4"/>
             <text x="520" y="150" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Sans, sans-serif" font-size="12.5">Production System</text>
 
             <path d="M200,168 V200" stroke="#7fae95" stroke-width="2" marker-end="url(#arrow3)"/>
