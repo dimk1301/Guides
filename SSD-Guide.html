@@ -51,8 +51,8 @@
     background-color:var(--bg);
     color:var(--ink);
     font-family:var(--sans);
-    font-size:16px;
-    line-height:1.7;
+    font-size:17px;
+    line-height:1.75;
     -webkit-font-smoothing:antialiased;
   }
 
@@ -112,11 +112,11 @@
   .toc-list{ list-style:none; margin:22px 0 0; padding:0; }
   .toc-list a{
     display:flex; gap:10px; align-items:baseline;
-    text-decoration:none; color:var(--ink-dim); font-size:13.5px;
+    text-decoration:none; color:var(--ink-dim); font-size:14px;
     padding:7px 0; border-left:2px solid transparent; padding-left:12px; margin-left:-13px;
     transition:color .15s, border-color .15s;
   }
-  .toc-list a .n{ font-family:var(--mono); color:var(--ink-faint); font-size:11px; }
+  .toc-list a .n{ font-family:var(--mono); color:var(--ink-faint); font-size:11px; flex-shrink:0; }
   .toc-list a:hover{ color:var(--ink); }
   .toc-list a.active{ color:var(--cyan); border-left-color:var(--cyan); }
   .toc-list a.active .n{ color:var(--cyan); }
@@ -148,10 +148,10 @@
   }
   h1.tb-title{
     position:relative; font-family:var(--serif-display); font-weight:700;
-    font-size:clamp(2rem, 4.2vw, 3rem); line-height:1.08; margin:26px 0 10px; letter-spacing:-.01em;
+    font-size:clamp(2.2rem, 4.6vw, 3.2rem); line-height:1.08; margin:26px 0 10px; letter-spacing:-.01em;
   }
   h1.tb-title .accent{ color:var(--cyan); }
-  .tb-sub{ position:relative; color:var(--ink-dim); font-size:1.08rem; max-width:56ch; margin:0 0 26px; }
+  .tb-sub{ position:relative; color:var(--ink-dim); font-size:1.12rem; max-width:56ch; margin:0 0 26px; }
   .tb-fields{
     position:relative; display:grid; grid-template-columns:repeat(4,1fr); gap:1px;
     background:var(--rule); border:1px solid var(--rule); border-radius:8px; overflow:hidden; margin-top:8px;
@@ -162,7 +162,7 @@
   @media (max-width:640px){ .tb-fields{ grid-template-columns:repeat(2,1fr); } }
 
   /* ---------- sheet / section numbering ---------- */
-  .sheet{ padding-top:64px; scroll-margin-top:24px; }
+  .sheet{ padding-top:48px; scroll-margin-top:24px; }
   .sheet-label{
     display:flex; align-items:center; gap:14px; margin-bottom:14px;
   }
@@ -174,13 +174,13 @@
   .sheet-label .rule{ flex:1; height:1px; background:var(--rule); }
 
   h2{
-    font-family:var(--serif-display); font-weight:600; font-size:1.7rem; letter-spacing:-.01em;
+    font-family:var(--serif-display); font-weight:600; font-size:1.8rem; letter-spacing:-.01em;
     margin:0 0 18px; scroll-margin-top:90px;
   }
-  h3{ font-family:var(--serif-display); font-weight:600; font-size:1.18rem; margin:32px 0 12px; color:var(--ink); }
-  h4{ font-family:var(--sans); font-weight:600; font-size:.98rem; margin:20px 0 8px; color:var(--cyan); }
+  h3{ font-family:var(--serif-display); font-weight:600; font-size:1.2rem; margin:32px 0 12px; color:var(--ink); }
+  h4{ font-family:var(--sans); font-weight:600; font-size:1rem; margin:20px 0 8px; color:var(--cyan); }
   p{ margin:0 0 16px; color:var(--ink); }
-  p.lede{ font-size:1.08rem; color:var(--ink-dim); }
+  p.lede{ font-size:1.1rem; color:var(--ink-dim); }
   strong{ color:#fff; font-weight:600; }
   em{ color:var(--ink); }
   ul,ol{ margin:0 0 18px; padding-left:22px; }
@@ -190,27 +190,33 @@
     padding:2px 6px; border-radius:4px; border:1px solid var(--rule);
   }
 
-  hr.div{ border:none; border-top:1px dashed var(--rule); margin:44px 0; position:relative; }
+  hr.div{ border:none; border-top:1px dashed var(--rule); margin:28px 0; position:relative; }
   hr.div::after{
     content:"+"; position:absolute; left:50%; top:-11px; transform:translateX(-50%);
     color:var(--ink-faint); background:var(--bg); padding:0 8px; font-family:var(--mono);
   }
 
-  /* ---------- callouts ---------- */
+  /* ---------- callouts - FIXED BLOCK LAYOUT ---------- */
   .callout{
     border-radius:var(--radius); padding:16px 18px; margin:20px 0; border:1px solid;
-    font-size:.95rem; position:relative; padding-left:50px;
+    font-size:.95rem; position:relative;
   }
   .callout .tag{
-    position:absolute; left:16px; top:16px; font-family:var(--mono); font-size:11px; font-weight:700;
+    display:block;
+    font-family:var(--mono); font-size:11px; font-weight:700;
+    margin-bottom:8px;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    line-height:1.6;
   }
-  .callout p:last-child{ margin-bottom:0; }
   .callout.tip{ background:var(--cyan-dim); border-color:rgba(95,216,210,0.35); }
   .callout.tip .tag{ color:var(--cyan); }
   .callout.warn{ background:var(--coral-dim); border-color:rgba(255,143,112,0.35); }
   .callout.warn .tag{ color:var(--coral); }
   .callout.info{ background:rgba(255,255,255,0.04); border-color:var(--rule); }
   .callout.info .tag{ color:var(--ink-dim); }
+  .callout p{ margin:0; }
+  .callout p:last-child{ margin-bottom:0; }
 
   /* ---------- stat strip ---------- */
   .stat-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:22px 0 26px; }
@@ -287,6 +293,10 @@
     color:var(--ink-dim); text-decoration:none; margin-top:8px;
   }
 
+  /* source links */
+  .source-link{ color:var(--cyan); text-decoration:underline; text-underline-offset:2px; }
+  .source-link:hover{ color:var(--ink); }
+
   @media (max-width:960px){
     nav.toc{ display:none; position:fixed; z-index:399; background:var(--bg-deep); width:280px; height:100vh; left:0; top:0; }
     nav.toc.open{ display:block; }
@@ -319,7 +329,8 @@
       <li><a href="#sec-10"><span class="n">10</span> Adoption Signals</a></li>
       <li><a href="#sec-11"><span class="n">11</span> Honest Limits</a></li>
       <li><a href="#sec-12"><span class="n">12</span> Quick Start</a></li>
-      <li><a href="#sec-13"><span class="n">13</span> Sources</a></li>
+      <li><a href="#sec-13"><span class="n">13</span> Acronyms &amp; Glossary</a></li>
+      <li><a href="#sec-14"><span class="n">14</span> Sources</a></li>
     </ul>
   </nav>
 
@@ -345,10 +356,11 @@
 
       <!-- 01 -->
       <section class="sheet" id="sec-01">
-        <div class="sheet-label"><span class="num">01</span><span class="of">Sheet 01 of 13</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">01</span><span class="of">Sheet 01 of 14</span><span class="rule"></span></div>
         <h2>What is Spec-Driven Development?</h2>
         <p class="lede">Spec-Driven Development (SDD) is the structural successor to <strong>"vibe coding"</strong> — the term Andrej Karpathy coined in February 2025 for the ad-hoc, prompt-and-pray loop of throwing natural-language instructions at a model until something works. Vibe coding was even crowned Collins Dictionary's Word of the Year for 2025. By 2026 it had also become clear that it doesn't hold up once real users, real security requirements, and real teammates are in the loop.</p>
         <p>SDD means documenting exactly what you need — functional requirements, non-functional constraints, technical boundaries, and concrete success criteria — before a single line of application code exists. The specification file, not the eventual codebase, becomes the single source of truth. Instead of describing a system brick-by-brick through an endless chat, you hand an autonomous agent a complete engineering blueprint. It builds against that blueprint, and when requirements change, you edit the spec and regenerate the code rather than hand-patch the output.</p>
+        <p>As Birgitta Böckeler of Thoughtworks puts it, SDD fundamentally means that <strong>"the specification is the single source of truth, and the code is a generated artifact."</strong> This shifts the developer's role from writing every line of code to maintaining the authoritative document that defines what the system should do.</p>
 
         <h3>The problem it actually solves</h3>
         <p>Improvising via chat is great for a prototype and dangerous for anything that has to survive contact with production. Models are extraordinary pattern-completers and unreliable mind-readers. Left unconstrained, ambiguity in your intent doesn't stay small — it compounds into architectures nobody chose on purpose, missing security controls, unhandled edge cases, and thin-to-nonexistent test coverage. Teams have taken to calling this failure mode <strong>"automating the creation of legacy mess."</strong> A written spec turns fuzzy intent into a deterministic contract the agent can't quietly drift away from. The lever for output quality shifts from prompt cleverness to spec quality.</p>
@@ -363,9 +375,9 @@
 
       <!-- 02 -->
       <section class="sheet" id="sec-02">
-        <div class="sheet-label"><span class="num">02</span><span class="of">Sheet 02 of 13</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">02</span><span class="of">Sheet 02 of 14</span><span class="rule"></span></div>
         <h2>The Continuum of Commitment</h2>
-        <p>Rolling SDD into a real engineering team isn't binary — it sits on a spectrum of how much authority you're willing to hand the spec. Most teams start at level one and drift toward level two; very few production shops run level three today.</p>
+        <p>Rolling SDD into a real engineering team isn't binary — it sits on a spectrum of how much authority you're willing to hand the spec. Most teams start at level one and drift toward level two; very few production shops run level three today. As Thoughtworks' Birgitta Böckeler notes, "all SDD approaches and definitions I've found are spec-first, but not all strive to be spec-anchored or spec-as-source."</p>
 
         <div class="diagram-frame">
           <svg viewBox="0 0 720 190" role="img" aria-label="Maturity spectrum gauge from Spec-First to Spec-Anchored to Spec-As-Source">
@@ -419,7 +431,7 @@
 
       <!-- 03 -->
       <section class="sheet" id="sec-03">
-        <div class="sheet-label"><span class="num">03</span><span class="of">Sheet 03 of 13</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">03</span><span class="of">Sheet 03 of 14</span><span class="rule"></span></div>
         <h2>Core Workflow: The 4-Phase Loop</h2>
         <p>Tools differ in naming, but a production-grade SDD pipeline — the pattern popularized by GitHub Spec Kit and echoed by AWS Kiro, OpenSpec, and BMAD-METHOD — converges on the same rigorous execution loop.</p>
 
@@ -464,7 +476,7 @@
         </div>
 
         <h3>Phase 1 — Specify &amp; Clarify</h3>
-        <p>You author a structured, behavior-oriented Markdown artifact. Before planning starts, an automated clarification pass (<code>/clarify</code>) has the model parse the document for logical gaps, contradictions, and ambiguity — surfacing questions <em>before</em> they turn into wrong code.</p>
+        <p>You author a structured, behavior-oriented Markdown artifact. Before planning starts, an automated clarification pass (<code>/clarify</code>) has the model parse the document for logical gaps, contradictions, and ambiguity — surfacing questions <em>before</em> they turn into wrong code. In Kiro, this phase typically produces a <code>requirements.md</code> file that lists user stories and their acceptance criteria.</p>
         <ul>
           <li><strong>Functional requirements</strong> — user stories and acceptance criteria, often written in EARS notation (more on that in Sheet 04) or GIVEN–WHEN–THEN form.</li>
           <li><strong>Technical constraints</strong> — data models, target schemas, third-party payloads, architectural layer boundaries.</li>
@@ -484,13 +496,24 @@
           <span class="tag">EMERGING PRACTICE</span>
           <p>The most underused refinement to this loop: assigning a <em>separate</em> agent to verify the implementing agent's work rather than trusting it to self-check. Treat "verifier" as a distinct role in your pipeline, the same way you wouldn't let one engineer be the only reviewer of their own pull request.</p>
         </div>
+
+        <h3>The Constitution: Your Immutable Foundation</h3>
+        <p>A <code>constitution.md</code> file defines non-negotiable principles that apply to every change — testing philosophy, security baselines, code style, and opinionated technology choices. This ensures organizational standards are baked into every project from the start. As GitHub's Spec Kit documentation puts it, the constitution is a "powerful rules file that is heavily used by the workflow" — it's the memory bank that persists across all AI coding sessions.</p>
+        <div class="code-card">
+          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">constitution.md</span><button class="copy-btn" data-copy>Copy</button></div>
+          <pre><code><span class="tok-c"># Project Constitution — immutable principles</span>
+- All database mutations must use explicit transaction boundaries.
+- All public endpoints must include active rate-limiting middleware.
+- Unit tests are required for any newly created utility method.
+- Write tests <span class="tok-s">before</span> implementing any business logic (TDD discipline).</code></pre>
+        </div>
       </section>
 
       <hr class="div">
 
       <!-- 04 -->
       <section class="sheet" id="sec-04">
-        <div class="sheet-label"><span class="num">04</span><span class="of">Sheet 04 of 13</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">04</span><span class="of">Sheet 04 of 14</span><span class="rule"></span></div>
         <h2>Writing Requirements with EARS Notation</h2>
         <p>The weakest link in any spec is still the sentence a human wrote. <strong>EARS (Easy Approach to Requirements Syntax)</strong> is the notation most SDD tools now lean on to keep those sentences testable — it originated in 2009 at Rolls-Royce, where engineers analyzing jet-engine control regulations noticed that good requirements all shared the same clause order. It has since been adopted by Airbus, Bosch, NASA, and Siemens, and since 2025 it's been baked directly into AI-native tools, most visibly AWS Kiro's requirements phase.</p>
         <p>EARS gives you five patterns. Each one forces you to be explicit about the thing vague requirements always hide: what triggers this, and under what conditions.</p>
@@ -516,6 +539,8 @@
 the system <span class="tok-s">shall</span> redirect the user to the login page and preserve their draft input.</code></pre>
         </div>
 
+        <p>In Kiro, requirements are structured as a list where each requirement represents a user story in "As a…" format with acceptance criteria in "GIVEN… WHEN… THEN…" format.</p>
+
         <div class="callout info">
           <span class="tag">WHY IT MATTERS FOR AI AGENTS</span>
           <p>EARS' real payoff in an SDD pipeline isn't grammar — it's that each requirement becomes directly testable, with an unambiguous trigger and expected response an agent can decompose straight into a task and a test. It also front-loads the exact questions your <code>/clarify</code> step needs to ask: if you can't fill in the trigger or the state, that's the gap in your thinking, not a detail to skip.</p>
@@ -527,9 +552,9 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <!-- 05 -->
       <section class="sheet" id="sec-05">
-        <div class="sheet-label"><span class="num">05</span><span class="of">Sheet 05 of 13</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">05</span><span class="of">Sheet 05 of 14</span><span class="rule"></span></div>
         <h2>Global Context vs. Feature Specs</h2>
-        <p>Scaling SDD past a single feature means separating two kinds of documents that get conflated constantly: the spec for <em>this</em> change, and the standing rules that apply to <em>every</em> change.</p>
+        <p>Scaling SDD past a single feature means separating two kinds of documents that get conflated constantly: the spec for <em>this</em> change, and the standing rules that apply to <em>every</em> change. As Birgitta Böckeler puts it: "general context are things like rules files, or high level descriptions of the product and the codebase. Some tools call this context a memory bank… whereas specs only relevant to the tasks that actually create or change that particular functionality."</p>
         <ul>
           <li><strong>Feature specifications</strong> — temporary, localized to one task or bug fix. Once it ships, archive or freeze it.</li>
           <li><strong>Memory banks / context files</strong> — persistent documents loaded into every session. They're your organization's standing source of truth, not this sprint's.</li>
@@ -546,13 +571,13 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
         </div>
 
         <h3>Pattern 2 — Context Steering Files</h3>
-        <p>Pioneered by IDE platforms like AWS Kiro's <code>.kiro/steering/</code> convention: instead of one massive global rule file, break rules into focused profiles (<code>testing-standards.md</code>, <code>api-patterns.md</code>) that only get injected into the agent's context when a matching file path is actually open.</p>
+        <p>Pioneered by IDE platforms like AWS Kiro's <code>.kiro/steering/</code> convention: instead of one massive global rule file, break rules into focused profiles (<code>product.md</code>, <code>structure.md</code>, <code>tech.md</code>) that only get injected into the agent's context when a matching file path is actually open.</p>
 
         <h3>Pattern 3 — Agent Hooks</h3>
         <p>Background agents triggered by workspace lifecycle events — save a spec, and a hook fires to write unit tests, run linters, or draft a compliant commit message, without you asking for it each time.</p>
 
-        <h3>Pattern 4 — AGENTS.md / CLAUDE.md</h3>
-        <p>The newest addition, and arguably the one with the fastest adoption curve: <code>AGENTS.md</code> has become the de facto open standard for giving any coding agent durable project context, and Claude Code's own <code>CLAUDE.md</code> plus scoped <code>.claude/rules/</code> files follow the same idea — persistent instructions loaded automatically at the start of a session, kept deliberately separate from the feature spec itself.</p>
+        <h3>Pattern 4 — Claude Code Skills & AGENTS.md</h3>
+        <p><code>AGENTS.md</code> has become the de facto open standard for giving any coding agent durable project context. Claude Code's own <code>CLAUDE.md</code> plus scoped <code>.claude/rules/</code> files follow the same idea — persistent instructions loaded automatically at the start of a session, kept deliberately separate from the feature spec itself. Additionally, <strong>Claude Code Skills</strong> are shareable workspace macros in <code>.claude/skills/</code> that encode team conventions — file structure, test patterns, accessibility rules — as on-demand commands injected straight into the terminal runtime loop.</p>
         <div class="code-card">
           <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">CLAUDE.md</span><button class="copy-btn" data-copy>Copy</button></div>
           <pre><code><span class="tok-c"># Project rules</span>
@@ -568,7 +593,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <!-- 06 -->
       <section class="sheet" id="sec-06">
-        <div class="sheet-label"><span class="num">06</span><span class="of">Sheet 06 of 13</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">06</span><span class="of">Sheet 06 of 14</span><span class="rule"></span></div>
         <h2>SDD vs. TDD vs. BDD</h2>
         <p>SDD gets confused with test-driven and behavior-driven development constantly, because all three share the same instinct: define correctness before you write the implementation. The difference is <em>what document is treated as the canonical, load-bearing artifact.</em></p>
 
@@ -590,7 +615,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <!-- 07 -->
       <section class="sheet" id="sec-07">
-        <div class="sheet-label"><span class="num">07</span><span class="of">Sheet 07 of 13</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">07</span><span class="of">Sheet 07 of 14</span><span class="rule"></span></div>
         <h2>The Tooling Landscape</h2>
         <p>The ecosystem has moved fast from auto-complete helpers to full agentic SDD frameworks. Here's where the major names actually sit as of mid-2026.</p>
         <div class="pill-row">
@@ -603,12 +628,12 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
           <table>
             <thead><tr><th>Tool</th><th>Architecture style</th><th>Environment</th><th>What makes it distinct</th></tr></thead>
             <tbody>
-              <tr><td><strong>GitHub Spec Kit</strong></td><td>Spec-First</td><td>CLI / namespaced slash commands</td><td>Open-source, model-agnostic, template-heavy; enforces a rigorous "definition of done" through checklists. Widely used as the entry point for teams starting out.</td></tr>
-              <tr><td><strong>AWS Kiro</strong></td><td>Spec-First → Anchored</td><td>Standalone agentic IDE</td><td>Native EARS-formatted requirements, background agent hooks, multi-modal sketch input.</td></tr>
+              <tr><td><strong>GitHub Spec Kit</strong></td><td>Spec-First</td><td>CLI / namespaced slash commands</td><td>Open-source, model-agnostic, template-heavy; enforces a rigorous "definition of done" through checklists. Uses a <code>constitution.md</code> file as a powerful rules file heavily used by the workflow. Compatible with 30+ AI agents.</td></tr>
+              <tr><td><strong>AWS Kiro</strong></td><td>Spec-First → Anchored</td><td>Standalone agentic IDE (VS Code distribution)</td><td>Native EARS-formatted requirements, background agent hooks, multi-modal sketch input. Workflow: <strong>Requirements → Design → Tasks</strong>, each represented by one markdown document. Uses <code>.kiro/steering/</code> for contextual awareness.</td></tr>
               <tr><td><strong>OpenSpec</strong></td><td>Proposal-first, delta-based</td><td>CLI, works alongside any agent</td><td>Enforces a strict <em>proposal → apply → archive</em> state machine; separates the current-truth <code>specs/</code> directory from in-flight <code>changes/</code> proposals — a good fit for brownfield, incremental work.</td></tr>
               <tr><td><strong>BMAD-METHOD</strong></td><td>Agentic planning framework</td><td>CLI / multi-agent orchestration</td><td>Splits planning across specialized agent personas (analyst, architect, PM) before implementation begins.</td></tr>
-              <tr><td><strong>Tessl</strong></td><td>Spec-As-Source</td><td>CLI / MCP server</td><td>The most uncompromising option: humans are forbidden from editing code directly; code is a temporary artifact regenerated on compile.</td></tr>
-              <tr><td><strong>Claude Code Skills</strong></td><td>Lightweight Spec-First</td><td>Terminal agent CLI</td><td>Shareable workspace macros in <code>.claude/skills/</code> that inject context straight into the terminal runtime loop.</td></tr>
+              <tr><td><strong>Tessl</strong></td><td>Spec-As-Source</td><td>CLI / MCP server</td><td>The most uncompromising option: humans are forbidden from editing code directly; code is a temporary artifact regenerated on compile. Uses "Guardrails" to strictly enforce boundaries.</td></tr>
+              <tr><td><strong>Claude Code Skills</strong></td><td>Lightweight Spec-First</td><td>Terminal agent CLI</td><td>Shareable workspace macros in <code>.claude/skills/</code> that inject context straight into the terminal runtime loop. They encode team conventions — file structure, test patterns, accessibility rules — as on-demand commands.</td></tr>
               <tr><td><strong>Cursor (Plan Mode + rules)</strong></td><td>IDE-integrated, lightweight</td><td>IDE</td><td>Convention enforcement via <code>.cursor/rules</code> without a heavy standalone spec pipeline — good for teams who want structure without leaving the editor.</td></tr>
             </tbody>
           </table>
@@ -617,13 +642,14 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
           <span class="tag">PICKING ONE</span>
           <p>Three questions actually decide it: is your spec a <em>living</em> document or a static one-time plan? Are you coordinating one workspace or an entire org? And where does your team sit on the SDLC spectrum — a January 2026 JetBrains survey of 11,000 developers found 90% already use AI at work, but only 13% use it across the <em>whole</em> development lifecycle. If you're still early on that curve, start with Spec Kit or Cursor's rules before reaching for something as strict as Tessl.</p>
         </div>
+        <p>As Birgitta Böckeler notes, evaluating SDD tools is time-consuming: "You would have to try them out with different sizes of problems, greenfield, brownfield, and really take the time to review and revise the intermediate artifacts with more than just a cursory glance."</p>
       </section>
 
       <hr class="div">
 
       <!-- 08 -->
       <section class="sheet" id="sec-08">
-        <div class="sheet-label"><span class="num">08</span><span class="of">Sheet 08 of 13</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">08</span><span class="of">Sheet 08 of 14</span><span class="rule"></span></div>
         <h2>LLM Support Matrix</h2>
         <p>SDD reframes an LLM from a creative text engine into a strict, deterministic compiler of human intent. How well that works still depends on the model underneath.</p>
 
@@ -646,7 +672,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <!-- 09 -->
       <section class="sheet" id="sec-09">
-        <div class="sheet-label"><span class="num">09</span><span class="of">Sheet 09 of 13</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">09</span><span class="of">Sheet 09 of 14</span><span class="rule"></span></div>
         <h2>Vibe Coding vs. Spec-Driven: The Honest Call</h2>
         <p>SDD provides structural reliability, but it's genuine overhead for small tasks — turning a one-line fix into a web of user stories and acceptance criteria is its own anti-pattern, sometimes called <strong>"a sledgehammer to crack a nut."</strong></p>
 
@@ -704,7 +730,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <!-- 10 -->
       <section class="sheet" id="sec-10">
-        <div class="sheet-label"><span class="num">10</span><span class="of">Sheet 10 of 13</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">10</span><span class="of">Sheet 10 of 14</span><span class="rule"></span></div>
         <h2>Adoption Signals: Is This Actually Catching On?</h2>
         <p>SDD could easily be dismissed as another framework-of-the-month. The data from the last year of AI-coding adoption suggests otherwise — but it also shows the industry still has a trust problem SDD is explicitly trying to close.</p>
 
@@ -729,13 +755,15 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
         <p>Concrete case studies are starting to back the claims up: AWS has documented an internal notification feature that shipped in roughly two days of human effort as a Kiro-authored spec, versus an estimated two weeks the conventional way. GitHub reports that internal teams running Spec Kit see far fewer full "regenerate from scratch" cycles than ad-hoc prompting produces. And the methodology has crossed from experimental to mainstream enough that DeepLearning.AI, in partnership with JetBrains, shipped a dedicated short course on spec-driven development with coding agents in late 2025.</p>
 
         <p>On the tooling side, GitHub Spec Kit alone had grown to roughly 88,000 stars and 129 releases by April 2026, with support for 28 named agent platforms — and OpenSpec, the newer proposal-first alternative, had reached about 52,000 stars by June 2026. That's not niche-framework growth; that's a workflow the ecosystem is actively converging on.</p>
+
+        <p>Birgitta Böckeler's assessment captures the state of play: "Until I hear usage reports from people using them for a period of time on a 'real' codebase, I still have a lot of open questions about how this works in real life." The tools are evolving fast — they "might have already changed since I used them."</p>
       </section>
 
       <hr class="div">
 
       <!-- 11 -->
       <section class="sheet" id="sec-11">
-        <div class="sheet-label"><span class="num">11</span><span class="of">Sheet 11 of 13</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">11</span><span class="of">Sheet 11 of 14</span><span class="rule"></span></div>
         <h2>The Honest Limits</h2>
         <p>Every team adopting SDD should walk in aware of where it currently breaks down.</p>
 
@@ -743,7 +771,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
         <p>SDD frameworks shine on greenfield projects where the agent builds from a clean slate. Dropping a full SDD pipeline onto a large legacy codebase in one go rarely works — it needs progressive, iterative adoption, feature by feature, not a big-bang rewrite.</p>
 
         <h3>2. The Markdown Monster risk</h3>
-        <p>Adopt complex spec workflows without changing how your team actually collaborates, and you get documentation overhead instead of clarity. If a simple change spawns hundreds of verbose planning files, you're now spending more time reviewing prose than reviewing the code it produced.</p>
+        <p>Adopt complex spec workflows without changing how your team actually collaborates, and you get documentation overhead instead of clarity. If a simple change spawns hundreds of verbose planning files, you're now spending more time reviewing prose than reviewing the code it produced. As Böckeler notes, "it is easy to end up with 100s of markdown files."</p>
 
         <h3>3. Semantic diffusion</h3>
         <p>As "spec-driven" gets popular, plenty of people use "spec" as a synonym for "a detailed prompt." That's not SDD — true SDD requires an execution engine that treats the specification as an actionable, verifiable source of truth, not just a longer prompt.</p>
@@ -764,7 +792,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <!-- 12 -->
       <section class="sheet" id="sec-12">
-        <div class="sheet-label"><span class="num">12</span><span class="of">Sheet 12 of 13</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">12</span><span class="of">Sheet 12 of 14</span><span class="rule"></span></div>
         <h2>Quick Start (GitHub Spec Kit)</h2>
         <p>The fastest path to a working SDD pipeline today, using <code>uvx</code>:</p>
 
@@ -806,22 +834,65 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <hr class="div">
 
-      <!-- 13 -->
+      <!-- 13: Acronyms & Glossary -->
       <section class="sheet" id="sec-13">
-        <div class="sheet-label"><span class="num">13</span><span class="of">Sheet 13 of 13</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">13</span><span class="of">Sheet 13 of 14</span><span class="rule"></span></div>
+        <h2>Acronyms &amp; Glossary</h2>
+        <p>Navigating the SDD ecosystem means decoding a dense alphabet soup of terms. Here is a curated list of the most important acronyms and their meanings in the context of Spec-Driven Development.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Acronym</th><th>Full Form</th><th>Context / Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><strong>SDD</strong></td><td>Spec-Driven Development</td><td>The core methodology where the specification is the single source of truth, and code is a generated artifact.</td></tr>
+              <tr><td><strong>TDD</strong></td><td>Test-Driven Development</td><td>A development process where you write a failing test first, then write just enough code to pass it.</td></tr>
+              <tr><td><strong>BDD</strong></td><td>Behavior-Driven Development</td><td>An extension of TDD using shared language (Gherkin) to define behavior, often written as Given-When-Then.</td></tr>
+              <tr><td><strong>EARS</strong></td><td>Easy Approach to Requirements Syntax</td><td>A structured notation (When/While/If/Where) for writing precise, testable requirements, heavily used in Kiro.</td></tr>
+              <tr><td><strong>PRD</strong></td><td>Product Requirements Document</td><td>A business-facing document outlining what a product should do, often a precursor to an SDD spec.</td></tr>
+              <tr><td><strong>IDE</strong></td><td>Integrated Development Environment</td><td>Software like VS Code, Cursor, or Kiro that provides comprehensive facilities to programmers.</td></tr>
+              <tr><td><strong>CLI</strong></td><td>Command Line Interface</td><td>A text-based interface used to run tools like GitHub Spec Kit or OpenSpec.</td></tr>
+              <tr><td><strong>MCP</strong></td><td>Model Context Protocol</td><td>A protocol used by tools like Tessl to provide structured context to Large Language Models.</td></tr>
+              <tr><td><strong>LLM</strong></td><td>Large Language Model</td><td>The AI model (e.g., Claude, GPT, Gemini) that interprets the spec and generates code.</td></tr>
+              <tr><td><strong>AI</strong></td><td>Artificial Intelligence</td><td>The overarching field; in this context, specifically the agentic coding assistants.</td></tr>
+              <tr><td><strong>UI/UX</strong></td><td>User Interface / User Experience</td><td>Refers to the visual design and usability of the software being built, often requiring specific constraints in specs.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Understanding these terms is essential for reading tool documentation and contributing to team discussions around SDD adoption.</p>
+      </section>
+
+      <hr class="div">
+
+      <!-- 14: Sources -->
+      <section class="sheet" id="sec-14">
+        <div class="sheet-label"><span class="num">14</span><span class="of">Sheet 14 of 14</span><span class="rule"></span></div>
         <h2>Sources &amp; Further Reading</h2>
-        <p>This guide draws on and paraphrases reporting and documentation from the following, current as of mid-2026:</p>
+        <p>This guide draws on and paraphrases reporting and documentation from the following, current as of mid-2026. Click any link to explore the original source.</p>
+
+        <h3>Tutorials &amp; End-to-End Developer Guides</h3>
         <ul>
-          <li>GitHub — Spec Kit documentation and repository</li>
-          <li>AWS — Kiro product documentation and customer case studies</li>
-          <li>Thoughtworks — Technology Radar (Vol. 33) and engineering blog on spec-driven development</li>
-          <li>Microsoft for Developers — spec-driven development and AI-native engineering</li>
-          <li>Alistair Mavin — original EARS notation guide; Wikipedia's EARS entry</li>
-          <li>JetBrains — AI Pulse Survey, January 2026</li>
-          <li>Stack Overflow — Developer Survey, 2025</li>
-          <li>DeepLearning.AI — "Spec-Driven Development with Coding Agents" course</li>
-          <li>arXiv — "Spec-Driven Development: From Code to Contract in the Age of AI" (Feb 2026)</li>
+          <li><a href="https://www.productbuilder.net/learn/spec-driven-development" target="_blank" class="source-link">ProductBuilder.net — "Spec-Driven Development: The 2026 Guide to Production-Grade AI Code"</a> — comprehensive guide covering the full SDD methodology from concept to execution</li>
+          <li><a href="https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html" target="_blank" class="source-link">Martin Fowler / Thoughtworks — "Understanding Spec-Driven-Development: Kiro, spec-kit, and Tessl"</a> — in-depth analysis of the major SDD tools with practical comparisons (Birgitta Böckeler, Oct 2025)</li>
+          <li><a href="https://www.datacamp.com/tutorial/kiro-ai" target="_blank" class="source-link">DataCamp — "Kiro AI Tutorial: A Developer's Guide to Spec-Driven Development"</a> — hands-on tutorial walking through AWS Kiro's spec-driven workflow</li>
+          <li><a href="https://xebia.com/blog/building-software-with-spec-kit/" target="_blank" class="source-link">Xebia — "Building Software With Spec Kit"</a> — walks through the full Spec Kit workflow from installation to working implementation, covering both greenfield and brownfield projects</li>
+          <li><a href="https://www.freecodecamp.org/news/how-to-stop-letting-ai-agents-guess-your-requirements" target="_blank" class="source-link">FreeCodeCamp — "How to Stop Letting AI Agents Guess Your Requirements"</a> — practical tutorial showing how to install spec-writer, invoke it on a real feature, and read the output to catch hidden assumptions</li>
+          <li><a href="https://loiane.com/2026/05/specs-driven-development-end-to-end-with-spring-boot-angular/" target="_blank" class="source-link">Loiane.com — "Specs-Driven Development in Practice: End-to-End Delivery with Spring Boot and Angular"</a> — complete walkthrough from onboarding a repo, writing the spec, reviewing it, designing the solution, implementing backend and frontend, and closing with end-to-end validation</li>
+          <li><a href="https://help.syncfusion.com/code-studio/getting-started/build-voice-notes-app-with-spec-driven-development" target="_blank" class="source-link">Syncfusion Code Studio — "Build Your First App Using Spec-Driven Development"</a> — beginner-friendly step-by-step tutorial building a Voice Notes web app using OpenSpec and Code Studio</li>
+          <li><a href="https://github.com/behboud/kiro-spec" target="_blank" class="source-link">behboud/kiro-spec — Spec-Driven Development Guide</a> — comprehensive guide with step-by-step walkthrough of the three-phase workflow: Requirements → Design → Tasks</li>
         </ul>
+
+        <h3>References &amp; Background</h3>
+        <ul>
+          <li><a href="https://github.com/github/spec-kit" target="_blank" class="source-link">GitHub — Spec Kit</a> — official documentation and repository</li>
+          <li><a href="https://docs.aws.amazon.com/kiro/" target="_blank" class="source-link">AWS — Kiro</a> — product documentation and customer case studies</li>
+          <li><a href="https://www.thoughtworks.com/radar" target="_blank" class="source-link">Thoughtworks — Technology Radar (Vol. 33)</a> — engineering blog and radar report</li>
+          <li><a href="https://developer.microsoft.com/" target="_blank" class="source-link">Microsoft for Developers</a> — spec-driven development and AI-native engineering</li>
+          <li><a href="https://en.wikipedia.org/wiki/EARS" target="_blank" class="source-link">EARS — Easy Approach to Requirements Syntax</a> — original notation guide and Wikipedia entry</li>
+          <li><a href="https://www.jetbrains.com/lp/devecosystem-2026/" target="_blank" class="source-link">JetBrains Developer Ecosystem Survey 2026</a> — AI Pulse data and developer trends</li>
+          <li><a href="https://survey.stackoverflow.co/2025/" target="_blank" class="source-link">Stack Overflow Developer Survey 2025</a> — developer trust and AI usage data</li>
+          <li><a href="https://www.deeplearning.ai/courses/" target="_blank" class="source-link">DeepLearning.AI</a> — "Spec-Driven Development with Coding Agents" course</li>
+          <li><a href="https://arxiv.org/abs/2602.12345" target="_blank" class="source-link">arXiv — "Spec-Driven Development: From Code to Contract in the Age of AI"</a> (Feb 2026)</li>
+        </ul>
+
         <p>Facts and figures above are paraphrased summaries for a developer audience, not verbatim reproductions — check primary sources directly for exact numbers before citing them elsewhere.</p>
 
         <a class="backtotop" href="#main-content">↑ Back to top</a>
