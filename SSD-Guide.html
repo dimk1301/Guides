@@ -9,24 +9,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#081b30;
-    --bg-deep:#051222;
-    --panel:#0d2c4c;
-    --panel-2:#0a2440;
-    --card:#0e3355;
-    --grid:rgba(140,197,247,0.09);
-    --grid-strong:rgba(140,197,247,0.16);
-    --rule:rgba(163,197,227,0.22);
-    --ink:#e7f1fb;
-    --ink-dim:#9db6d2;
-    --ink-faint:#6f8aa8;
-    --cyan:#5fd8d2;
-    --cyan-dim:rgba(95,216,210,0.15);
-    --amber:#f0ac4a;
-    --amber-dim:rgba(240,172,74,0.14);
-    --coral:#ff8f70;
-    --coral-dim:rgba(255,143,112,0.14);
-    --code-bg:#04101f;
+    --bg:#1b1a17;
+    --bg-deep:#121110;
+    --panel:#262320;
+    --panel-2:#201e1b;
+    --card:#2a2621;
+    --grid:rgba(230,220,200,0.07);
+    --grid-strong:rgba(230,220,200,0.12);
+    --rule:rgba(214,201,181,0.20);
+    --ink:#e8e2d3;
+    --ink-dim:#b7ae9e;
+    --ink-faint:#8a8172;
+    --cyan:#7fae95;
+    --cyan-dim:rgba(127,174,149,0.15);
+    --amber:#d9a153;
+    --amber-dim:rgba(217,161,83,0.14);
+    --coral:#d98a6e;
+    --coral-dim:rgba(217,138,110,0.14);
+    --code-bg:#14120e;
     --radius:10px;
     --serif-display:'Space Grotesk',sans-serif;
     --sans:'IBM Plex Sans',sans-serif;
@@ -46,7 +46,7 @@
     background:
       linear-gradient(var(--grid) 1px, transparent 1px) 0 0/40px 40px,
       linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/40px 40px,
-      radial-gradient(ellipse 1200px 800px at 15% -10%, #123a5c 0%, transparent 60%),
+      radial-gradient(ellipse 1200px 800px at 15% -10%, #332c22 0%, transparent 60%),
       var(--bg);
     background-color:var(--bg);
     color:var(--ink);
@@ -65,7 +65,7 @@
 
   .skip-link{
     position:absolute; left:-9999px; top:0;
-    background:var(--cyan); color:#04141f; padding:10px 16px; z-index:999; font-weight:600;
+    background:var(--cyan); color:#14120e; padding:10px 16px; z-index:999; font-weight:600;
   }
   .skip-link:focus{ left:12px; top:12px; }
 
@@ -181,7 +181,7 @@
   h4{ font-family:var(--sans); font-weight:600; font-size:1rem; margin:20px 0 8px; color:var(--cyan); }
   p{ margin:0 0 16px; color:var(--ink); }
   p.lede{ font-size:1.1rem; color:var(--ink-dim); }
-  strong{ color:#fff; font-weight:600; }
+  strong{ color:#f4efe3; font-weight:600; }
   em{ color:var(--ink); }
   ul,ol{ margin:0 0 18px; padding-left:22px; }
   li{ margin-bottom:8px; }
@@ -209,9 +209,9 @@
     letter-spacing:.04em;
     line-height:1.6;
   }
-  .callout.tip{ background:var(--cyan-dim); border-color:rgba(95,216,210,0.35); }
+  .callout.tip{ background:var(--cyan-dim); border-color:rgba(127,174,149,0.35); }
   .callout.tip .tag{ color:var(--cyan); }
-  .callout.warn{ background:var(--coral-dim); border-color:rgba(255,143,112,0.35); }
+  .callout.warn{ background:var(--coral-dim); border-color:rgba(217,138,110,0.35); }
   .callout.warn .tag{ color:var(--coral); }
   .callout.info{ background:rgba(255,255,255,0.04); border-color:var(--rule); }
   .callout.info .tag{ color:var(--ink-dim); }
@@ -236,7 +236,7 @@
   tbody td{ padding:12px 14px; border-bottom:1px solid var(--rule); color:var(--ink-dim); vertical-align:top; }
   tbody tr:last-child td{ border-bottom:none; }
   tbody td strong{ color:var(--ink); }
-  tbody tr:hover td{ background:rgba(95,216,210,0.04); }
+  tbody tr:hover td{ background:rgba(127,174,149,0.04); }
 
   /* ---------- code blocks ---------- */
   .code-card{
@@ -381,25 +381,25 @@
 
         <div class="diagram-frame">
           <svg viewBox="0 0 720 190" role="img" aria-label="Maturity spectrum gauge from Spec-First to Spec-Anchored to Spec-As-Source">
-            <line x1="60" y1="100" x2="660" y2="100" stroke="rgba(163,197,227,0.35)" stroke-width="2"/>
-            <circle cx="120" cy="100" r="7" fill="#0d2c4c" stroke="#5fd8d2" stroke-width="2.5"/>
-            <circle cx="360" cy="100" r="7" fill="#0d2c4c" stroke="#f0ac4a" stroke-width="2.5"/>
-            <circle cx="600" cy="100" r="7" fill="#0d2c4c" stroke="#ff8f70" stroke-width="2.5"/>
-            <line x1="120" y1="100" x2="120" y2="72" stroke="rgba(163,197,227,0.35)"/>
-            <line x1="360" y1="100" x2="360" y2="72" stroke="rgba(163,197,227,0.35)"/>
-            <line x1="600" y1="100" x2="600" y2="72" stroke="rgba(163,197,227,0.35)"/>
-            <text x="120" y="58" text-anchor="middle" fill="#5fd8d2" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600">LEVEL 1</text>
-            <text x="360" y="58" text-anchor="middle" fill="#f0ac4a" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600">LEVEL 2</text>
-            <text x="600" y="58" text-anchor="middle" fill="#ff8f70" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600">LEVEL 3</text>
-            <text x="120" y="130" text-anchor="middle" fill="#e7f1fb" font-family="IBM Plex Sans, sans-serif" font-size="13" font-weight="600">Spec-First</text>
-            <text x="360" y="130" text-anchor="middle" fill="#e7f1fb" font-family="IBM Plex Sans, sans-serif" font-size="13" font-weight="600">Spec-Anchored</text>
-            <text x="600" y="130" text-anchor="middle" fill="#e7f1fb" font-family="IBM Plex Sans, sans-serif" font-size="13" font-weight="600">Spec-As-Source</text>
-            <text x="120" y="150" text-anchor="middle" fill="#9db6d2" font-family="IBM Plex Sans, sans-serif" font-size="11.5">spec drafted once,</text>
-            <text x="120" y="165" text-anchor="middle" fill="#9db6d2" font-family="IBM Plex Sans, sans-serif" font-size="11.5">code owned by hand</text>
-            <text x="360" y="150" text-anchor="middle" fill="#9db6d2" font-family="IBM Plex Sans, sans-serif" font-size="11.5">spec + code kept</text>
-            <text x="360" y="165" text-anchor="middle" fill="#9db6d2" font-family="IBM Plex Sans, sans-serif" font-size="11.5">in sync, always</text>
-            <text x="600" y="150" text-anchor="middle" fill="#9db6d2" font-family="IBM Plex Sans, sans-serif" font-size="11.5">code is generated,</text>
-            <text x="600" y="165" text-anchor="middle" fill="#9db6d2" font-family="IBM Plex Sans, sans-serif" font-size="11.5">spec is the only file you touch</text>
+            <line x1="60" y1="100" x2="660" y2="100" stroke="rgba(214,201,181,0.35)" stroke-width="2"/>
+            <circle cx="120" cy="100" r="7" fill="#262320" stroke="#7fae95" stroke-width="2.5"/>
+            <circle cx="360" cy="100" r="7" fill="#262320" stroke="#d9a153" stroke-width="2.5"/>
+            <circle cx="600" cy="100" r="7" fill="#262320" stroke="#d98a6e" stroke-width="2.5"/>
+            <line x1="120" y1="100" x2="120" y2="72" stroke="rgba(214,201,181,0.35)"/>
+            <line x1="360" y1="100" x2="360" y2="72" stroke="rgba(214,201,181,0.35)"/>
+            <line x1="600" y1="100" x2="600" y2="72" stroke="rgba(214,201,181,0.35)"/>
+            <text x="120" y="58" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600">LEVEL 1</text>
+            <text x="360" y="58" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600">LEVEL 2</text>
+            <text x="600" y="58" text-anchor="middle" fill="#d98a6e" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600">LEVEL 3</text>
+            <text x="120" y="130" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="13" font-weight="600">Spec-First</text>
+            <text x="360" y="130" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="13" font-weight="600">Spec-Anchored</text>
+            <text x="600" y="130" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="13" font-weight="600">Spec-As-Source</text>
+            <text x="120" y="150" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">spec drafted once,</text>
+            <text x="120" y="165" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">code owned by hand</text>
+            <text x="360" y="150" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">spec + code kept</text>
+            <text x="360" y="165" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">in sync, always</text>
+            <text x="600" y="150" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">code is generated,</text>
+            <text x="600" y="165" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">spec is the only file you touch</text>
           </svg>
         </div>
 
@@ -439,38 +439,38 @@
           <svg viewBox="0 0 900 260" role="img" aria-label="Four phase diagram: Specify, Plan, Tasks, Implement, looping back to Specify via a continuous validation loop">
             <defs>
               <marker id="arrow1" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-                <path d="M0,0 L8,4 L0,8 Z" fill="#5fd8d2"/>
+                <path d="M0,0 L8,4 L0,8 Z" fill="#7fae95"/>
               </marker>
               <marker id="arrow2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-                <path d="M0,0 L8,4 L0,8 Z" fill="#f0ac4a"/>
+                <path d="M0,0 L8,4 L0,8 Z" fill="#d9a153"/>
               </marker>
             </defs>
-            <path d="M175,90 H225" stroke="#5fd8d2" stroke-width="2" fill="none" marker-end="url(#arrow1)"/>
-            <path d="M400,90 H450" stroke="#5fd8d2" stroke-width="2" fill="none" marker-end="url(#arrow1)"/>
-            <path d="M625,90 H675" stroke="#5fd8d2" stroke-width="2" fill="none" marker-end="url(#arrow1)"/>
-            <path d="M800,120 V180 H100 V120" stroke="#f0ac4a" stroke-width="2" fill="none" stroke-dasharray="6 5" marker-end="url(#arrow2)"/>
+            <path d="M175,90 H225" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrow1)"/>
+            <path d="M400,90 H450" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrow1)"/>
+            <path d="M625,90 H675" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrow1)"/>
+            <path d="M800,120 V180 H100 V120" stroke="#d9a153" stroke-width="2" fill="none" stroke-dasharray="6 5" marker-end="url(#arrow2)"/>
 
             <g>
-              <rect x="25" y="55" width="150" height="70" rx="10" fill="#0e3355" stroke="#5fd8d2" stroke-width="1.6"/>
-              <text x="100" y="82" text-anchor="middle" fill="#5fd8d2" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">01 · SPECIFY</text>
-              <text x="100" y="102" text-anchor="middle" fill="#e7f1fb" font-family="IBM Plex Sans, sans-serif" font-size="15">The Blueprint</text>
+              <rect x="25" y="55" width="150" height="70" rx="10" fill="#2a2621" stroke="#7fae95" stroke-width="1.6"/>
+              <text x="100" y="82" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">01 · SPECIFY</text>
+              <text x="100" y="102" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="15">The Blueprint</text>
             </g>
             <g>
-              <rect x="225" y="55" width="175" height="70" rx="10" fill="#0e3355" stroke="#5fd8d2" stroke-width="1.6"/>
-              <text x="312" y="82" text-anchor="middle" fill="#5fd8d2" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">02 · PLAN</text>
-              <text x="312" y="102" text-anchor="middle" fill="#e7f1fb" font-family="IBM Plex Sans, sans-serif" font-size="15">Architecture</text>
+              <rect x="225" y="55" width="175" height="70" rx="10" fill="#2a2621" stroke="#7fae95" stroke-width="1.6"/>
+              <text x="312" y="82" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">02 · PLAN</text>
+              <text x="312" y="102" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="15">Architecture</text>
             </g>
             <g>
-              <rect x="450" y="55" width="175" height="70" rx="10" fill="#0e3355" stroke="#f0ac4a" stroke-width="1.6"/>
-              <text x="537" y="82" text-anchor="middle" fill="#f0ac4a" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">03 · TASKS</text>
-              <text x="537" y="102" text-anchor="middle" fill="#e7f1fb" font-family="IBM Plex Sans, sans-serif" font-size="15">Task Board</text>
+              <rect x="450" y="55" width="175" height="70" rx="10" fill="#2a2621" stroke="#d9a153" stroke-width="1.6"/>
+              <text x="537" y="82" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">03 · TASKS</text>
+              <text x="537" y="102" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="15">Task Board</text>
             </g>
             <g>
-              <rect x="675" y="55" width="200" height="70" rx="10" fill="#0e3355" stroke="#8ee8b8" stroke-width="1.6"/>
-              <text x="775" y="82" text-anchor="middle" fill="#8ee8b8" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">04 · IMPLEMENT</text>
-              <text x="775" y="102" text-anchor="middle" fill="#e7f1fb" font-family="IBM Plex Sans, sans-serif" font-size="15">Targeted Diff</text>
+              <rect x="675" y="55" width="200" height="70" rx="10" fill="#2a2621" stroke="#9bc98f" stroke-width="1.6"/>
+              <text x="775" y="82" text-anchor="middle" fill="#9bc98f" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">04 · IMPLEMENT</text>
+              <text x="775" y="102" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="15">Targeted Diff</text>
             </g>
-            <text x="450" y="205" text-anchor="middle" fill="#f0ac4a" font-family="IBM Plex Mono, monospace" font-size="14" letter-spacing="0.06em" font-weight="600">◂ CONTINUOUS VALIDATION LOOP ▸</text>
+            <text x="450" y="205" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="14" letter-spacing="0.06em" font-weight="600">◂ CONTINUOUS VALIDATION LOOP ▸</text>
           </svg>
           <p class="diagram-cap">The loop never truly ends — Implement validates continuously back against Specify, not just once at the end.</p>
         </div>
@@ -679,28 +679,28 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
         <div class="diagram-frame">
           <svg viewBox="0 0 720 260" role="img" aria-label="Decision tree: what are you building, branching to vibe coding for learning and prototypes, and spec-driven for production systems">
             <defs>
-              <marker id="arrow3" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#5fd8d2"/></marker>
-              <marker id="arrow4" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#f0ac4a"/></marker>
+              <marker id="arrow3" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#7fae95"/></marker>
+              <marker id="arrow4" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#d9a153"/></marker>
             </defs>
-            <path d="M360,55 L200,120" stroke="#5fd8d2" stroke-width="2" fill="none" marker-end="url(#arrow3)"/>
-            <path d="M360,55 L520,120" stroke="#f0ac4a" stroke-width="2" fill="none" marker-end="url(#arrow4)"/>
-            <rect x="260" y="20" width="200" height="46" rx="8" fill="#0e3355" stroke="#e7f1fb" stroke-width="1.4"/>
-            <text x="360" y="48" text-anchor="middle" fill="#e7f1fb" font-family="IBM Plex Sans, sans-serif" font-size="13">What are you building?</text>
+            <path d="M360,55 L200,120" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrow3)"/>
+            <path d="M360,55 L520,120" stroke="#d9a153" stroke-width="2" fill="none" marker-end="url(#arrow4)"/>
+            <rect x="260" y="20" width="200" height="46" rx="8" fill="#2a2621" stroke="#e8e2d3" stroke-width="1.4"/>
+            <text x="360" y="48" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="13">What are you building?</text>
 
-            <rect x="100" y="122" width="200" height="46" rx="8" fill="#0e3355" stroke="#5fd8d2" stroke-width="1.4"/>
-            <text x="200" y="150" text-anchor="middle" fill="#5fd8d2" font-family="IBM Plex Sans, sans-serif" font-size="12.5">Learning / Prototype</text>
+            <rect x="100" y="122" width="200" height="46" rx="8" fill="#2a2621" stroke="#7fae95" stroke-width="1.4"/>
+            <text x="200" y="150" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Sans, sans-serif" font-size="12.5">Learning / Prototype</text>
 
-            <rect x="420" y="122" width="200" height="46" rx="8" fill="#0e3355" stroke="#f0ac4a" stroke-width="1.4"/>
-            <text x="520" y="150" text-anchor="middle" fill="#f0ac4a" font-family="IBM Plex Sans, sans-serif" font-size="12.5">Production System</text>
+            <rect x="420" y="122" width="200" height="46" rx="8" fill="#2a2621" stroke="#d9a153" stroke-width="1.4"/>
+            <text x="520" y="150" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Sans, sans-serif" font-size="12.5">Production System</text>
 
-            <path d="M200,168 V200" stroke="#5fd8d2" stroke-width="2" marker-end="url(#arrow3)"/>
-            <path d="M520,168 V200" stroke="#f0ac4a" stroke-width="2" marker-end="url(#arrow4)"/>
+            <path d="M200,168 V200" stroke="#7fae95" stroke-width="2" marker-end="url(#arrow3)"/>
+            <path d="M520,168 V200" stroke="#d9a153" stroke-width="2" marker-end="url(#arrow4)"/>
 
-            <rect x="100" y="205" width="200" height="42" rx="21" fill="#5fd8d2" opacity="0.15" stroke="#5fd8d2" stroke-width="1.6"/>
-            <text x="200" y="231" text-anchor="middle" fill="#5fd8d2" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="700">VIBE CODING</text>
+            <rect x="100" y="205" width="200" height="42" rx="21" fill="#7fae95" opacity="0.15" stroke="#7fae95" stroke-width="1.6"/>
+            <text x="200" y="231" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="700">VIBE CODING</text>
 
-            <rect x="420" y="205" width="200" height="42" rx="21" fill="#f0ac4a" opacity="0.15" stroke="#f0ac4a" stroke-width="1.6"/>
-            <text x="520" y="231" text-anchor="middle" fill="#f0ac4a" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="700">SPEC-DRIVEN</text>
+            <rect x="420" y="205" width="200" height="42" rx="21" fill="#d9a153" opacity="0.15" stroke="#d9a153" stroke-width="1.6"/>
+            <text x="520" y="231" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="700">SPEC-DRIVEN</text>
           </svg>
         </div>
 
