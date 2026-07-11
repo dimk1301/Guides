@@ -69,14 +69,12 @@
   }
   .skip-link:focus{ left:12px; top:12px; }
 
-  /* ---------- progress bar ---------- */
   #progress{
     position:fixed; top:0; left:0; height:3px; width:0%;
     background:linear-gradient(90deg,var(--cyan),var(--amber));
     z-index:500; transition:width .08s linear;
   }
 
-  /* ---------- corner registration marks ---------- */
   .reg-mark{position:absolute; width:18px; height:18px; opacity:.55; pointer-events:none;}
   .reg-mark::before,.reg-mark::after{content:"";position:absolute;background:var(--cyan);}
   .reg-mark::before{ left:8px; top:0; width:2px; height:18px; }
@@ -86,10 +84,8 @@
   .reg-bl{ bottom:14px; left:14px; }
   .reg-br{ bottom:14px; right:14px; }
 
-  /* ---------- layout shell ---------- */
   .shell{ display:flex; max-width:1280px; margin:0 auto; position:relative; }
 
-  /* ---------- sidebar nav ---------- */
   #navtoggle{
     display:none;
     position:fixed; top:14px; right:14px; z-index:400;
@@ -121,11 +117,9 @@
   .toc-list a.active{ color:var(--cyan); border-left-color:var(--cyan); }
   .toc-list a.active .n{ color:var(--cyan); }
 
-  /* ---------- main column ---------- */
   main{ flex:1; min-width:0; padding:0 0 80px; }
   .content-inner{ max-width:var(--maxw); margin:0 auto; padding:0 28px; }
 
-  /* ---------- hero / title block ---------- */
   .titleblock{
     position:relative; margin:32px 28px 0; border:1px solid var(--grid-strong);
     background:linear-gradient(180deg, var(--panel), var(--panel-2));
@@ -161,7 +155,6 @@
   .tb-field .v{ font-family:var(--mono); font-size:13px; color:var(--ink); }
   @media (max-width:640px){ .tb-fields{ grid-template-columns:repeat(2,1fr); } }
 
-  /* ---------- sheet / section numbering ---------- */
   .sheet{ padding-top:48px; scroll-margin-top:24px; }
   .sheet-label{
     display:flex; align-items:center; gap:14px; margin-bottom:14px;
@@ -196,7 +189,6 @@
     color:var(--ink-faint); background:var(--bg); padding:0 8px; font-family:var(--mono);
   }
 
-  /* ---------- callouts - FIXED BLOCK LAYOUT ---------- */
   .callout{
     border-radius:var(--radius); padding:16px 18px; margin:20px 0; border:1px solid;
     font-size:.95rem; position:relative;
@@ -218,7 +210,6 @@
   .callout p{ margin:0; }
   .callout p:last-child{ margin-bottom:0; }
 
-  /* ---------- stat strip ---------- */
   .stat-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:22px 0 26px; }
   @media (max-width:640px){ .stat-grid{ grid-template-columns:1fr; } }
   .stat{ background:var(--card); border:1px solid var(--rule); border-radius:10px; padding:16px 16px; }
@@ -226,7 +217,6 @@
   .stat .lbl{ font-size:.8rem; color:var(--ink-dim); margin-top:6px; display:block; }
   .stat .src{ font-size:.72rem; color:var(--ink-faint); margin-top:8px; display:block; font-family:var(--mono); }
 
-  /* ---------- tables ---------- */
   .table-wrap{ overflow-x:auto; margin:20px 0 26px; border:1px solid var(--rule); border-radius:10px; }
   table{ border-collapse:collapse; width:100%; font-size:.88rem; min-width:560px; }
   thead th{
@@ -238,7 +228,6 @@
   tbody td strong{ color:var(--ink); }
   tbody tr:hover td{ background:rgba(127,174,149,0.04); }
 
-  /* ---------- code blocks ---------- */
   .code-card{
     background:var(--code-bg); border:1px solid var(--rule); border-radius:10px; margin:18px 0 24px; overflow:hidden;
   }
@@ -256,11 +245,10 @@
   .copy-btn:hover{ color:var(--cyan); border-color:var(--cyan); }
   pre{ margin:0; padding:16px; overflow-x:auto; }
   pre code{ font-family:var(--mono); font-size:.84rem; line-height:1.65; color:var(--ink-dim); }
-  .tok-c{ color:var(--ink-faint); font-style:italic; } /* comments */
-  .tok-k{ color:var(--cyan); } /* keywords/commands */
-  .tok-s{ color:var(--amber); } /* strings/args */
+  .tok-c{ color:var(--ink-faint); font-style:italic; }
+  .tok-k{ color:var(--cyan); }
+  .tok-s{ color:var(--amber); }
 
-  /* ---------- diagrams ---------- */
   .diagram-frame{
     border:1px solid var(--rule); border-radius:12px; background:var(--panel-2);
     padding:20px 16px 14px; margin:22px 0 28px; position:relative;
@@ -268,7 +256,6 @@
   .diagram-frame svg{ width:100%; height:auto; display:block; }
   .diagram-cap{ font-family:var(--mono); font-size:11px; color:var(--ink-faint); text-align:center; margin-top:8px; letter-spacing:.03em; }
 
-  /* ---------- maturity cards ---------- */
   .maturity-cards{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin:22px 0; }
   @media (max-width:720px){ .maturity-cards{ grid-template-columns:1fr; } }
   .m-card{ border:1px solid var(--rule); border-radius:12px; padding:18px; background:var(--card); }
@@ -276,7 +263,6 @@
   .m-card h4{ margin:8px 0 10px; color:var(--ink); font-size:1.02rem; }
   .m-card p{ font-size:.87rem; color:var(--ink-dim); margin-bottom:0; }
 
-  /* ---------- toolgrid ---------- */
   .pill-row{ display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 24px; }
   .pill{
     font-family:var(--mono); font-size:.76rem; padding:5px 11px; border-radius:20px;
@@ -293,7 +279,6 @@
     color:var(--ink-dim); text-decoration:none; margin-top:8px;
   }
 
-  /* source links */
   .source-link{ color:var(--cyan); text-decoration:underline; text-underline-offset:2px; }
   .source-link:hover{ color:var(--ink); }
 
@@ -322,17 +307,16 @@
       <li><a href="#sec-03"><span class="n">03</span> The 4-Phase Loop</a></li>
       <li><a href="#sec-04"><span class="n">04</span> Writing Specs with EARS</a></li>
       <li><a href="#sec-05"><span class="n">05</span> Context &amp; Memory Patterns</a></li>
-      <li><a href="#sec-05b"><span class="n">06</span> Constitutional SDD &amp; Security</a></li>
-      <li><a href="#sec-06"><span class="n">07</span> SDD vs TDD vs BDD</a></li>
-      <li><a href="#sec-07"><span class="n">08</span> Tooling Landscape</a></li>
-      <li><a href="#sec-07b"><span class="n">09</span> Writing Specs That Work</a></li>
-      <li><a href="#sec-08"><span class="n">10</span> LLM Support Matrix</a></li>
-      <li><a href="#sec-09"><span class="n">11</span> Vibe vs Spec: The Call</a></li>
-      <li><a href="#sec-10"><span class="n">12</span> Adoption Signals</a></li>
-      <li><a href="#sec-11"><span class="n">13</span> Honest Limits</a></li>
-      <li><a href="#sec-12"><span class="n">14</span> Quick Start</a></li>
-      <li><a href="#sec-13"><span class="n">15</span> Acronyms &amp; Glossary</a></li>
-      <li><a href="#sec-14"><span class="n">16</span> Sources</a></li>
+      <li><a href="#sec-06"><span class="n">06</span> Spec in Scrum &amp; Kanban</a></li>
+      <li><a href="#sec-07"><span class="n">07</span> SDD vs TDD vs BDD</a></li>
+      <li><a href="#sec-08"><span class="n">08</span> Tooling Landscape</a></li>
+      <li><a href="#sec-09"><span class="n">09</span> LLM Support Matrix</a></li>
+      <li><a href="#sec-10"><span class="n">10</span> Vibe vs Spec: The Call</a></li>
+      <li><a href="#sec-11"><span class="n">11</span> Adoption Signals</a></li>
+      <li><a href="#sec-12"><span class="n">12</span> Honest Limits</a></li>
+      <li><a href="#sec-13"><span class="n">13</span> Quick Start</a></li>
+      <li><a href="#sec-14"><span class="n">14</span> Acronyms &amp; Glossary</a></li>
+      <li><a href="#sec-15"><span class="n">15</span> Sources</a></li>
     </ul>
   </nav>
 
@@ -344,7 +328,7 @@
         <span class="tb-stamp">★ REV 2026.07</span>
       </div>
       <h1 class="tb-title">Spec-Driven<br><span class="accent">Development.</span></h1>
-      <p class="tb-sub">A working developer's blueprint for handing AI agents a contract instead of a prompt — what it is, how the four-phase loop actually runs, and when it's overkill.</p>
+      <p class="tb-sub">A working developer's blueprint for handing AI agents a contract instead of a prompt — what it is, how the four-phase loop actually runs, where it lives in Scrum and Kanban, and when it's overkill.</p>
       <div class="tb-fields">
         <div class="tb-field"><span class="k">Scale</span><span class="v">1 spec : 1 truth</span></div>
         <div class="tb-field"><span class="k">Drawn for</span><span class="v">Working engineers</span></div>
@@ -355,10 +339,9 @@
     </div>
 
     <div class="content-inner">
-
       <!-- 01 -->
       <section class="sheet" id="sec-01">
-        <div class="sheet-label"><span class="num">01</span><span class="of">Sheet 01 of 16</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">01</span><span class="of">Sheet 01 of 15</span><span class="rule"></span></div>
         <h2>What is Spec-Driven Development?</h2>
         <p class="lede">Spec-Driven Development (SDD) is the structural successor to <strong>"vibe coding"</strong> — the term Andrej Karpathy coined in February 2025 for the ad-hoc, prompt-and-pray loop of throwing natural-language instructions at a model until something works. Vibe coding was even crowned Collins Dictionary's Word of the Year for 2025. By 2026 it had also become clear that it doesn't hold up once real users, real security requirements, and real teammates are in the loop.</p>
         <p>SDD is a methodology in which a written specification is treated as the primary, executable artifact of a software project, and code is a regenerable output produced from that spec by humans, AI agents, or both. The specification file, not the eventual codebase, becomes the single source of truth. Instead of describing a system brick-by-brick through an endless chat, you hand an autonomous agent a complete engineering blueprint. It builds against that blueprint, and when requirements change, you edit the spec and regenerate the code rather than hand-patch the output.</p>
@@ -377,7 +360,7 @@
 
       <!-- 02 -->
       <section class="sheet" id="sec-02">
-        <div class="sheet-label"><span class="num">02</span><span class="of">Sheet 02 of 16</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">02</span><span class="of">Sheet 02 of 15</span><span class="rule"></span></div>
         <h2>The Continuum of Commitment</h2>
         <p>Rolling SDD into a real engineering team isn't binary — it sits on a spectrum of how much authority you're willing to hand the spec. Most teams start at level one and drift toward level two; very few production shops run level three today. As Thoughtworks' Birgitta Böckeler notes, "all SDD approaches and definitions I've found are spec-first, but not all strive to be spec-anchored or spec-as-source."</p>
 
@@ -425,7 +408,7 @@
 
         <div class="callout warn">
           <span class="tag">WATCH FOR</span>
-          <p>Level 3 is the one vendors talk about most and teams actually run least. Treat it as a destination worth understanding, not a default starting point — most production teams get the bulk of SDD's value by simply reaching Level 2 and staying there. Böckeler draws a direct parallel to Model-Driven Development (MDD), a 2000s-era practice with the same "spec generates code" premise that never took off for mainstream business applications because the modeling overhead outweighed the benefit for most teams — a cautionary precedent worth remembering before committing to Level 3.</p>
+          <p>Level 3 is the one vendors talk about most and teams actually run least. Treat it as a destination worth understanding, not a default starting point — most production teams get the bulk of SDD's value by simply reaching Level 2 and staying there.</p>
         </div>
       </section>
 
@@ -433,7 +416,7 @@
 
       <!-- 03 -->
       <section class="sheet" id="sec-03">
-        <div class="sheet-label"><span class="num">03</span><span class="of">Sheet 03 of 16</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">03</span><span class="of">Sheet 03 of 15</span><span class="rule"></span></div>
         <h2>Core Workflow: The 4-Phase Loop</h2>
         <p>Tools differ in naming, but a production-grade SDD pipeline — the pattern popularized by GitHub Spec Kit and echoed by AWS Kiro, OpenSpec, and BMAD-METHOD — converges on the same rigorous execution loop. This loop is a continuous cycle, not a one‑off sequence; at every step, the output is validated back against the original specification to prevent drift.</p>
 
@@ -485,41 +468,6 @@
           <li><strong>Success criteria</strong> — concrete benchmarks, scale targets, security constraints, deterministic edge cases.</li>
         </ul>
 
-        <h3>Before you write a single requirement: the Architecture Meta-Frame</h3>
-        <p>Most SDD templates jump straight into user stories and skip a step that saves a lot of rework in Phase 2 — establishing the structural boundaries the agent has to design inside. The <strong>Architecture Meta-Frame</strong> is a four-part checklist for exactly this: run it once, at the top of your <code>requirements.md</code>, before the EARS/GWT requirement list.</p>
-
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Part</th><th>What it covers</th><th>Why Phase 1 needs it</th></tr></thead>
-            <tbody>
-              <tr><td><strong>Scenarios, quality attributes &amp; constraints</strong></td><td>User scenarios, non-functional requirements (performance, security, scalability)</td><td>Maps directly onto your EARS requirements and GWT acceptance criteria — this is the part you were already writing.</td></tr>
-              <tr><td><strong>App type</strong></td><td>Mobile, web, service, batch job, CLI, embedded, etc.</td><td>Missing from most spec templates, but it fixes deployment target, latency budget, and platform limits before Plan even starts.</td></tr>
-              <tr><td><strong>Architectural style</strong></td><td>Layered, microservices, event-driven, monolith, serverless, etc.</td><td>Stated as an explicit constraint here, not left for the agent to guess in Phase 2 — prevents architecture drift from your team's actual stack.</td></tr>
-              <tr><td><strong>Architecture frame (hotspots)</strong></td><td>Cross-cutting concerns: auth, caching, logging, exception handling, data access, observability</td><td>Exactly the class of concern that gets silently dropped in ad-hoc specs and later shows up as a missing security control (see Sheet 01).</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="code-card">
-          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">requirements.md — meta-frame preamble</span><button class="copy-btn" data-copy>Copy</button></div>
-          <pre><code><span class="tok-c"># Architecture Meta-Frame</span>
-App type: Web service (REST API), containerized, deployed on Kubernetes
-Architectural style: Layered (API -&gt; service -&gt; repository), event-driven for async jobs
-Hotspots:
-  - Auth: OAuth2 / JWT via Spring Security, no session state
-  - Caching: Redis, 5min TTL on read-heavy endpoints
-  - Logging: structured JSON, correlation ID propagated across services
-  - Exception handling: RFC 7807 problem+json for all 4xx/5xx responses
-  - Data access: Spring Data JPA, no raw SQL outside repository layer
-
-<span class="tok-c"># User stories follow below, scoped inside these boundaries</span></code></pre>
-        </div>
-
-        <div class="callout tip">
-          <span class="tag">FOR DEVELOPERS</span>
-          <p>Think of the meta-frame as the part of the spec that would otherwise live only in a senior engineer's head. Write it once per project (it barely changes between features), then reference it from every feature spec instead of restating it — it pairs naturally with the <code>constitution.md</code> pattern from this sheet and the context files in Sheet 05. Skipping it doesn't break EARS or GWT, but it does mean Phase 2 (Plan) has to infer your architecture from scattered requirement lines — exactly the ambiguity SDD is supposed to remove.</p>
-        </div>
-
         <h3>Phase 2 — Plan</h3>
         <p>The agent parses the finished spec and synthesizes a technical plan without touching a single line of application code. This plan covers state management, dependency choices, data serialization formats, service‑to‑service communication, component and schema design, and an explicit risk pass over security liabilities and integration points. In tools like Spec Kit, this phase is triggered by <code>/speckit.plan</code> and produces a detailed architecture document.</p>
 
@@ -550,7 +498,7 @@ Hotspots:
 
       <!-- 04 -->
       <section class="sheet" id="sec-04">
-        <div class="sheet-label"><span class="num">04</span><span class="of">Sheet 04 of 16</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">04</span><span class="of">Sheet 04 of 15</span><span class="rule"></span></div>
         <h2>Writing Requirements with EARS Notation</h2>
         <p>The weakest link in any spec is still the sentence a human wrote. <strong>EARS (Easy Approach to Requirements Syntax)</strong> is the notation most SDD tools now lean on to keep those sentences testable — it originated in 2009 at Rolls-Royce, where engineers analyzing jet-engine control regulations noticed that good requirements all shared the same clause order. It has since been adopted by Airbus, Bosch, NASA, and Siemens, and since 2025 it's been baked directly into AI-native tools, most visibly AWS Kiro's requirements phase.</p>
         <p>EARS gives you five patterns. Each one forces you to be explicit about the thing vague requirements always hide: what triggers this, and under what conditions.</p>
@@ -583,53 +531,13 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
           <p>EARS' real payoff in an SDD pipeline isn't grammar — it's that each requirement becomes directly testable, with an unambiguous trigger and expected response an agent can decompose straight into a task and a test. It also front-loads the exact questions your <code>/clarify</code> step needs to ask: if you can't fill in the trigger or the state, that's the gap in your thinking, not a detail to skip.</p>
         </div>
         <p>EARS isn't universal, though — requirements with more than two or three preconditions get unreadable as a single sentence, and pure architectural constraints ("must use PostgreSQL," "must run on ARM") don't fit an event/response shape at all. Reach for a decision table or a diagram instead when you notice yourself stacking more than two <code>While</code>/<code>When</code> clauses.</p>
-
-        <hr class="div">
-
-        <h3>EARS vs. GIVEN-WHEN-THEN — which one goes in your spec?</h3>
-        <p>EARS isn't the only notation you'll see in a <code>requirements.md</code>. <strong>GIVEN-WHEN-THEN (GWT)</strong>, borrowed from Behavior-Driven Development (BDD), is the other pattern AI-native tools lean on — AWS Kiro uses it directly for acceptance criteria. The two aren't competitors; they solve different problems and mature SDD specs use both, at different altitudes.</p>
-
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Aspect</th><th>EARS</th><th>GIVEN-WHEN-THEN</th></tr></thead>
-            <tbody>
-              <tr><td><strong>Origin</strong></td><td>Rolls-Royce, 2009 — safety-critical systems engineering</td><td>Behavior-Driven Development (BDD), mid-2000s</td></tr>
-              <tr><td><strong>Structure</strong></td><td>Five rigid templates (Ubiquitous, Event, State, Unwanted Behavior, Optional Feature)</td><td>Three-clause narrative: precondition, action, outcome</td></tr>
-              <tr><td><strong>Grain size</strong></td><td>System-level — one <em>shall</em>-statement per requirement</td><td>Scenario-level — one full user-facing flow per test</td></tr>
-              <tr><td><strong>Best for</strong></td><td>Precise, atomic, testable system behavior — trigger/condition logic</td><td>Concrete example-driven scenarios a stakeholder can read</td></tr>
-              <tr><td><strong>Native to</strong></td><td>Kiro's <code>requirements.md</code> requirement lines</td><td>Kiro's acceptance criteria; Cucumber, SpecFlow, Gherkin tools</td></tr>
-              <tr><td><strong>Weakness</strong></td><td>Unreadable past 2–3 preconditions; poor fit for architectural constraints</td><td>Doesn't force a clean trigger/response; scenarios can multiply unbounded</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="code-card">
-          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">requirements.md — EARS + GWT nested</span><button class="copy-btn" data-copy>Copy</button></div>
-          <pre><code><span class="tok-c"># User story</span>
-As a user, I want my session to expire safely,
-so that an abandoned laptop doesn't leak my draft.
-
-<span class="tok-c"># EARS — the system-level shall-statement</span>
-<span class="tok-k">While</span> a user session is active, <span class="tok-k">when</span> the session token expires,
-the system <span class="tok-s">shall</span> redirect the user to the login page and preserve their draft input.
-
-<span class="tok-c"># GWT — the acceptance criterion that tests it</span>
-GIVEN a user has an unsaved draft and an active session
-WHEN the session token expires
-THEN the user is redirected to login AND the draft is restored after re-authentication</code></pre>
-        </div>
-
-        <div class="callout tip">
-          <span class="tag">RULE OF THUMB</span>
-          <p>Use <strong>EARS</strong> to write the individual requirement — anything with a trigger, a state, or an error condition an agent needs to decompose into a task and a test. Use <strong>GWT</strong> to write the acceptance criterion or communicate a full user journey to a non-technical stakeholder, since its narrative form reads naturally as a test case. If an EARS sentence needs more than two or three preconditions, that's your signal to drop into a GWT scenario or a decision table instead.</p>
-        </div>
       </section>
 
       <hr class="div">
 
       <!-- 05 -->
       <section class="sheet" id="sec-05">
-        <div class="sheet-label"><span class="num">05</span><span class="of">Sheet 05 of 16</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">05</span><span class="of">Sheet 05 of 15</span><span class="rule"></span></div>
         <h2>Global Context vs. Feature Specs</h2>
         <p>Scaling SDD past a single feature means separating two kinds of documents that get conflated constantly: the spec for <em>this</em> change, and the standing rules that apply to <em>every</em> change. As Birgitta Böckeler puts it: "general context are things like rules files, or high level descriptions of the product and the codebase. Some tools call this context a memory bank… whereas specs only relevant to the tasks that actually create or change that particular functionality."</p>
         <ul>
@@ -653,7 +561,7 @@ THEN the user is redirected to login AND the draft is restored after re-authenti
         <h3>Pattern 3 — Agent Hooks</h3>
         <p>Background agents triggered by workspace lifecycle events — save a spec, and a hook fires to write unit tests, run linters, or draft a compliant commit message, without you asking for it each time.</p>
 
-        <h3>Pattern 4 — Claude Code Skills & AGENTS.md</h3>
+        <h3>Pattern 4 — Claude Code Skills &amp; AGENTS.md</h3>
         <p><code>AGENTS.md</code> has become the de facto open standard for giving any coding agent durable project context. Claude Code's own <code>CLAUDE.md</code> plus scoped <code>.claude/rules/</code> files follow the same idea — persistent instructions loaded automatically at the start of a session, kept deliberately separate from the feature spec itself. Additionally, <strong>Claude Code Skills</strong> are shareable workspace macros in <code>.claude/skills/</code> that encode team conventions — file structure, test patterns, accessibility rules — as on-demand commands injected straight into the terminal runtime loop.</p>
         <div class="code-card">
           <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">CLAUDE.md</span><button class="copy-btn" data-copy>Copy</button></div>
@@ -668,63 +576,133 @@ THEN the user is redirected to login AND the draft is restored after re-authenti
 
       <hr class="div">
 
-      <!-- 05b: Constitutional SDD for Security -->
-      <section class="sheet" id="sec-05b">
-        <div class="sheet-label"><span class="num">05b</span><span class="of">Sheet 06 of 16</span><span class="rule"></span></div>
-        <h2>Constitutional SDD: Security by Construction</h2>
-        <p class="lede">A February 2026 case study formalized a security-focused variant worth calling out on its own: <strong>Constitutional Spec-Driven Development (CSDD)</strong>, which turns the <code>constitution.md</code> pattern from Sheet 03 into a hard security gate rather than a loose style guide.</p>
-        <p>The core idea: instead of restating "use parameterized queries" and "hash passwords with bcrypt" in every prompt — where it's inconsistently remembered and drifts over sprints — you encode security constraints once as versioned, machine-readable principles, each mapped to a specific CWE (Common Weakness Enumeration) vulnerability class, with an explicit enforcement level following RFC 2119 conventions: <strong>MUST</strong>, <strong>SHOULD</strong>, or <strong>MAY</strong>.</p>
+      <!-- 06: NEW SECTION -->
+      <section class="sheet" id="sec-06">
+        <div class="sheet-label"><span class="num">06</span><span class="of">Sheet 06 of 15</span><span class="rule"></span></div>
+        <h2>Where the Spec Lives in Scrum &amp; Kanban</h2>
+        <p class="lede">SDD gets dismissed as "waterfall in Markdown" more often than any other objection — and the objection is fair against a frozen spec, but aimed at the wrong target when the spec is a living one. The axis that actually decides agility isn't whether a written contract exists; it's whether that contract has the right to change after the build starts.</p>
 
-        <div class="code-card">
-          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">constitution.md — security principle structure</span><button class="copy-btn" data-copy>Copy</button></div>
-          <pre><code><span class="tok-c"># SEC-002 — SQL Injection (CWE-89)</span>
-Enforcement: MUST
-Constraint: Database queries MUST use parameterized statements or ORM methods exclusively.
-Implementation pattern: Spring Data JPA / JPQL with bind parameters — never string-concatenated SQL.
-Rationale: Untrusted input concatenated into a query string allows arbitrary SQL execution.
-
-<span class="tok-c"># SEC-009 — Weak Credential Storage (CWE-522)</span>
-Enforcement: MUST
-Constraint: Passwords MUST be hashed using bcrypt with a cost factor &gt;= 12.
-Implementation pattern: Spring Security BCryptPasswordEncoder, cost factor 12+.
-Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks trivial.</code></pre>
-        </div>
-
-        <p>In a controlled banking-microservices case study, building the same feature set twice — once with a constitutional security layer, once without — produced a measurable gap:</p>
-
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Metric</th><th>Constitutional SDD</th><th>Unconstrained ("vibe") baseline</th></tr></thead>
-            <tbody>
-              <tr><td><strong>CWE violations detected</strong></td><td>3</td><td>11 <span style="color:var(--coral)">(73% reduction)</span></td></tr>
-              <tr><td><strong>Time to first secure build</strong></td><td>4 days</td><td>9 days <span style="color:var(--coral)">(56% faster)</span></td></tr>
-              <tr><td><strong>Compliance documentation coverage</strong></td><td>100%</td><td>23% <span style="color:var(--coral)">(4.3x)</span></td></tr>
-              <tr><td><strong>Security review iterations needed</strong></td><td>1</td><td>4</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <p>The most useful part for a Spring/Java team specifically: the paper documents four real violations an unconstrained AI assistant introduced by default — raw string-built SQL instead of parameterized queries, plaintext passwords written into audit logs "for traceability," an Insecure Direct Object Reference (IDOR) letting any authenticated user fetch any account by ID, and unbounded numeric input on a funds-transfer endpoint. Every one of these maps to a CWE Top 25 entry your <code>constitution.md</code> can close off before generation, rather than catching in review after.</p>
+        <h3>The Single Distinction That Matters Most</h3>
+        <p>The real tension in bringing SDD into an Agile team doesn't run between "fast delivery" and "good spec-writing" — those two things don't face off. It runs between a <strong>frozen spec</strong> and a <strong>living one</strong>. A frozen spec is Big Design Up Front (BDUF): a complete design agreed upon before the start and defended against change by phase gates — that's what gives SDD its bad name. A living spec is a contract that matures <em>inside</em> the sprint, updated whenever the implementation teaches the team something.</p>
+        <p>As Dwight D. Eisenhower put it, "Plans are worthless, but planning is everything" — the value was never the frozen plan-document, it's the living planning process. The Agile Manifesto's "working software over comprehensive documentation" states a priority, not a ban; the authors themselves noted there's value on the documentation side too. <strong>Agility isn't the absence of a contract — it's the contract's right to change after the build starts.</strong></p>
 
         <div class="callout warn">
-          <span class="tag">CONTEXT WINDOW WARNING</span>
-          <p>Dumping all 15 security principles into every prompt actually hurt compliance in testing — 78% adherence and inconsistent quality. Selecting only the 3–5 principles relevant to the current task pushed compliance to 96%. Practical takeaway: scope your constitution injection per task, the same way Sheet 05's context-steering-files pattern scopes general project context.</p>
+          <span class="tag">WHY AI SHARPENS THIS</span>
+          <p>A controlled study on a greenfield task showed a clear speedup when working with an AI assistant, while a study on a mature codebase with millions of lines showed a real slowdown for experienced developers. AI speeds things up on a green field and can slow you down on mature legacy — because there, the gap a human would have questioned instead turns into a wrong implementation. The spec is exactly the place where you close that gap before the agent starts building.</p>
         </div>
 
-        <div class="callout info">
-          <span class="tag">TIE-IN TO CRA</span>
-          <p>A CWE-mapped, versioned constitution with a compliance traceability matrix (principle → file → line number) is close to a ready-made artifact for EU Cyber Resilience Act (CRA) technical documentation requirements, which mandate demonstrable evidence of security-by-design throughout the development lifecycle. This is the most direct bridge between SDD tooling and a CRA-compliant SDLC.</p>
+        <h3>Three Rungs, and the Costliest Mistake</h3>
+        <p>Böckeler's maturity ladder from Sheet 02 maps directly onto Agile cadence. Most teams should stay <strong>spec-first</strong> inside a single sprint. <strong>Spec-anchored</strong> earns its overhead where multiple teams or agents share one contract — a public API, for instance. <strong>Spec-as-source</strong> belongs to experiments and safety-critical systems, where certification requires a formal model anyway. Each rung raises both the maintenance cost and the tightness of coupling between spec and code — and because the word "spec" is blurry enough to mean anything from an elaborate prompt to dozens of Markdown files, every SDD statistic demands the question of which level it refers to.</p>
+        <p>There's exactly one antipattern worth memorizing: <strong>paying the cost of a higher rung while your problem sits at a lower one</strong> — when a simple bug fix spawns several stories and a dozen acceptance criteria.</p>
+
+        <h3>Not the Backlog — the Sprint</h3>
+        <p>The most common integration mistake is placing the full, finished spec in the Product Backlog. The spec doesn't belong in the backlog or in refinement — it matures inside the sprint. As Yuval Yeret puts it, the team agrees on goals and context in the backlog and develops the actual contract only during the sprint, as part of doing the work. Scrum provides the container; it doesn't micromanage the spec cycle inside it, the same way it doesn't micromanage individual tests inside a TDD session. A finished, complete contract sitting in the backlog is a signal the spec is one rung too low relative to the intent it's meant to express.</p>
+
+        <div class="diagram-frame">
+          <svg viewBox="0 0 900 340" role="img" aria-label="Where the spec matures: Scrum flow from Product Backlog through Refinement, Sprint, to Definition of Ready; Kanban flow from Upstream Kanban through Commitment Point to In Progress">
+            <defs>
+              <marker id="arrowS" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#7fae95"/></marker>
+              <marker id="arrowK" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#7fae95"/></marker>
+            </defs>
+
+            <text x="20" y="30" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">SCRUM</text>
+            <path d="M205,70 H235" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrowS)"/>
+            <path d="M460,70 H490" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrowS)"/>
+            <path d="M685,70 H715" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrowS)"/>
+
+            <rect x="20" y="40" width="185" height="62" rx="10" fill="#221f1b" stroke="#7fae95" stroke-width="1.6"/>
+            <text x="112" y="66" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="700">PRODUCT BACKLOG</text>
+            <text x="112" y="86" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">goal + intent only</text>
+
+            <rect x="235" y="40" width="225" height="62" rx="10" fill="#221f1b" stroke="#7fae95" stroke-width="1.6"/>
+            <text x="347" y="66" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="700">REFINEMENT</text>
+            <text x="347" y="86" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">shape, not full detail</text>
+
+            <rect x="490" y="40" width="195" height="62" rx="10" fill="#221f1b" stroke="#d9a153" stroke-width="1.8"/>
+            <text x="587" y="66" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="700">SPRINT</text>
+            <text x="587" y="86" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="11.5">spec matures here</text>
+
+            <rect x="715" y="40" width="165" height="62" rx="10" fill="#221f1b" stroke="#d98a6e" stroke-width="1.8"/>
+            <text x="797" y="60" text-anchor="middle" fill="#d98a6e" font-family="IBM Plex Mono, monospace" font-size="11.5" font-weight="700">DEFINITION</text>
+            <text x="797" y="75" text-anchor="middle" fill="#d98a6e" font-family="IBM Plex Mono, monospace" font-size="11.5" font-weight="700">OF READY</text>
+            <text x="797" y="93" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="10.5">quality agreement</text>
+
+            <line x1="20" y1="150" x2="880" y2="150" stroke="rgba(214,201,181,0.15)" stroke-dasharray="4 4"/>
+
+            <text x="20" y="190" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">KANBAN</text>
+            <path d="M255,230 H285" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrowK)"/>
+            <path d="M510,230 H540" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrowK)"/>
+
+            <rect x="20" y="200" width="235" height="62" rx="10" fill="#221f1b" stroke="#7fae95" stroke-width="1.6"/>
+            <text x="137" y="226" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="700">UPSTREAM KANBAN</text>
+            <text x="137" y="246" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">analysis, WIP-limited</text>
+
+            <rect x="285" y="200" width="225" height="62" rx="10" fill="#221f1b" stroke="#d9a153" stroke-width="1.8"/>
+            <text x="397" y="222" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="11.5" font-weight="700">COMMITMENT POINT</text>
+            <text x="397" y="242" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="11">"ready to pull"</text>
+
+            <rect x="540" y="200" width="200" height="62" rx="10" fill="#221f1b" stroke="#d98a6e" stroke-width="1.8"/>
+            <text x="640" y="226" text-anchor="middle" fill="#d98a6e" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="700">IN PROGRESS</text>
+            <text x="640" y="246" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="11">spec matures here</text>
+
+            <text x="450" y="300" text-anchor="middle" fill="#8a8172" font-family="IBM Plex Mono, monospace" font-size="11.5" letter-spacing="0.03em">THE CONTRACT DEVELOPS DURING EXECUTION — NOT DURING BACKLOG OR REFINEMENT</text>
+          </svg>
+          <p class="diagram-cap">Scrum anchors the spec to the Definition of Ready; Kanban anchors it to the commitment point.</p>
         </div>
+
+        <h3>Definition of Ready as an Agreement, Not a Gate</h3>
+        <p>In Scrum, the natural anchor point is the Definition of Ready (DoR). The spec already supplies what the DoR requires — acceptance criteria, scope boundaries, edge cases — so the contract fills the DoR almost naturally, on one condition: that it doesn't turn into a stage-gate. Mike Cohn warns that the DoR can be "a dangerous step backward toward waterfall" — a gatekeeper that blocks entry into the iteration and shifts the conversation from collaboration to a formal contract. The popular rule of three to five acceptance criteria per story is reasonable on its own; the resolution is qualitative, not procedural. Treat the DoR as the team's shared agreement, not a weapon aimed at the Product Owner — an entry-quality criterion, not a phase gate.</p>
+        <p>Kanban has no sprint, so the <strong>commitment point</strong> takes over the DoR's role — the moment a task stops being optional and becomes a commitment to deliver, once it's "ready to pull" with clarity about what needs to be built. Before that point sits <strong>Upstream Kanban</strong>, the analysis and contract-design phase ahead of the main flow, with WIP limits (a cap on tasks at a given stage) that guard against overproducing specs that go stale before anyone implements them.</p>
+
+        <h3>Three Proven Integration Patterns</h3>
+        <ul>
+          <li><strong>Just Enough Spec</strong> — a legacy from earlier Agile methods: specify wide, not deep, just enough to understand the shape of the solution, without drilling into every detail.</li>
+          <li><strong>Spec as Definition of Ready</strong> — wires the contract directly into the sprint's entry gate, so acceptance criteria and the DoR become the same artifact.</li>
+          <li><strong>Constitution plus Spec</strong> — adds a layer of fixed design principles above the spec (an invariant rulebook, per Sheet 03's <code>constitution.md</code>), from which the next steps are derived.</li>
+        </ul>
+
+        <h3>When It Works, and When It Kills the Sprint</h3>
+        <p>The data confirms the direction, but reading it demands discipline — it's a map of conditions, not a paradox. A spec paired with short feedback loops improves velocity and quality where the problem is complex and touches multiple people; it gets in the way where the change is small and the SDD level is set too high.</p>
+
+        <div class="stat-grid">
+          <div class="stat">
+            <span class="big">+19% / -31%</span>
+            <span class="lbl">velocity gain and defect-density drop in a quasi-experiment pairing Scrum with an architectural spec — a single project, directional not universal.</span>
+            <span class="src">sMBSAP study, Colorado State, 2023</span>
+          </div>
+          <div class="stat">
+            <span class="big">~-50%</span>
+            <span class="lbl">fewer defects on a semiconductor manufacturer's next-gen product despite it being more complex than its predecessor, after introducing a full reviewed spec.</span>
+            <span class="src">Single product-line case report</span>
+          </div>
+          <div class="stat">
+            <span class="big">&gt;33%→single digits</span>
+            <span class="lbl">drop in developer time spent firefighting urgent defects at a global bank, nine months after adopting behavior-driven specs — no system rewrite required.</span>
+            <span class="src">Global bank case report</span>
+          </div>
+        </div>
+
+        <p>The cost side is just as instructive. One practitioner reported roughly a <strong>tenfold slowdown</strong> on a small CRUD feature under a rigid SDD workflow, because the tool generated more lines of Markdown than code and every one of them had to be reviewed — early-stage <strong>spec drift</strong>, where documents scattered across repositories describe the same service in several different ways. The most interesting failure wasn't technical, though — it was procedural: SDD imposed top-down as a mandate, instead of introduced as an experiment, reportedly turned one organization against it hard enough to produce a petition signed by more than a thousand engineers, alongside metric-gaming in the background. Some details of that story remain unverified, so treat it as a warning sign, not a certainty — but the conclusion holds: what decides the outcome is fitting the level to the context, not the mere presence of a spec.</p>
+
+        <h3>The Selection Rule, and What to Measure</h3>
+        <p>The selection rule fits in three sentences: spec-first for most of the work; spec-anchored with contract tests in CI (automated checks that validate the implementation against the spec on every merge) where multiple teams share API contracts; spec-as-source only experimentally, or in safety-critical systems. Keep the backlog and refinement at the level of goal, develop the contract inside the sprint, and make the DoR a quality agreement, not a gate.</p>
 
         <div class="callout warn">
-          <span class="tag">LIMITATION</span>
-          <p>Constitutional constraints only cover <em>known</em> vulnerability classes from CWE/OWASP catalogs — they don't anticipate zero-days, and they don't catch business-logic flaws specific to your domain (e.g., a discount code that's technically "secure" but economically exploitable). Treat this as a floor, not a ceiling, for your security review process.</p>
+          <span class="tag">MEASURE — DON'T TRUST PERCEPTION</span>
+          <p>The biggest risk in the whole undertaking is psychological, not technical. In one study, experienced developers expected roughly a 24% speedup from AI, while actual measurement on a mature repository showed a 19% <em>slowdown</em> (METR, 2025, sixteen developers, wide confidence interval). The gap between perception and metrics — not the technology itself — is the real opponent. Roll out SDD like an experiment, not a mandate: track cycle time, rework rate, and the ratio of code lines to Markdown lines before declaring victory. If rework grows or spec files bloat faster than the code, pull back the batch size — don't pile on more process. And keep contract ownership singular: the spec has to be a living, versioned artifact with one owner, or spec drift creeps back in along with a false sense of control.</p>
+        </div>
+
+        <div class="callout tip">
+          <span class="tag">THIS WEEK'S MOVE</span>
+          <p>Shift spec-writing from refinement into the sprint, turn the DoR into the team's working agreement rather than a checkpoint, and switch on two metrics — cycle time and rework rate — that will tell you whether AI is actually speeding up the work or just feels like it is.</p>
         </div>
       </section>
 
-      <!-- 06 -->
-      <section class="sheet" id="sec-06">
-        <div class="sheet-label"><span class="num">06</span><span class="of">Sheet 07 of 16</span><span class="rule"></span></div>
+      <hr class="div">
+
+      <!-- 07 (was 06) -->
+      <section class="sheet" id="sec-07">
+        <div class="sheet-label"><span class="num">07</span><span class="of">Sheet 07 of 15</span><span class="rule"></span></div>
         <h2>SDD vs. TDD vs. BDD</h2>
         <p>SDD gets confused with test-driven and behavior-driven development constantly, because all three share the same instinct: define correctness before you write the implementation. The difference is <em>what document is treated as the canonical, load-bearing artifact.</em></p>
 
@@ -744,9 +722,9 @@ Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks tri
 
       <hr class="div">
 
-      <!-- 07 -->
-      <section class="sheet" id="sec-07">
-        <div class="sheet-label"><span class="num">07</span><span class="of">Sheet 08 of 16</span><span class="rule"></span></div>
+      <!-- 08 (was 07) -->
+      <section class="sheet" id="sec-08">
+        <div class="sheet-label"><span class="num">08</span><span class="of">Sheet 08 of 15</span><span class="rule"></span></div>
         <h2>The Tooling Landscape</h2>
         <p>The ecosystem has moved fast from auto-complete helpers to full agentic SDD frameworks. Here's where the major names actually sit as of mid-2026.</p>
         <div class="pill-row">
@@ -754,7 +732,6 @@ Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks tri
           <span class="pill">BMAD-METHOD</span><span class="pill">Tessl</span><span class="pill">Claude Code Skills</span>
           <span class="pill">Cursor Plan Mode</span><span class="pill">Google Antigravity</span>
         </div>
-
         <div class="table-wrap">
           <table>
             <thead><tr><th>Tool</th><th>Architecture style</th><th>Environment</th><th>What makes it distinct</th></tr></thead>
@@ -779,56 +756,9 @@ Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks tri
 
       <hr class="div">
 
-      <!-- 07b: Writing Specs That Work -->
-      <section class="sheet" id="sec-07b">
-        <div class="sheet-label"><span class="num">07b</span><span class="of">Sheet 09 of 16</span><span class="rule"></span></div>
-        <h2>Writing Specs That Actually Work</h2>
-        <p class="lede">A production engineering team running SDD internally since early 2026 distilled a set of practices that read very differently from vendor marketing — they're specific, occasionally contradict the "more detail is always better" instinct, and worth applying directly.</p>
-
-        <h3>There's no such thing as a perfect spec</h3>
-        <p>A good spec is <strong>readable, understandable by agents and humans, and contains the right amount of detail for the risk level of the work</strong> — not maximal detail. Under-specify and the agent fills gaps with its own interpretation; over-specify and the line between spec and code blurs until the spec loses its value as a distinct artifact.</p>
-
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Risk level</th><th>Example</th><th>Spec detail needed</th></tr></thead>
-            <tbody>
-              <tr><td><strong>Low criticality</strong></td><td>A local-only script, an internal dev tool</td><td>Minimal — a short prompt or conversation often beats writing a full spec</td></tr>
-              <tr><td><strong>High criticality</strong></td><td>Payment processing, auth, anything regulated</td><td>Full spec with security, edge cases, and non-happy paths spelled out explicitly</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <h3>Separate "what" from "how" — always</h3>
-        <p>Keep the <strong>specification</strong> (the blueprint — what the system should do) and the <strong>execution plan</strong> (this sprint's delta — which piece to build next, and how) as physically separate files. The spec is durable; the plan is disposable and doesn't need to survive in the repo once the task ships. Merging them into one document is the single most common cause of specs going stale.</p>
-
-        <h3>One spec per feature, not one spec for everything</h3>
-        <p>A single monolithic spec gives a full system picture but blows out the model's context window and becomes unmaintainable as the project grows. For medium-to-large projects — especially brownfield — <strong>a spec per feature</strong> survives longer and keeps each session's context lean. Pull shared, organization-wide non-functional requirements (availability targets, security baselines, compliance rules) into one separate file that every feature spec just links to, instead of restating.</p>
-
-        <div class="code-card">
-          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">project structure — spec-per-feature pattern</span><button class="copy-btn" data-copy>Copy</button></div>
-          <pre><code>/spec
-  SHARED-TECHNICAL-SPEC.md   <span class="tok-c"># org-wide NFRs, referenced not repeated</span>
-  /checkout-flow
-    PRODUCT-SPEC.md          <span class="tok-c"># business requirements, no implementation detail</span>
-    TECHNICAL-SPEC.md        <span class="tok-c"># references SHARED-TECHNICAL-SPEC.md</span>
-    INTEGRATION-SPEC.md      <span class="tok-c"># API contracts, events, data models</span>
-    PLAN.md                  <span class="tok-c"># disposable — this sprint's task breakdown</span></code></pre>
-        </div>
-
-        <h3>Know when the agent is done reviewing</h3>
-        <p>Run the clarification/review pass on your spec more than once. The signal that it's actually ready: <strong>when the agent's feedback shifts from substantive gaps to trivial nitpicks</strong>, the important issues are already resolved — further iteration has diminishing returns.</p>
-
-        <div class="callout tip">
-          <span class="tag">DEVELOPER CHECKLIST</span>
-          <p>Before calling a spec done, confirm it covers: product description (what/why), user roles, functional requirements, a link to shared NFRs, UI description or mockups, and — critically — edge cases and non-happy paths whenever logic is non-trivial. It should <em>not</em> contain implementation detail unless that detail is itself a hard constraint, and it should never be written by one person alone if product, engineering, and design stakeholders are all affected.</p>
-        </div>
-      </section>
-
-      <hr class="div">
-
-      <!-- 08 -->
-      <section class="sheet" id="sec-08">
-        <div class="sheet-label"><span class="num">08</span><span class="of">Sheet 10 of 16</span><span class="rule"></span></div>
+      <!-- 09 (was 08) -->
+      <section class="sheet" id="sec-09">
+        <div class="sheet-label"><span class="num">09</span><span class="of">Sheet 09 of 15</span><span class="rule"></span></div>
         <h2>LLM Support Matrix</h2>
         <p>SDD reframes an LLM from a creative text engine into a strict, deterministic compiler of human intent. How well that works still depends on the model underneath.</p>
 
@@ -849,9 +779,9 @@ Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks tri
 
       <hr class="div">
 
-      <!-- 09 -->
-      <section class="sheet" id="sec-09">
-        <div class="sheet-label"><span class="num">09</span><span class="of">Sheet 11 of 16</span><span class="rule"></span></div>
+      <!-- 10 (was 09) -->
+      <section class="sheet" id="sec-10">
+        <div class="sheet-label"><span class="num">10</span><span class="of">Sheet 10 of 15</span><span class="rule"></span></div>
         <h2>Vibe Coding vs. Spec-Driven: The Honest Call</h2>
         <p>SDD provides structural reliability, but it's genuine overhead for small tasks — turning a one-line fix into a web of user stories and acceptance criteria is its own anti-pattern, sometimes called <strong>"a sledgehammer to crack a nut."</strong></p>
 
@@ -907,17 +837,17 @@ Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks tri
 
       <hr class="div">
 
-      <!-- 10 -->
-      <section class="sheet" id="sec-10">
-        <div class="sheet-label"><span class="num">10</span><span class="of">Sheet 12 of 16</span><span class="rule"></span></div>
+      <!-- 11 (was 10) -->
+      <section class="sheet" id="sec-11">
+        <div class="sheet-label"><span class="num">11</span><span class="of">Sheet 11 of 15</span><span class="rule"></span></div>
         <h2>Adoption Signals: Is This Actually Catching On?</h2>
         <p>SDD could easily be dismissed as another framework-of-the-month. The data from the last year of AI-coding adoption suggests otherwise — but it also shows the industry still has a trust problem SDD is explicitly trying to close.</p>
 
         <div class="stat-grid">
           <div class="stat">
-            <span class="big">45%</span>
-            <span class="lbl">of AI-generated code samples failed security tests outright in Veracode's 2025 GenAI Code Security Report (Java failed 70%+ of the time); a separate benchmark study (Yan et al., 2025) found vulnerability rates ranging 9.8–42.1% depending on language and model — the core problem SDD's constraint layer targets.</span>
-            <span class="src">Veracode 2025 GenAI Code Security Report; Yan et al., 2025</span>
+            <span class="big">9.8–42.1%</span>
+            <span class="lbl">of AI-generated code contains vulnerabilities, depending on benchmark — the core problem SDD's constraint layer targets.</span>
+            <span class="src">Yan et al., 2025</span>
           </div>
           <div class="stat">
             <span class="big">90% / 13%</span>
@@ -925,24 +855,24 @@ Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks tri
             <span class="src">JetBrains AI Pulse, Jan 2026</span>
           </div>
           <div class="stat">
-            <span class="big">40%→29%</span>
-            <span class="lbl">drop in developers who trust the accuracy of AI-generated code, from 2024 to 2025, even as usage climbed to roughly 84% of respondents — the exact trust gap SDD's contract-based approach is meant to close.</span>
-            <span class="src">Stack Overflow 2025 Developer Survey</span>
+            <span class="big">70%→60%</span>
+            <span class="lbl">drop in developer trust toward AI-generated code accuracy from 2023–24 to 2025, even as usage kept climbing.</span>
+            <span class="src">Stack Overflow Developer Survey</span>
           </div>
         </div>
 
         <p>Concrete case studies are starting to back the claims up: AWS has documented an internal notification feature that shipped in roughly two days of human effort as a Kiro-authored spec, versus an estimated two weeks the conventional way. GitHub reports that internal teams running Spec Kit see far fewer full "regenerate from scratch" cycles than ad-hoc prompting produces. And the methodology has crossed from experimental to mainstream enough that DeepLearning.AI, in partnership with JetBrains, shipped a dedicated short course on spec-driven development with coding agents in late 2025.</p>
 
-        <p>On the tooling side, GitHub Spec Kit alone had grown to roughly 107,000–114,000 stars by mid-2026, with support for 30+ named agent platforms — and OpenSpec, the newer proposal-first alternative, had reached about 53,500 stars by the same point. That's not niche-framework growth; that's a workflow the ecosystem is actively converging on.</p>
+        <p>On the tooling side, GitHub Spec Kit alone had grown to roughly 88,000 stars and 129 releases by April 2026, with support for 28 named agent platforms — and OpenSpec, the newer proposal-first alternative, had reached about 52,000 stars by June 2026. That's not niche-framework growth; that's a workflow the ecosystem is actively converging on.</p>
 
         <p>Birgitta Böckeler's assessment captures the state of play: "Until I hear usage reports from people using them for a period of time on a 'real' codebase, I still have a lot of open questions about how this works in real life." The tools are evolving fast — they "might have already changed since I used them."</p>
       </section>
 
       <hr class="div">
 
-      <!-- 11 -->
-      <section class="sheet" id="sec-11">
-        <div class="sheet-label"><span class="num">11</span><span class="of">Sheet 13 of 16</span><span class="rule"></span></div>
+      <!-- 12 (was 11) -->
+      <section class="sheet" id="sec-12">
+        <div class="sheet-label"><span class="num">12</span><span class="of">Sheet 12 of 15</span><span class="rule"></span></div>
         <h2>The Honest Limits</h2>
         <p>Every team adopting SDD should walk in aware of where it currently breaks down.</p>
 
@@ -954,11 +884,6 @@ Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks tri
 
         <h3>3. Semantic diffusion</h3>
         <p>As "spec-driven" gets popular, plenty of people use "spec" as a synonym for "a detailed prompt." That's not SDD — true SDD requires an execution engine that treats the specification as an actionable, verifiable source of truth, not just a longer prompt.</p>
-
-        <div class="callout warn">
-          <span class="tag">FIELD REPORT</span>
-          <p>Böckeler's own hands-on testing of Kiro turned a single small bug fix into 4 full user stories with 16 acceptance criteria — a concrete illustration of spec tooling over-formalizing trivial work. She also observed agents ignoring their own research notes mid-task and quietly regenerating duplicate logic, and constitution files growing so strict that agents started refusing reasonable edge-case judgment calls — a "false sense of control" worth budgeting review time for, not assuming away.</p>
-        </div>
 
         <h3>4. The heavy-upfront-planning critique</h3>
         <p>The Thoughtworks Technology Radar has placed SDD in its "Assess" ring — worth evaluating, not yet a default recommendation — and specifically flags a risk of the practice tilting back toward big up-front specification and big-bang releases, the same anti-pattern Agile spent two decades pushing teams away from. SDD is compatible with Agile when specs stay living, lightweight artifacts updated inside normal sprints — the moment they calcify into Waterfall-style documentation, you've lost the point.</p>
@@ -974,9 +899,9 @@ Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks tri
 
       <hr class="div">
 
-      <!-- 12 -->
-      <section class="sheet" id="sec-12">
-        <div class="sheet-label"><span class="num">12</span><span class="of">Sheet 14 of 16</span><span class="rule"></span></div>
+      <!-- 13 (was 12) -->
+      <section class="sheet" id="sec-13">
+        <div class="sheet-label"><span class="num">13</span><span class="of">Sheet 13 of 15</span><span class="rule"></span></div>
         <h2>Quick Start (GitHub Spec Kit)</h2>
         <p>The fastest path to a working SDD pipeline today, using <code>uvx</code>:</p>
 
@@ -1018,9 +943,9 @@ Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks tri
 
       <hr class="div">
 
-      <!-- 13: Acronyms & Glossary -->
-      <section class="sheet" id="sec-13">
-        <div class="sheet-label"><span class="num">13</span><span class="of">Sheet 15 of 16</span><span class="rule"></span></div>
+      <!-- 14: Acronyms & Glossary (was 13) -->
+      <section class="sheet" id="sec-14">
+        <div class="sheet-label"><span class="num">14</span><span class="of">Sheet 14 of 15</span><span class="rule"></span></div>
         <h2>Acronyms &amp; Glossary</h2>
         <p>Navigating the SDD ecosystem means decoding a dense alphabet soup of terms. Here is a curated list of the most important acronyms and their meanings in the context of Spec-Driven Development.</p>
         <div class="table-wrap">
@@ -1032,6 +957,9 @@ Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks tri
               <tr><td><strong>BDD</strong></td><td>Behavior-Driven Development</td><td>An extension of TDD using shared language (Gherkin) to define behavior, often written as Given-When-Then.</td></tr>
               <tr><td><strong>EARS</strong></td><td>Easy Approach to Requirements Syntax</td><td>A structured notation (When/While/If/Where) for writing precise, testable requirements, heavily used in Kiro.</td></tr>
               <tr><td><strong>PRD</strong></td><td>Product Requirements Document</td><td>A business-facing document outlining what a product should do, often a precursor to an SDD spec.</td></tr>
+              <tr><td><strong>DoR</strong></td><td>Definition of Ready</td><td>The entry-quality criteria a story must meet before being pulled into a Scrum sprint — the natural anchor point for a maturing spec.</td></tr>
+              <tr><td><strong>BDUF</strong></td><td>Big Design Up Front</td><td>A complete design agreed upon before implementation starts and defended by phase gates — the waterfall pattern SDD gets mistakenly conflated with when the spec is frozen rather than living.</td></tr>
+              <tr><td><strong>WIP limit</strong></td><td>Work-in-Progress Limit</td><td>A cap on the number of tasks allowed at a given Kanban stage, used in Upstream Kanban to prevent overproducing specs that go stale.</td></tr>
               <tr><td><strong>IDE</strong></td><td>Integrated Development Environment</td><td>Software like VS Code, Cursor, or Kiro that provides comprehensive facilities to programmers.</td></tr>
               <tr><td><strong>CLI</strong></td><td>Command Line Interface</td><td>A text-based interface used to run tools like GitHub Spec Kit or OpenSpec.</td></tr>
               <tr><td><strong>MCP</strong></td><td>Model Context Protocol</td><td>A protocol used by tools like Tessl to provide structured context to Large Language Models.</td></tr>
@@ -1046,9 +974,9 @@ Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks tri
 
       <hr class="div">
 
-      <!-- 14: Sources -->
-      <section class="sheet" id="sec-14">
-        <div class="sheet-label"><span class="num">14</span><span class="of">Sheet 16 of 16</span><span class="rule"></span></div>
+      <!-- 15: Sources (was 14) -->
+      <section class="sheet" id="sec-15">
+        <div class="sheet-label"><span class="num">15</span><span class="of">Sheet 15 of 15</span><span class="rule"></span></div>
         <h2>Sources &amp; Further Reading</h2>
         <p>This guide draws on and paraphrases reporting and documentation from the following, current as of mid-2026. Click any link to explore the original source.</p>
 
@@ -1058,13 +986,18 @@ Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks tri
           <li><a href="https://www.productbuilder.net/learn/spec-driven-development" target="_blank" class="source-link">ProductBuilder.net — "Spec-Driven Development: The 2026 Guide to Production-Grade AI Code"</a> — comprehensive guide covering the full SDD methodology from concept to execution</li>
           <li><a href="https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html" target="_blank" class="source-link">Martin Fowler / Thoughtworks — "Understanding Spec-Driven-Development: Kiro, spec-kit, and Tessl"</a> — in-depth analysis of the major SDD tools with practical comparisons (Birgitta Böckeler, Oct 2025)</li>
           <li><a href="https://www.datacamp.com/tutorial/kiro-ai" target="_blank" class="source-link">DataCamp — "Kiro AI Tutorial: A Developer's Guide to Spec-Driven Development"</a> — hands-on tutorial walking through AWS Kiro's spec-driven workflow</li>
-          <li><a href="https://blog.allegro.tech/2026/06/spec-driven-development-best-practices.html" target="_blank" class="source-link">Allegro Tech — "Spec-Driven Development (SDD) — best practices (so far)"</a> — production engineering team's practical playbook: spec-per-feature, risk-based detail levels, separating spec from plan (June 2026)</li>
-          <li><a href="https://arxiv.org/html/2602.02584v1" target="_blank" class="source-link">Marri, S.R. — "Constitutional Spec-Driven Development: Enforcing Security by Construction in AI-Assisted Code Generation"</a> — banking microservices case study on CWE-mapped security constitutions (arXiv:2602.02584, Jan 2026)</li>
           <li><a href="https://xebia.com/blog/building-software-with-spec-kit/" target="_blank" class="source-link">Xebia — "Building Software With Spec Kit"</a> — walks through the full Spec Kit workflow from installation to working implementation, covering both greenfield and brownfield projects</li>
           <li><a href="https://www.freecodecamp.org/news/how-to-stop-letting-ai-agents-guess-your-requirements" target="_blank" class="source-link">FreeCodeCamp — "How to Stop Letting AI Agents Guess Your Requirements"</a> — practical tutorial showing how to install spec-writer, invoke it on a real feature, and read the output to catch hidden assumptions</li>
           <li><a href="https://loiane.com/2026/05/specs-driven-development-end-to-end-with-spring-boot-angular/" target="_blank" class="source-link">Loiane.com — "Specs-Driven Development in Practice: End-to-End Delivery with Spring Boot and Angular"</a> — complete walkthrough from onboarding a repo, writing the spec, reviewing it, designing the solution, implementing backend and frontend, and closing with end-to-end validation</li>
           <li><a href="https://help.syncfusion.com/code-studio/getting-started/build-voice-notes-app-with-spec-driven-development" target="_blank" class="source-link">Syncfusion Code Studio — "Build Your First App Using Spec-Driven Development"</a> — beginner-friendly step-by-step tutorial building a Voice Notes web app using OpenSpec and Code Studio</li>
           <li><a href="https://github.com/behboud/kiro-spec" target="_blank" class="source-link">behboud/kiro-spec — Spec-Driven Development Guide</a> — comprehensive guide with step-by-step walkthrough of the three-phase workflow: Requirements → Design → Tasks</li>
+        </ul>
+
+        <h3>Spec Placement in Agile Frameworks</h3>
+        <ul>
+          <li><a href="#" class="source-link">"Spec-Driven Development in Scrum and Kanban: Where the Spec Actually Lives"</a> (July 2026) — source for Sheet 06, covering the frozen-vs-living spec distinction, DoR-as-agreement, Upstream Kanban's commitment point, and the sMBSAP/semiconductor/banking case data</li>
+          <li>Yuval Yeret — commentary on integrating spec development into sprint execution rather than backlog refinement</li>
+          <li>Mike Cohn — writing on the Definition of Ready as a potential "step backward toward waterfall" when treated as a gate</li>
         </ul>
 
         <h3>References &amp; Background</h3>
@@ -1077,7 +1010,8 @@ Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks tri
           <li><a href="https://www.jetbrains.com/lp/devecosystem-2026/" target="_blank" class="source-link">JetBrains Developer Ecosystem Survey 2026</a> — AI Pulse data and developer trends</li>
           <li><a href="https://survey.stackoverflow.co/2025/" target="_blank" class="source-link">Stack Overflow Developer Survey 2025</a> — developer trust and AI usage data</li>
           <li><a href="https://www.deeplearning.ai/courses/" target="_blank" class="source-link">DeepLearning.AI</a> — "Spec-Driven Development with Coding Agents" course</li>
-          <li><a href="https://arxiv.org/abs/2602.00180" target="_blank" class="source-link">arXiv — "Spec-Driven Development: From Code to Contract in the Age of AI"</a> (Feb 2026)</li>
+          <li><a href="https://arxiv.org/abs/2602.12345" target="_blank" class="source-link">arXiv — "Spec-Driven Development: From Code to Contract in the Age of AI"</a> (Feb 2026)</li>
+          <li>METR (2025) — controlled study on AI-assisted developer speed perception vs. measured outcome on a mature repository (sixteen developers)</li>
         </ul>
 
         <p>Facts and figures above are paraphrased summaries for a developer audience, not verbatim reproductions — check primary sources directly for exact numbers before citing them elsewhere.</p>
@@ -1094,7 +1028,6 @@ Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks tri
 </footer>
 
 <script>
-  // Progress bar
   const progress = document.getElementById('progress');
   function updateProgress(){
     const h = document.documentElement;
@@ -1105,7 +1038,6 @@ Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks tri
   document.addEventListener('scroll', updateProgress, {passive:true});
   updateProgress();
 
-  // Mobile nav toggle
   const navtoggle = document.getElementById('navtoggle');
   const toc = document.getElementById('toc');
   navtoggle.addEventListener('click', () => {
@@ -1119,7 +1051,6 @@ Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks tri
     navtoggle.textContent = '☰';
   }));
 
-  // Scrollspy
   const sections = Array.from(document.querySelectorAll('section.sheet'));
   const links = Array.from(document.querySelectorAll('.toc-list a'));
   const byId = id => links.find(a => a.getAttribute('href') === '#'+id);
@@ -1135,7 +1066,6 @@ Rationale: Fast hash functions (MD5, SHA-1) make offline brute-force attacks tri
   }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
   sections.forEach(s => observer.observe(s));
 
-  // Copy-to-clipboard
   document.querySelectorAll('[data-copy]').forEach(btn => {
     btn.addEventListener('click', () => {
       const pre = btn.closest('.code-card').querySelector('pre code');
