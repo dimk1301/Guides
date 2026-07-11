@@ -414,7 +414,7 @@
 
       <hr class="div">
 
-      <!-- 03 -->
+      <!-- 03 (UPDATED) -->
       <section class="sheet" id="sec-03">
         <div class="sheet-label"><span class="num">03</span><span class="of">Sheet 03 of 15</span><span class="rule"></span></div>
         <h2>Core Workflow: The 4-Phase Loop</h2>
@@ -460,6 +460,19 @@
           <p class="diagram-cap">The loop never truly ends — Implement validates continuously back against Specify, not just once at the end.</p>
         </div>
 
+        <h3>The 4 Phases at a Glance</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Phase</th><th>Goal</th><th>Key Output</th><th>Checkpoint / Validation</th></tr></thead>
+            <tbody>
+              <tr><td><strong>1. Specify</strong></td><td>Define <em>what</em> and <em>why</em>, not how.</td><td>Authoritative <code>spec.md</code></td><td>Spec must be complete and unambiguous before planning.</td></tr>
+              <tr><td><strong>2. Plan</strong></td><td>Decide <em>how</em> to build it.</td><td>Technical <code>plan.md</code></td><td>Plan must be feasible; each requirement mapped to a strategy.</td></tr>
+              <tr><td><strong>3. Tasks</strong></td><td>Break work into independent, verifiable units.</td><td>Ordered <code>tasks.md</code> checklist</td><td>Checklist must fully cover the spec before coding starts.</td></tr>
+              <tr><td><strong>4. Implement</strong></td><td>Write code against the spec and the task list.</td><td>Tested, working code</td><td>Code must be validated against the original spec.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
         <h3>Phase 1 — Specify &amp; Clarify</h3>
         <p>You author a structured, behavior-oriented Markdown artifact. Before planning starts, an automated clarification pass (<code>/clarify</code> in Spec Kit, or an equivalent in other tools) has the model parse the document for logical gaps, contradictions, and ambiguity — surfacing questions <em>before</em> they turn into wrong code. In Kiro, this phase typically produces a <code>requirements.md</code> file that lists user stories and their acceptance criteria. The output is a single source of truth that defines the system's behavior, constraints, and success criteria.</p>
         <ul>
@@ -492,17 +505,23 @@
 - Unit tests are required for any newly created utility method.
 - Write tests <span class="tok-s">before</span> implementing any business logic (TDD discipline).</code></pre>
         </div>
+
+        <div class="callout info">
+          <span class="tag">FOR MANAGERS</span>
+          <p>The 4-phase loop provides full traceability. If requirements change, you update the spec (Phase 1) and the plan/tasks cascade automatically — no more guesswork about what code to patch. This is the key to managing AI‑generated code at scale.</p>
+        </div>
       </section>
 
       <hr class="div">
 
-      <!-- 04 -->
+      <!-- 04 (UPDATED) -->
       <section class="sheet" id="sec-04">
         <div class="sheet-label"><span class="num">04</span><span class="of">Sheet 04 of 15</span><span class="rule"></span></div>
         <h2>Writing Requirements with EARS Notation</h2>
         <p>The weakest link in any spec is still the sentence a human wrote. <strong>EARS (Easy Approach to Requirements Syntax)</strong> is the notation most SDD tools now lean on to keep those sentences testable — it originated in 2009 at Rolls-Royce, where engineers analyzing jet-engine control regulations noticed that good requirements all shared the same clause order. It has since been adopted by Airbus, Bosch, NASA, and Siemens, and since 2025 it's been baked directly into AI-native tools, most visibly AWS Kiro's requirements phase.</p>
-        <p>EARS gives you five patterns. Each one forces you to be explicit about the thing vague requirements always hide: what triggers this, and under what conditions.</p>
+        <p>EARS gives you five patterns. Each one forces you to be explicit about the thing vague requirements always hide: <strong>what triggers this, and under what conditions.</strong></p>
 
+        <h3>EARS Pattern Quick Reference</h3>
         <div class="table-wrap">
           <table>
             <thead><tr><th>Pattern</th><th>Keyword</th><th>Template</th><th>Example</th></tr></thead>
@@ -510,7 +529,7 @@
               <tr><td><strong>Ubiquitous</strong></td><td>— (none)</td><td>The &lt;system&gt; shall &lt;response&gt;</td><td>The system shall hash all passwords using bcrypt.</td></tr>
               <tr><td><strong>Event-Driven</strong></td><td>When</td><td>When &lt;trigger&gt;, the &lt;system&gt; shall &lt;response&gt;</td><td>When a file upload exceeds 10MB, the system shall reject it with an error.</td></tr>
               <tr><td><strong>State-Driven</strong></td><td>While</td><td>While &lt;state&gt;, the &lt;system&gt; shall &lt;response&gt;</td><td>While a password-reset link is valid, the system shall allow setting a new password.</td></tr>
-              <tr><td><strong>Unwanted Behavior</strong></td><td>If / Then</td><td>If &lt;condition&gt;, then the &lt;system&gt; shall &lt;response&gt;</td><td>If an invalid card number is entered, then the system shall display a re-entry prompt.</td></tr>
+              <tr><td><strong>Unwanted Behavior</strong></td><td>If</td><td>If &lt;condition&gt;, then the &lt;system&gt; shall &lt;response&gt;</td><td>If an invalid card number is entered, then the system shall display a re-entry prompt.</td></tr>
               <tr><td><strong>Optional Feature</strong></td><td>Where</td><td>Where &lt;feature present&gt;, the &lt;system&gt; shall &lt;response&gt;</td><td>Where two-factor auth is enabled, the system shall send a code via SMS.</td></tr>
             </tbody>
           </table>
@@ -524,26 +543,34 @@
 the system <span class="tok-s">shall</span> redirect the user to the login page and preserve their draft input.</code></pre>
         </div>
 
-        <p>In Kiro, requirements are structured as a list where each requirement represents a user story in "As a…" format with acceptance criteria in "GIVEN… WHEN… THEN…" format.</p>
-
         <div class="callout info">
-          <span class="tag">WHY IT MATTERS FOR AI AGENTS</span>
-          <p>EARS' real payoff in an SDD pipeline isn't grammar — it's that each requirement becomes directly testable, with an unambiguous trigger and expected response an agent can decompose straight into a task and a test. It also front-loads the exact questions your <code>/clarify</code> step needs to ask: if you can't fill in the trigger or the state, that's the gap in your thinking, not a detail to skip.</p>
+          <span class="tag">WHY EARS WORKS FOR AI</span>
+          <p>EARS makes each requirement directly testable — an unambiguous trigger and expected response that an agent can decompose into a task and a test. It also front‑loads the exact questions your <code>/clarify</code> step needs to ask: if you can't fill in the trigger or the state, that's the gap in your thinking, not a detail to skip.</p>
         </div>
+
+        <h3>Good vs. Bad: A Quick Example</h3>
+        <ul>
+          <li><strong>❌ Bad (vague):</strong> "The system should handle many requests quickly."</li>
+          <li><strong>✅ Good (EARS):</strong> <code>When the system receives more than 1000 requests per second, it shall maintain a median response time under 200ms for 99% of requests.</code></li>
+        </ul>
+
         <p>EARS isn't universal, though — requirements with more than two or three preconditions get unreadable as a single sentence, and pure architectural constraints ("must use PostgreSQL," "must run on ARM") don't fit an event/response shape at all. Reach for a decision table or a diagram instead when you notice yourself stacking more than two <code>While</code>/<code>When</code> clauses.</p>
       </section>
 
       <hr class="div">
 
-      <!-- 05 -->
+      <!-- 05 (UPDATED) -->
       <section class="sheet" id="sec-05">
         <div class="sheet-label"><span class="num">05</span><span class="of">Sheet 05 of 15</span><span class="rule"></span></div>
         <h2>Global Context vs. Feature Specs</h2>
-        <p>Scaling SDD past a single feature means separating two kinds of documents that get conflated constantly: the spec for <em>this</em> change, and the standing rules that apply to <em>every</em> change. As Birgitta Böckeler puts it: "general context are things like rules files, or high level descriptions of the product and the codebase. Some tools call this context a memory bank… whereas specs only relevant to the tasks that actually create or change that particular functionality."</p>
+        <p>Scaling SDD past a single feature means separating two kinds of documents that get conflated constantly: the spec for <em>this</em> change, and the standing rules that apply to <em>every</em> change. Think of it as a <strong>two‑layer model</strong>:</p>
+
         <ul>
-          <li><strong>Feature specifications</strong> — temporary, localized to one task or bug fix. Once it ships, archive or freeze it.</li>
-          <li><strong>Memory banks / context files</strong> — persistent documents loaded into every session. They're your organization's standing source of truth, not this sprint's.</li>
+          <li><strong>Layer 1: Global Context (the "Company Handbook")</strong> — Persistent rules that apply to all projects and sessions: coding standards, security policies, tech stack choices, testing requirements. Stored in <code>constitution.md</code>, <code>AGENTS.md</code>, or <code>CLAUDE.md</code>. It rarely changes and provides consistent "company policy" for every AI session.</li>
+          <li><strong>Layer 2: Feature Spec (the "Project Blueprint")</strong> — Temporary, localized to one task or bug fix. Includes user stories, EARS requirements, acceptance criteria. Lives in <code>spec.md</code> (or similar) and evolves with the feature. It's the primary guide for the current AI session.</li>
         </ul>
+
+        <p>As Birgitta Böckeler puts it: "general context are things like rules files, or high level descriptions of the product and the codebase. Some tools call this context a memory bank… whereas specs only relevant to the tasks that actually create or change that particular functionality."</p>
 
         <h3>Pattern 1 — The Project Constitution</h3>
         <p>A global file acting as an uncompromising set of laws for every session, so nobody has to retype the same constraints into every prompt.</p>
@@ -576,14 +603,17 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <hr class="div">
 
-      <!-- 06: NEW SECTION -->
+      <!-- 06 (UPDATED) -->
       <section class="sheet" id="sec-06">
         <div class="sheet-label"><span class="num">06</span><span class="of">Sheet 06 of 15</span><span class="rule"></span></div>
         <h2>Where the Spec Lives in Scrum &amp; Kanban</h2>
         <p class="lede">SDD gets dismissed as "waterfall in Markdown" more often than any other objection — and the objection is fair against a frozen spec, but aimed at the wrong target when the spec is a living one. The axis that actually decides agility isn't whether a written contract exists; it's whether that contract has the right to change after the build starts.</p>
 
-        <h3>The Single Distinction That Matters Most</h3>
-        <p>The real tension in bringing SDD into an Agile team doesn't run between "fast delivery" and "good spec-writing" — those two things don't face off. It runs between a <strong>frozen spec</strong> and a <strong>living one</strong>. A frozen spec is Big Design Up Front (BDUF): a complete design agreed upon before the start and defended against change by phase gates — that's what gives SDD its bad name. A living spec is a contract that matures <em>inside</em> the sprint, updated whenever the implementation teaches the team something.</p>
+        <h3>Frozen vs. Living Spec — The Real Distinction</h3>
+        <ul>
+          <li><strong>❌ Frozen Spec</strong> — fully defined before development, defended against change. This is Big Design Up Front (BDUF) and gives SDD a bad name.</li>
+          <li><strong>✅ Living Spec</strong> — a contract that matures <em>inside</em> the sprint, updated whenever implementation teaches the team something new. This is fully compatible with Agile.</li>
+        </ul>
         <p>As Dwight D. Eisenhower put it, "Plans are worthless, but planning is everything" — the value was never the frozen plan-document, it's the living planning process. The Agile Manifesto's "working software over comprehensive documentation" states a priority, not a ban; the authors themselves noted there's value on the documentation side too. <strong>Agility isn't the absence of a contract — it's the contract's right to change after the build starts.</strong></p>
 
         <div class="callout warn">
