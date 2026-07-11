@@ -414,7 +414,7 @@
 
       <hr class="div">
 
-      <!-- 03 (UPDATED) -->
+      <!-- 03 -->
       <section class="sheet" id="sec-03">
         <div class="sheet-label"><span class="num">03</span><span class="of">Sheet 03 of 15</span><span class="rule"></span></div>
         <h2>Core Workflow: The 4-Phase Loop</h2>
@@ -514,7 +514,7 @@
 
       <hr class="div">
 
-      <!-- 04 (UPDATED) -->
+      <!-- 04 -->
       <section class="sheet" id="sec-04">
         <div class="sheet-label"><span class="num">04</span><span class="of">Sheet 04 of 15</span><span class="rule"></span></div>
         <h2>Writing Requirements with EARS Notation</h2>
@@ -559,7 +559,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <hr class="div">
 
-      <!-- 05 (UPDATED) -->
+      <!-- 05 -->
       <section class="sheet" id="sec-05">
         <div class="sheet-label"><span class="num">05</span><span class="of">Sheet 05 of 15</span><span class="rule"></span></div>
         <h2>Global Context vs. Feature Specs</h2>
@@ -603,30 +603,48 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <hr class="div">
 
-      <!-- 06 (UPDATED) -->
+      <!-- 06 — REVISED AND SIMPLIFIED -->
       <section class="sheet" id="sec-06">
         <div class="sheet-label"><span class="num">06</span><span class="of">Sheet 06 of 15</span><span class="rule"></span></div>
         <h2>Where the Spec Lives in Scrum &amp; Kanban</h2>
-        <p class="lede">SDD gets dismissed as "waterfall in Markdown" more often than any other objection — and the objection is fair against a frozen spec, but aimed at the wrong target when the spec is a living one. The axis that actually decides agility isn't whether a written contract exists; it's whether that contract has the right to change after the build starts.</p>
 
-        <h3>Frozen vs. Living Spec — The Real Distinction</h3>
+        <h3>The One Big Misconception</h3>
+        <p>The most common objection to SDD is that it's just "waterfall in Markdown." That criticism is valid <em>if</em> your spec is frozen and never allowed to change. But SDD becomes fully Agile when the spec is <strong>living</strong> — meaning it evolves as you learn.</p>
+        <p>The real test of agility is not <em>whether</em> you have a spec, but <em>whether that spec is allowed to change after development starts.</em></p>
+
         <ul>
-          <li><strong>❌ Frozen Spec</strong> — fully defined before development, defended against change. This is Big Design Up Front (BDUF) and gives SDD a bad name.</li>
-          <li><strong>✅ Living Spec</strong> — a contract that matures <em>inside</em> the sprint, updated whenever implementation teaches the team something new. This is fully compatible with Agile.</li>
+          <li><strong>❌ Frozen Spec</strong> – locked down before coding, resistant to change. This is Big Design Up Front (BDUF) and is <em>not</em> Agile.</li>
+          <li><strong>✅ Living Spec</strong> – updated during the sprint as new insights emerge. The AI then regenerates the code from the updated spec. This is Agile.</li>
         </ul>
-        <p>As Dwight D. Eisenhower put it, "Plans are worthless, but planning is everything" — the value was never the frozen plan-document, it's the living planning process. The Agile Manifesto's "working software over comprehensive documentation" states a priority, not a ban; the authors themselves noted there's value on the documentation side too. <strong>Agility isn't the absence of a contract — it's the contract's right to change after the build starts.</strong></p>
 
-        <div class="callout warn">
-          <span class="tag">WHY AI SHARPENS THIS</span>
-          <p>A controlled study on a greenfield task showed a clear speedup when working with an AI assistant, while a study on a mature codebase with millions of lines showed a real slowdown for experienced developers. AI speeds things up on a green field and can slow you down on mature legacy — because there, the gap a human would have questioned instead turns into a wrong implementation. The spec is exactly the place where you close that gap before the agent starts building.</p>
+        <div class="callout tip">
+          <span class="tag">FOR MANAGERS</span>
+          <p>The Agile Manifesto says <strong>"working software over comprehensive documentation"</strong> — it prioritises working software, but it doesn't say documentation is useless. A living spec is a form of working documentation because it directly drives AI to produce working software. It supports Agile's core value of <strong>"responding to change"</strong> better than a fixed plan ever could.</p>
         </div>
 
-        <h3>Three Rungs, and the Costliest Mistake</h3>
-        <p>Böckeler's maturity ladder from Sheet 02 maps directly onto Agile cadence. Most teams should stay <strong>spec-first</strong> inside a single sprint. <strong>Spec-anchored</strong> earns its overhead where multiple teams or agents share one contract — a public API, for instance. <strong>Spec-as-source</strong> belongs to experiments and safety-critical systems, where certification requires a formal model anyway. Each rung raises both the maintenance cost and the tightness of coupling between spec and code — and because the word "spec" is blurry enough to mean anything from an elaborate prompt to dozens of Markdown files, every SDD statistic demands the question of which level it refers to.</p>
-        <p>There's exactly one antipattern worth memorizing: <strong>paying the cost of a higher rung while your problem sits at a lower one</strong> — when a simple bug fix spawns several stories and a dozen acceptance criteria.</p>
+        <h3>The Three Maturity Levels — and the Costliest Mistake</h3>
+        <p>From Sheet 02, remember the three rungs of SDD maturity. They map directly to how you use them in Agile:</p>
 
-        <h3>Not the Backlog — the Sprint</h3>
-        <p>The most common integration mistake is placing the full, finished spec in the Product Backlog. The spec doesn't belong in the backlog or in refinement — it matures inside the sprint. As Yuval Yeret puts it, the team agrees on goals and context in the backlog and develops the actual contract only during the sprint, as part of doing the work. Scrum provides the container; it doesn't micromanage the spec cycle inside it, the same way it doesn't micromanage individual tests inside a TDD session. A finished, complete contract sitting in the backlog is a signal the spec is one rung too low relative to the intent it's meant to express.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Level</th><th>When to use</th><th>Cost / Overhead</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Spec-First</strong></td><td>Most day‑to‑day work inside a single sprint.</td><td>Low – good for most features.</td></tr>
+              <tr><td><strong>Spec-Anchored</strong></td><td>When multiple teams or agents share the same contract (e.g., a public API).</td><td>Medium – requires more coordination.</td></tr>
+              <tr><td><strong>Spec-As-Source</strong></td><td>Experiments, safety‑critical systems, or formal certification projects.</td><td>High – full regeneration, heavy overhead.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p><strong>The single biggest mistake:</strong> using a higher‑level spec for a simple task. If you turn a one‑line bug fix into a dozen acceptance criteria and multiple stories, you're paying too much for too little gain. <strong>Keep the level matched to the problem.</strong></p>
+
+        <h3>Where the Spec Belongs: In the Sprint, Not the Backlog</h3>
+        <p>Many teams make the error of writing the complete spec in the Product Backlog. That's wrong.</p>
+        <ul>
+          <li><strong>In the Backlog:</strong> keep only the <em>intent</em> — enough to understand the goal.</li>
+          <li><strong>In the Sprint:</strong> develop the detailed spec (user stories, EARS requirements, acceptance criteria) as part of the implementation work.</li>
+        </ul>
+        <p>As Yuval Yeret says: the team agrees on goals and context in the backlog, and develops the actual contract <em>during</em> the sprint, as part of doing the work. Scrum provides the container; it doesn't micromanage the spec cycle inside it, just as it doesn't micromanage individual TDD tests.</p>
 
         <div class="diagram-frame">
           <svg viewBox="0 0 900 340" role="img" aria-label="Where the spec matures: Scrum flow from Product Backlog through Refinement, Sprint, to Definition of Ready; Kanban flow from Upstream Kanban through Commitment Point to In Progress">
@@ -677,54 +695,67 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
             <text x="450" y="300" text-anchor="middle" fill="#8a8172" font-family="IBM Plex Mono, monospace" font-size="11.5" letter-spacing="0.03em">THE CONTRACT DEVELOPS DURING EXECUTION — NOT DURING BACKLOG OR REFINEMENT</text>
           </svg>
-          <p class="diagram-cap">Scrum anchors the spec to the Definition of Ready; Kanban anchors it to the commitment point.</p>
+          <p class="diagram-cap">In Scrum, the spec matures inside the Sprint, anchored by the Definition of Ready. In Kanban, the commitment point plays the same role.</p>
         </div>
 
-        <h3>Definition of Ready as an Agreement, Not a Gate</h3>
-        <p>In Scrum, the natural anchor point is the Definition of Ready (DoR). The spec already supplies what the DoR requires — acceptance criteria, scope boundaries, edge cases — so the contract fills the DoR almost naturally, on one condition: that it doesn't turn into a stage-gate. Mike Cohn warns that the DoR can be "a dangerous step backward toward waterfall" — a gatekeeper that blocks entry into the iteration and shifts the conversation from collaboration to a formal contract. The popular rule of three to five acceptance criteria per story is reasonable on its own; the resolution is qualitative, not procedural. Treat the DoR as the team's shared agreement, not a weapon aimed at the Product Owner — an entry-quality criterion, not a phase gate.</p>
-        <p>Kanban has no sprint, so the <strong>commitment point</strong> takes over the DoR's role — the moment a task stops being optional and becomes a commitment to deliver, once it's "ready to pull" with clarity about what needs to be built. Before that point sits <strong>Upstream Kanban</strong>, the analysis and contract-design phase ahead of the main flow, with WIP limits (a cap on tasks at a given stage) that guard against overproducing specs that go stale before anyone implements them.</p>
+        <h3>Definition of Ready: Agreement, Not Gate</h3>
+        <p>In Scrum, the natural home for the spec is the <strong>Definition of Ready (DoR)</strong>. The DoR is the team's shared understanding of when a story is ready to be pulled into a sprint. SDD's acceptance criteria naturally fill that need.</p>
+        <p><strong>But:</strong> don't turn the DoR into a bureaucratic phase gate. Mike Cohn warns that the DoR can become "a dangerous step backward toward waterfall" if used to block work rather than to collaborate. Keep it a quality agreement, not a weapon.</p>
+        <p><strong>For Kanban:</strong> use the <strong>commitment point</strong> — the moment a task becomes a commitment to deliver. Before that, the task sits in <strong>Upstream Kanban</strong> for analysis and spec design, with WIP limits to avoid over‑producing specs that go stale.</p>
 
-        <h3>Three Proven Integration Patterns</h3>
+        <h3>Three Simple Integration Patterns</h3>
         <ul>
-          <li><strong>Just Enough Spec</strong> — a legacy from earlier Agile methods: specify wide, not deep, just enough to understand the shape of the solution, without drilling into every detail.</li>
-          <li><strong>Spec as Definition of Ready</strong> — wires the contract directly into the sprint's entry gate, so acceptance criteria and the DoR become the same artifact.</li>
-          <li><strong>Constitution plus Spec</strong> — adds a layer of fixed design principles above the spec (an invariant rulebook, per Sheet 03's <code>constitution.md</code>), from which the next steps are derived.</li>
+          <li><strong>Just Enough Spec</strong> – specify wide, not deep. Only enough to understand the shape of the solution.</li>
+          <li><strong>Spec as Definition of Ready</strong> – make the acceptance criteria the DoR itself.</li>
+          <li><strong>Constitution + Spec</strong> – keep a fixed rulebook (the Constitution) and a separate feature spec.</li>
         </ul>
 
-        <h3>When It Works, and When It Kills the Sprint</h3>
-        <p>The data confirms the direction, but reading it demands discipline — it's a map of conditions, not a paradox. A spec paired with short feedback loops improves velocity and quality where the problem is complex and touches multiple people; it gets in the way where the change is small and the SDD level is set too high.</p>
+        <h3>What the Data Says — and the Warning Signs</h3>
+        <p>Studies show real benefits when the spec is paired with short feedback loops — but only if the problem is complex and involves multiple people. For small changes, SDD can be overkill.</p>
 
         <div class="stat-grid">
           <div class="stat">
             <span class="big">+19% / -31%</span>
-            <span class="lbl">velocity gain and defect-density drop in a quasi-experiment pairing Scrum with an architectural spec — a single project, directional not universal.</span>
+            <span class="lbl">velocity gain and defect-density drop in a quasi‑experiment pairing Scrum with an architectural spec.</span>
             <span class="src">sMBSAP study, Colorado State, 2023</span>
           </div>
           <div class="stat">
             <span class="big">~-50%</span>
-            <span class="lbl">fewer defects on a semiconductor manufacturer's next-gen product despite it being more complex than its predecessor, after introducing a full reviewed spec.</span>
-            <span class="src">Single product-line case report</span>
+            <span class="lbl">fewer defects on a semiconductor product after introducing a full reviewed spec.</span>
+            <span class="src">Single product‑line case report</span>
           </div>
           <div class="stat">
             <span class="big">&gt;33%→single digits</span>
-            <span class="lbl">drop in developer time spent firefighting urgent defects at a global bank, nine months after adopting behavior-driven specs — no system rewrite required.</span>
+            <span class="lbl">drop in urgent defect‑fixing time at a global bank nine months after adopting behavior‑driven specs.</span>
             <span class="src">Global bank case report</span>
           </div>
         </div>
 
-        <p>The cost side is just as instructive. One practitioner reported roughly a <strong>tenfold slowdown</strong> on a small CRUD feature under a rigid SDD workflow, because the tool generated more lines of Markdown than code and every one of them had to be reviewed — early-stage <strong>spec drift</strong>, where documents scattered across repositories describe the same service in several different ways. The most interesting failure wasn't technical, though — it was procedural: SDD imposed top-down as a mandate, instead of introduced as an experiment, reportedly turned one organization against it hard enough to produce a petition signed by more than a thousand engineers, alongside metric-gaming in the background. Some details of that story remain unverified, so treat it as a warning sign, not a certainty — but the conclusion holds: what decides the outcome is fitting the level to the context, not the mere presence of a spec.</p>
+        <p>But there's a downside: one practitioner reported a <strong>tenfold slowdown</strong> on a small CRUD feature under a rigid SDD workflow, because the tool generated more Markdown than code, all of which had to be reviewed. Also, a top‑down mandate to adopt SDD reportedly backfired so badly that engineers signed a petition against it. The lesson: <strong>fit the level to the context, and introduce SDD as an experiment, not a decree.</strong></p>
 
-        <h3>The Selection Rule, and What to Measure</h3>
-        <p>The selection rule fits in three sentences: spec-first for most of the work; spec-anchored with contract tests in CI (automated checks that validate the implementation against the spec on every merge) where multiple teams share API contracts; spec-as-source only experimentally, or in safety-critical systems. Keep the backlog and refinement at the level of goal, develop the contract inside the sprint, and make the DoR a quality agreement, not a gate.</p>
+        <h3>The Selection Rule in Three Sentences</h3>
+        <ul>
+          <li>Use <strong>Spec-First</strong> for most everyday work.</li>
+          <li>Use <strong>Spec-Anchored</strong> with contract tests in CI when multiple teams share API contracts.</li>
+          <li>Use <strong>Spec-As-Source</strong> only experimentally or in safety‑critical systems.</li>
+        </ul>
+        <p>Keep the backlog and refinement at the level of <em>goal</em>, develop the contract <em>inside</em> the sprint, and treat the DoR as a quality agreement, not a gate.</p>
 
         <div class="callout warn">
-          <span class="tag">MEASURE — DON'T TRUST PERCEPTION</span>
-          <p>The biggest risk in the whole undertaking is psychological, not technical. In one study, experienced developers expected roughly a 24% speedup from AI, while actual measurement on a mature repository showed a 19% <em>slowdown</em> (METR, 2025, sixteen developers, wide confidence interval). The gap between perception and metrics — not the technology itself — is the real opponent. Roll out SDD like an experiment, not a mandate: track cycle time, rework rate, and the ratio of code lines to Markdown lines before declaring victory. If rework grows or spec files bloat faster than the code, pull back the batch size — don't pile on more process. And keep contract ownership singular: the spec has to be a living, versioned artifact with one owner, or spec drift creeps back in along with a false sense of control.</p>
+          <span class="tag">MEASURE, DON'T TRUST PERCEPTION</span>
+          <p>The biggest risk is psychological, not technical. In one study, developers expected a 24% speedup from AI, but actual measurement showed a 19% <em>slowdown</em> on a mature codebase. The gap between perception and reality is the real enemy.</p>
+          <p><strong>Track these metrics:</strong></p>
+          <ul>
+            <li><strong>Cycle Time</strong> – how long from start to finish.</li>
+            <li><strong>Rework Rate</strong> – how often code needs to be changed due to misunderstandings.</li>
+            <li><strong>Spec‑to‑Code Ratio</strong> – if your Markdown files grow faster than your code, you're over‑specifying.</li>
+          </ul>
+          <p>If rework grows or specs bloat, reduce the batch size. And keep <strong>one owner</strong> for each spec to avoid drift.</p>
         </div>
 
         <div class="callout tip">
           <span class="tag">THIS WEEK'S MOVE</span>
-          <p>Shift spec-writing from refinement into the sprint, turn the DoR into the team's working agreement rather than a checkpoint, and switch on two metrics — cycle time and rework rate — that will tell you whether AI is actually speeding up the work or just feels like it is.</p>
+          <p>Move spec‑writing from refinement into the sprint. Turn the DoR into a working agreement, not a checkpoint. Start measuring cycle time and rework rate — they'll tell you if AI is actually helping or just feeling like it.</p>
         </div>
       </section>
 
