@@ -423,7 +423,7 @@
 
         <div class="callout warn">
           <span class="tag">WATCH FOR</span>
-          <p>Level 3 is the one vendors talk about most and teams actually run least. Treat it as a destination worth understanding, not a default starting point — most production teams get the bulk of SDD's value by simply reaching Level 2 and staying there.</p>
+          <p>Level 3 is the one vendors talk about most and teams actually run least. Treat it as a destination worth understanding, not a default starting point — most production teams get the bulk of SDD's value by simply reaching Level 2 and staying there. Böckeler draws a direct parallel to Model-Driven Development (MDD), a 2000s-era practice with the same "spec generates code" premise that never took off for mainstream business applications because the modeling overhead outweighed the benefit for most teams — a cautionary precedent worth remembering before committing to Level 3.</p>
         </div>
       </section>
 
@@ -482,6 +482,41 @@
           <li><strong>Technical constraints</strong> — data models, target schemas, third-party payloads, architectural layer boundaries.</li>
           <li><strong>Success criteria</strong> — concrete benchmarks, scale targets, security constraints, deterministic edge cases.</li>
         </ul>
+
+        <h3>Before you write a single requirement: the Architecture Meta-Frame</h3>
+        <p>Most SDD templates jump straight into user stories and skip a step that saves a lot of rework in Phase 2 — establishing the structural boundaries the agent has to design inside. The <strong>Architecture Meta-Frame</strong> is a four-part checklist for exactly this: run it once, at the top of your <code>requirements.md</code>, before the EARS/GWT requirement list.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Part</th><th>What it covers</th><th>Why Phase 1 needs it</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Scenarios, quality attributes &amp; constraints</strong></td><td>User scenarios, non-functional requirements (performance, security, scalability)</td><td>Maps directly onto your EARS requirements and GWT acceptance criteria — this is the part you were already writing.</td></tr>
+              <tr><td><strong>App type</strong></td><td>Mobile, web, service, batch job, CLI, embedded, etc.</td><td>Missing from most spec templates, but it fixes deployment target, latency budget, and platform limits before Plan even starts.</td></tr>
+              <tr><td><strong>Architectural style</strong></td><td>Layered, microservices, event-driven, monolith, serverless, etc.</td><td>Stated as an explicit constraint here, not left for the agent to guess in Phase 2 — prevents architecture drift from your team's actual stack.</td></tr>
+              <tr><td><strong>Architecture frame (hotspots)</strong></td><td>Cross-cutting concerns: auth, caching, logging, exception handling, data access, observability</td><td>Exactly the class of concern that gets silently dropped in ad-hoc specs and later shows up as a missing security control (see Sheet 01).</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="code-card">
+          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">requirements.md — meta-frame preamble</span><button class="copy-btn" data-copy>Copy</button></div>
+          <pre><code><span class="tok-c"># Architecture Meta-Frame</span>
+App type: Web service (REST API), containerized, deployed on Kubernetes
+Architectural style: Layered (API -&gt; service -&gt; repository), event-driven for async jobs
+Hotspots:
+  - Auth: OAuth2 / JWT via Spring Security, no session state
+  - Caching: Redis, 5min TTL on read-heavy endpoints
+  - Logging: structured JSON, correlation ID propagated across services
+  - Exception handling: RFC 7807 problem+json for all 4xx/5xx responses
+  - Data access: Spring Data JPA, no raw SQL outside repository layer
+
+<span class="tok-c"># User stories follow below, scoped inside these boundaries</span></code></pre>
+        </div>
+
+        <div class="callout tip">
+          <span class="tag">FOR DEVELOPERS</span>
+          <p>Think of the meta-frame as the part of the spec that would otherwise live only in a senior engineer's head. Write it once per project (it barely changes between features), then reference it from every feature spec instead of restating it — it pairs naturally with the <code>constitution.md</code> pattern from this sheet and the context files in Sheet 05. Skipping it doesn't break EARS or GWT, but it does mean Phase 2 (Plan) has to infer your architecture from scattered requirement lines — exactly the ambiguity SDD is supposed to remove.</p>
+        </div>
 
         <h3>Phase 2 — Plan</h3>
         <p>The agent parses the finished spec and synthesizes a technical plan without touching a single line of application code. This plan covers state management, dependency choices, data serialization formats, service‑to‑service communication, component and schema design, and an explicit risk pass over security liabilities and integration points. In tools like Spec Kit, this phase is triggered by <code>/speckit.plan</code> and produces a detailed architecture document.</p>
@@ -546,6 +581,46 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
           <p>EARS' real payoff in an SDD pipeline isn't grammar — it's that each requirement becomes directly testable, with an unambiguous trigger and expected response an agent can decompose straight into a task and a test. It also front-loads the exact questions your <code>/clarify</code> step needs to ask: if you can't fill in the trigger or the state, that's the gap in your thinking, not a detail to skip.</p>
         </div>
         <p>EARS isn't universal, though — requirements with more than two or three preconditions get unreadable as a single sentence, and pure architectural constraints ("must use PostgreSQL," "must run on ARM") don't fit an event/response shape at all. Reach for a decision table or a diagram instead when you notice yourself stacking more than two <code>While</code>/<code>When</code> clauses.</p>
+
+        <hr class="div">
+
+        <h3>EARS vs. GIVEN-WHEN-THEN — which one goes in your spec?</h3>
+        <p>EARS isn't the only notation you'll see in a <code>requirements.md</code>. <strong>GIVEN-WHEN-THEN (GWT)</strong>, borrowed from Behavior-Driven Development (BDD), is the other pattern AI-native tools lean on — AWS Kiro uses it directly for acceptance criteria. The two aren't competitors; they solve different problems and mature SDD specs use both, at different altitudes.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Aspect</th><th>EARS</th><th>GIVEN-WHEN-THEN</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Origin</strong></td><td>Rolls-Royce, 2009 — safety-critical systems engineering</td><td>Behavior-Driven Development (BDD), mid-2000s</td></tr>
+              <tr><td><strong>Structure</strong></td><td>Five rigid templates (Ubiquitous, Event, State, Unwanted Behavior, Optional Feature)</td><td>Three-clause narrative: precondition, action, outcome</td></tr>
+              <tr><td><strong>Grain size</strong></td><td>System-level — one <em>shall</em>-statement per requirement</td><td>Scenario-level — one full user-facing flow per test</td></tr>
+              <tr><td><strong>Best for</strong></td><td>Precise, atomic, testable system behavior — trigger/condition logic</td><td>Concrete example-driven scenarios a stakeholder can read</td></tr>
+              <tr><td><strong>Native to</strong></td><td>Kiro's <code>requirements.md</code> requirement lines</td><td>Kiro's acceptance criteria; Cucumber, SpecFlow, Gherkin tools</td></tr>
+              <tr><td><strong>Weakness</strong></td><td>Unreadable past 2–3 preconditions; poor fit for architectural constraints</td><td>Doesn't force a clean trigger/response; scenarios can multiply unbounded</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="code-card">
+          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">requirements.md — EARS + GWT nested</span><button class="copy-btn" data-copy>Copy</button></div>
+          <pre><code><span class="tok-c"># User story</span>
+As a user, I want my session to expire safely,
+so that an abandoned laptop doesn't leak my draft.
+
+<span class="tok-c"># EARS — the system-level shall-statement</span>
+<span class="tok-k">While</span> a user session is active, <span class="tok-k">when</span> the session token expires,
+the system <span class="tok-s">shall</span> redirect the user to the login page and preserve their draft input.
+
+<span class="tok-c"># GWT — the acceptance criterion that tests it</span>
+GIVEN a user has an unsaved draft and an active session
+WHEN the session token expires
+THEN the user is redirected to login AND the draft is restored after re-authentication</code></pre>
+        </div>
+
+        <div class="callout tip">
+          <span class="tag">RULE OF THUMB</span>
+          <p>Use <strong>EARS</strong> to write the individual requirement — anything with a trigger, a state, or an error condition an agent needs to decompose into a task and a test. Use <strong>GWT</strong> to write the acceptance criterion or communicate a full user journey to a non-technical stakeholder, since its narrative form reads naturally as a test case. If an EARS sentence needs more than two or three preconditions, that's your signal to drop into a GWT scenario or a decision table instead.</p>
+        </div>
       </section>
 
       <hr class="div">
@@ -737,9 +812,9 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
         <div class="stat-grid">
           <div class="stat">
-            <span class="big">9.8–42.1%</span>
-            <span class="lbl">of AI-generated code contains vulnerabilities, depending on benchmark — the core problem SDD's constraint layer targets.</span>
-            <span class="src">Yan et al., 2025</span>
+            <span class="big">45%</span>
+            <span class="lbl">of AI-generated code samples failed security tests outright in Veracode's 2025 GenAI Code Security Report (Java failed 70%+ of the time); a separate benchmark study (Yan et al., 2025) found vulnerability rates ranging 9.8–42.1% depending on language and model — the core problem SDD's constraint layer targets.</span>
+            <span class="src">Veracode 2025 GenAI Code Security Report; Yan et al., 2025</span>
           </div>
           <div class="stat">
             <span class="big">90% / 13%</span>
@@ -747,15 +822,15 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
             <span class="src">JetBrains AI Pulse, Jan 2026</span>
           </div>
           <div class="stat">
-            <span class="big">70%→60%</span>
-            <span class="lbl">drop in developer trust toward AI-generated code accuracy from 2023–24 to 2025, even as usage kept climbing.</span>
-            <span class="src">Stack Overflow Developer Survey</span>
+            <span class="big">40%→29%</span>
+            <span class="lbl">drop in developers who trust the accuracy of AI-generated code, from 2024 to 2025, even as usage climbed to roughly 84% of respondents — the exact trust gap SDD's contract-based approach is meant to close.</span>
+            <span class="src">Stack Overflow 2025 Developer Survey</span>
           </div>
         </div>
 
         <p>Concrete case studies are starting to back the claims up: AWS has documented an internal notification feature that shipped in roughly two days of human effort as a Kiro-authored spec, versus an estimated two weeks the conventional way. GitHub reports that internal teams running Spec Kit see far fewer full "regenerate from scratch" cycles than ad-hoc prompting produces. And the methodology has crossed from experimental to mainstream enough that DeepLearning.AI, in partnership with JetBrains, shipped a dedicated short course on spec-driven development with coding agents in late 2025.</p>
 
-        <p>On the tooling side, GitHub Spec Kit alone had grown to roughly 88,000 stars and 129 releases by April 2026, with support for 28 named agent platforms — and OpenSpec, the newer proposal-first alternative, had reached about 52,000 stars by June 2026. That's not niche-framework growth; that's a workflow the ecosystem is actively converging on.</p>
+        <p>On the tooling side, GitHub Spec Kit alone had grown to roughly 107,000–114,000 stars by mid-2026, with support for 30+ named agent platforms — and OpenSpec, the newer proposal-first alternative, had reached about 53,500 stars by the same point. That's not niche-framework growth; that's a workflow the ecosystem is actively converging on.</p>
 
         <p>Birgitta Böckeler's assessment captures the state of play: "Until I hear usage reports from people using them for a period of time on a 'real' codebase, I still have a lot of open questions about how this works in real life." The tools are evolving fast — they "might have already changed since I used them."</p>
       </section>
@@ -776,6 +851,11 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
         <h3>3. Semantic diffusion</h3>
         <p>As "spec-driven" gets popular, plenty of people use "spec" as a synonym for "a detailed prompt." That's not SDD — true SDD requires an execution engine that treats the specification as an actionable, verifiable source of truth, not just a longer prompt.</p>
+
+        <div class="callout warn">
+          <span class="tag">FIELD REPORT</span>
+          <p>Böckeler's own hands-on testing of Kiro turned a single small bug fix into 4 full user stories with 16 acceptance criteria — a concrete illustration of spec tooling over-formalizing trivial work. She also observed agents ignoring their own research notes mid-task and quietly regenerating duplicate logic, and constitution files growing so strict that agents started refusing reasonable edge-case judgment calls — a "false sense of control" worth budgeting review time for, not assuming away.</p>
+        </div>
 
         <h3>4. The heavy-upfront-planning critique</h3>
         <p>The Thoughtworks Technology Radar has placed SDD in its "Assess" ring — worth evaluating, not yet a default recommendation — and specifically flags a risk of the practice tilting back toward big up-front specification and big-bang releases, the same anti-pattern Agile spent two decades pushing teams away from. SDD is compatible with Agile when specs stay living, lightweight artifacts updated inside normal sprints — the moment they calcify into Waterfall-style documentation, you've lost the point.</p>
@@ -892,7 +972,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
           <li><a href="https://www.jetbrains.com/lp/devecosystem-2026/" target="_blank" class="source-link">JetBrains Developer Ecosystem Survey 2026</a> — AI Pulse data and developer trends</li>
           <li><a href="https://survey.stackoverflow.co/2025/" target="_blank" class="source-link">Stack Overflow Developer Survey 2025</a> — developer trust and AI usage data</li>
           <li><a href="https://www.deeplearning.ai/courses/" target="_blank" class="source-link">DeepLearning.AI</a> — "Spec-Driven Development with Coding Agents" course</li>
-          <li><a href="https://arxiv.org/abs/2602.12345" target="_blank" class="source-link">arXiv — "Spec-Driven Development: From Code to Contract in the Age of AI"</a> (Feb 2026)</li>
+          <li><a href="https://arxiv.org/abs/2602.00180" target="_blank" class="source-link">arXiv — "Spec-Driven Development: From Code to Contract in the Age of AI"</a> (Feb 2026)</li>
         </ul>
 
         <p>Facts and figures above are paraphrased summaries for a developer audience, not verbatim reproductions — check primary sources directly for exact numbers before citing them elsewhere.</p>
