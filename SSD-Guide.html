@@ -484,14 +484,47 @@
         </div>
 
         <h3>The Constitution: Your Immutable Foundation</h3>
-        <p>A <code>constitution.md</code> file defines non‑negotiable principles that apply to every change — testing philosophy, security baselines, code style, and opinionated technology choices. This ensures organizational standards are baked into every project from the start.</p>
+        <p>A <strong>Constitution</strong> defines non‑negotiable principles that apply to every change — testing philosophy, security baselines, code style, and opinionated technology choices. This ensures organizational standards are baked into every project from the start.</p>
+
         <div class="code-card">
-          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">constitution.md</span><button class="copy-btn" data-copy>Copy</button></div>
+          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">constitution.md (generic template)</span><button class="copy-btn" data-copy>Copy</button></div>
           <pre><code><span class="tok-c"># Project Constitution — immutable principles</span>
 - All database mutations must use explicit transaction boundaries.
 - All public endpoints must include active rate-limiting middleware.
 - Unit tests are required for any newly created utility method.
 - Write tests <span class="tok-s">before</span> implementing any business logic (TDD discipline).</code></pre>
+        </div>
+
+        <h4>How to implement the Constitution in each tool</h4>
+        <ul>
+          <li>
+            <strong>Kiro CLI</strong> — Store your Constitution in <strong>steering files</strong> inside <code>.kiro/steering/</code>. For example, put architecture rules in <code>tech.md</code>, structural rules in <code>structure.md</code>, and product rules in <code>product.md</code>. Since steering files are <strong>always</strong> loaded in every interaction, they automatically enforce your immutable rules on every change — no extra configuration needed.
+            <div class="code-card" style="margin-top:8px;">
+              <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">.kiro/steering/tech.md — Kiro's Constitution</span></div>
+              <pre><code><span class="tok-c"># Technology Constitution</span>
+- All database mutations must use explicit transaction boundaries.
+- All public endpoints must include rate-limiting middleware.
+- Write tests <span class="tok-s">before</span> implementing any business logic.</code></pre>
+            </div>
+          </li>
+          <li>
+            <strong>Claude Code</strong> — Place your Constitution directly in <strong><code>CLAUDE.md</code></strong>, which is read at the start of every session. For larger rulebooks, keep a separate <code>constitution.md</code> and reference it in <code>CLAUDE.md</code> using the <code>@constitution.md</code> syntax, or simply include its contents. This ensures Claude applies your rules to every task it touches.
+            <div class="code-card" style="margin-top:8px;">
+              <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">CLAUDE.md — Claude's Constitution</span></div>
+              <pre><code><span class="tok-c"># Project Constitution (loaded every session)</span>
+- All database mutations must use explicit transaction boundaries.
+- All public endpoints must include rate-limiting middleware.
+- Write tests <span class="tok-s">before</span> implementing any business logic.
+
+<span class="tok-c"># Reference a separate constitution file if it grows large</span>
+@constitution.md</code></pre>
+            </div>
+          </li>
+        </ul>
+
+        <div class="callout tip">
+          <span class="tag">CONSTITUTION = PERSISTENT CONTEXT</span>
+          <p>Whether you use Kiro's steering files or Claude's <code>CLAUDE.md</code>, the Constitution is your team's <strong>living rulebook</strong>. It outlasts any single feature spec and ensures every AI session starts with the same non‑negotiable standards. Update it rarely — treat it like a real constitution, not a daily checklist.</p>
         </div>
       </section>
 
@@ -534,7 +567,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <hr class="div">
 
-      <!-- 05 -->
+      <!-- 05 — UPDATED to explicitly map Constitution to each tool -->
       <section class="sheet" id="sec-05">
         <div class="sheet-label"><span class="num">05</span><span class="of">Sheet 05 of 15</span><span class="rule"></span></div>
         <h2>Global Context vs. Feature Specs</h2>
@@ -545,43 +578,49 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
         </ul>
 
         <h3>Pattern 1 — The Project Constitution</h3>
-        <p>A global file acting as an uncompromising set of laws for every session, so nobody has to retype the same constraints into every prompt.</p>
+        <p>A global set of immutable rules. In practice, this is implemented differently in each tool:</p>
+        <ul>
+          <li><strong>Kiro CLI:</strong> Use <strong>steering files</strong> in <code>.kiro/steering/</code> (<code>tech.md</code>, <code>structure.md</code>, <code>product.md</code>). These are always loaded in every session and act as your Constitution.</li>
+          <li><strong>Claude Code:</strong> Use <strong><code>CLAUDE.md</code></strong> (or <code>AGENTS.md</code> for cross-tool projects). This file is read at the start of every session and serves as the Constitution.</li>
+        </ul>
+        <p>Below is the same template — implement it in your tool's preferred location:</p>
         <div class="code-card">
-          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">constitution.md</span><button class="copy-btn" data-copy>Copy</button></div>
+          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">Constitution rules (apply to both tools)</span><button class="copy-btn" data-copy>Copy</button></div>
           <pre><code><span class="tok-c"># Project Constitution</span>
 - All backend routes <span class="tok-s">MUST</span> enforce strict Zod runtime schema validation.
 - Write Vitest unit tests <span class="tok-s">before</span> implementing any business logic.
 - No inline styles — Tailwind utility classes only.</code></pre>
         </div>
 
-        <h3>Pattern 2 — Context Steering Files</h3>
-        <p><strong>Kiro</strong> uses <code>.kiro/steering/</code> files (<code>product.md</code>, <code>structure.md</code>, <code>tech.md</code>) that are always loaded in every interaction. They provide project-wide rules and context.</p>
-        <p><strong>Claude Code</strong> uses <code>CLAUDE.md</code> (or <code>AGENTS.md</code> for multi‑tool projects) — a project‑level instruction file read at the start of every session. It should contain project context, tech stack, build commands, and coding standards.</p>
+        <h3>Pattern 2 — Context Steering Files (Kiro)</h3>
+        <p>Kiro's <code>.kiro/steering/</code> convention breaks the Constitution into focused profiles (<code>product.md</code>, <code>structure.md</code>, <code>tech.md</code>) that are always injected into the agent's context.</p>
 
-        <h3>Pattern 3 — Agent Hooks</h3>
-        <p>Background agents triggered by workspace lifecycle events — save a spec, and a hook fires to write unit tests, run linters, or draft a compliant commit message, without you asking for it each time.</p>
+        <h3>Pattern 3 — CLAUDE.md (Claude Code)</h3>
+        <p><code>CLAUDE.md</code> is Claude Code's project‑level instruction file. It should contain project context, tech stack, build commands, coding standards, and your Constitution. For larger rulebooks, keep a separate <code>constitution.md</code> and reference it with <code>@constitution.md</code>.</p>
 
         <h3>Pattern 4 — Claude Code Skills &amp; AGENTS.md</h3>
         <p><code>AGENTS.md</code> has become the de facto open standard for giving any coding agent durable project context. <strong>Claude Code Skills</strong> are shareable workspace macros in <code>.claude/skills/</code> that encode team conventions — file structure, test patterns, accessibility rules — as on-demand commands injected straight into the terminal runtime loop.</p>
         <div class="code-card">
-          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">CLAUDE.md</span><button class="copy-btn" data-copy>Copy</button></div>
-          <pre><code><span class="tok-c"># Project rules</span>
+          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">CLAUDE.md example</span><button class="copy-btn" data-copy>Copy</button></div>
+          <pre><code><span class="tok-c"># Project rules (Constitution)</span>
 - Read the feature spec before writing any code.
 - Never expand scope beyond what the spec defines.
 - Write tests before marking a task complete.
-- If the implementation needs to drift from the spec, update the spec first.</code></pre>
+- If the implementation needs to drift from the spec, update the spec first.
+
+<span class="tok-c"># Reference a detailed constitution if needed</span>
+@constitution.md</code></pre>
         </div>
-        <p>Keep the instruction layer (constitution / <code>CLAUDE.md</code>) and the feature layer (this week's spec) in separate files. Collapsing them is the single most common reason teams end up rewriting their "constitution" every sprint.</p>
+        <p>Keep the instruction layer (Constitution / <code>CLAUDE.md</code>) and the feature layer (this week's spec) in separate files. Collapsing them is the single most common reason teams end up rewriting their "constitution" every sprint.</p>
       </section>
 
       <hr class="div">
 
-      <!-- 06 — COMPLETELY REVISED FOR CLARITY -->
+      <!-- 06 — REVISED FOR CLARITY -->
       <section class="sheet" id="sec-06">
         <div class="sheet-label"><span class="num">06</span><span class="of">Sheet 06 of 15</span><span class="rule"></span></div>
         <h2>Where the Spec Lives in Scrum &amp; Kanban</h2>
 
-        <!-- SECTION 1: THE MISCONCEPTION -->
         <h3>The Big Misconception: "Waterfall in Markdown"</h3>
         <p>The loudest criticism of SDD is that it's just <strong>"waterfall in Markdown."</strong> That criticism is fair <em>if</em> you write a spec and then refuse to change it. But SDD becomes fully Agile when the spec is <strong>living</strong> — meaning it evolves as you learn.</p>
         <p><strong>The real test of agility is not whether you have a spec, it's whether the spec is allowed to change after development starts.</strong></p>
@@ -598,7 +637,6 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
         <hr class="div">
 
-        <!-- SECTION 2: THREE RUNGS -->
         <h3>The Three Maturity Levels — and the One Antipattern</h3>
         <p>From Sheet 02, remember the three rungs. They map directly to how you use them in Agile:</p>
 
@@ -620,7 +658,6 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
         <hr class="div">
 
-        <!-- SECTION 3: SPRINT NOT BACKLOG -->
         <h3>Where the Spec Belongs: In the Sprint, Not the Backlog</h3>
         <p>The most common integration mistake is writing the complete, finished spec in the Product Backlog. That's wrong.</p>
         <ul>
@@ -683,7 +720,6 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
         <hr class="div">
 
-        <!-- SECTION 4: DEFINITION OF READY -->
         <h3>The Definition of Ready (DoR): Agreement, Not Gate</h3>
         <p>In Scrum, the natural home for the spec is the <strong>Definition of Ready (DoR)</strong>. The DoR is the team's shared understanding of when a story is ready to be pulled into a sprint. SDD's acceptance criteria naturally fill that need.</p>
         <p><strong>But:</strong> don't turn the DoR into a bureaucratic phase gate. Mike Cohn warns that the DoR can become <strong>"a dangerous step backward toward waterfall"</strong> if it blocks work rather than enabling collaboration. Keep it a quality agreement, not a weapon.</p>
@@ -691,7 +727,6 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
         <hr class="div">
 
-        <!-- SECTION 5: THREE PATTERNS -->
         <h3>Three Proven Integration Patterns</h3>
         <ul>
           <li><strong>Just Enough Spec</strong> – Specify wide, not deep. Only enough to understand the shape of the solution.</li>
@@ -701,7 +736,6 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
         <hr class="div">
 
-        <!-- SECTION 6: UPSIDE AND DOWNSIDE -->
         <h3>The Upside and the Downside</h3>
         <p>Studies show real benefits when the spec is paired with short feedback loops — but only if the problem is complex and involves multiple people. For small changes, SDD can be overkill.</p>
 
@@ -731,7 +765,6 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
         <hr class="div">
 
-        <!-- SECTION 7: SELECTION RULE & METRICS -->
         <h3>Choosing the Right Level &amp; Measuring Success</h3>
         <p><strong>The selection rule in three sentences:</strong></p>
         <ul>
@@ -796,7 +829,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
               <tr><td><strong>What it is</strong></td><td>A CLI from AWS that brings spec‑driven development to the terminal with a built‑in Spec agent.</td><td>Anthropic's agentic CLI that reads your repo and edits files — you bring your own spec workflow.</td></tr>
               <tr><td><strong>Spec workflow</strong></td><td>Built‑in <code>/spec</code> agent with structured phases: <strong>Build a Feature</strong>, <strong>Fix a Bug</strong>, or <strong>Quick Spec</strong>.</td><td>Bring your own — plugins like <strong>Specifico</strong> or custom slash commands (e.g., <code>/kiro:spec-*</code>).</td></tr>
               <tr><td><strong>Spec files</strong></td><td><code>.kiro/specs/&lt;name&gt;/</code> with <code>requirements.md</code>, <code>design.md</code>, <code>tasks.md</code>.</td><td>Varies by plugin. Specifico uses <code>specifico/&lt;id&gt;/</code> with <code>SPEC.md</code>, <code>PLAN.md</code>, <code>TASKS.md</code>, <code>STATE.json</code>.</td></tr>
-              <tr><td><strong>Context / Memory</strong></td><td><code>.kiro/steering/</code> (<code>product.md</code>, <code>tech.md</code>, <code>structure.md</code>) — always loaded.</td><td><code>CLAUDE.md</code> (or <code>AGENTS.md</code>) read at session start. Skills in <code>.claude/skills/</code>.</td></tr>
+              <tr><td><strong>Context / Constitution</strong></td><td><code>.kiro/steering/</code> (<code>product.md</code>, <code>tech.md</code>, <code>structure.md</code>) — always loaded.</td><td><code>CLAUDE.md</code> (or <code>AGENTS.md</code>) read at session start. Skills in <code>.claude/skills/</code>.</td></tr>
               <tr><td><strong>Best for</strong></td><td>Teams that want a structured, opinionated workflow out of the box with built‑in phase enforcement.</td><td>Teams that want flexibility, already use Claude, and are willing to set up plugins or custom commands.</td></tr>
               <tr><td><strong>The hybrid move</strong></td><td colspan="2">Start a spec in Kiro CLI, continue it in the Kiro IDE, or hand it off to Claude Code for implementation. Both tools can read and write <code>.kiro/specs/</code>. Some teams report implementing Kiro‑authored specs with Claude Code is roughly <strong>4× faster</strong> than using Kiro alone.</td></tr>
             </tbody>
