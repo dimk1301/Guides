@@ -351,7 +351,7 @@
 
         <div class="callout info">
           <span class="tag">CONTEXT</span>
-          <p>Independent research is now catching up to the practice: a February 2026 arXiv paper, <em>"Spec-Driven Development: From Code to Contract in the Age of AI,"</em> draws the line explicitly — a traditional spec is read by humans, an SDD spec executes as a validation gate that an agent's output has to pass.</p>
+          <p>Independent research is now catching up to the practice: an early-2026 academic paper on spec-driven development draws the line explicitly — a traditional spec is read by humans, an SDD spec executes as a validation gate that an agent's output has to pass. See Sheet 14 for the reference.</p>
         </div>
       </section>
 
@@ -558,6 +558,10 @@
 
         <h3>The Constitution: Your Immutable Foundation</h3>
         <p>A <strong>Constitution</strong> defines non‑negotiable principles that apply to every change — testing philosophy, security baselines, code style, and opinionated technology choices. This ensures organizational standards are baked into every project from the start.</p>
+        <div class="callout info">
+          <span class="tag">WHERE THIS TERM COMES FROM</span>
+          <p>"Constitution" isn't Kiro or Claude Code vocabulary — it originates with <strong>GitHub Spec Kit</strong>, another SDD tool, which uses it for the immutable rules file its workflow enforces. This guide borrows the term because it's become common shorthand across the SDD space. In Kiro it maps to <strong>steering files</strong>; in Claude Code it maps to <strong><code>CLAUDE.md</code></strong> — same concept, different file.</p>
+        </div>
 
         <div class="code-card">
           <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">constitution.md (generic template)</span><button class="copy-btn" data-copy>Copy</button></div>
@@ -664,12 +668,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
         </ul>
 
         <h3>Pattern 1 — The Project Constitution</h3>
-        <p>A global set of immutable rules. In practice, this is implemented differently in each tool:</p>
-        <ul>
-          <li><strong>Kiro CLI:</strong> Use <strong>steering files</strong> in <code>.kiro/steering/</code> (<code>tech.md</code>, <code>structure.md</code>, <code>product.md</code>). These are always loaded in every session and act as your Constitution.</li>
-          <li><strong>Claude Code:</strong> Use <strong><code>CLAUDE.md</code></strong> (or <code>AGENTS.md</code> for cross-tool projects). This file is read at the start of every session and serves as the Constitution.</li>
-        </ul>
-        <p>Below is the same template — implement it in your tool's preferred location:</p>
+        <p>Sheet 03 covers what the Constitution is, where the term comes from, and how it maps onto Kiro's steering files and Claude Code's <code>CLAUDE.md</code>. Here's the one thing worth adding at the project-scaling level: keep the Constitution content identical in spirit across tools even though the file location differs, so a rule doesn't quietly diverge between a Kiro-authored spec and a Claude Code session on the same repo.</p>
         <div class="code-card">
           <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">Constitution rules (apply to both tools)</span><button class="copy-btn" data-copy>Copy</button></div>
           <pre><code><span class="tok-c"># Project Constitution</span>
@@ -678,13 +677,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 - No inline styles — Tailwind utility classes only.</code></pre>
         </div>
 
-        <h3>Pattern 2 — Context Steering Files (Kiro)</h3>
-        <p>Kiro's <code>.kiro/steering/</code> convention breaks the Constitution into focused profiles (<code>product.md</code>, <code>structure.md</code>, <code>tech.md</code>) that are always injected into the agent's context.</p>
-
-        <h3>Pattern 3 — CLAUDE.md (Claude Code)</h3>
-        <p><code>CLAUDE.md</code> is Claude Code's project‑level instruction file. It should contain project context, tech stack, build commands, coding standards, and your Constitution. For larger rulebooks, keep a separate <code>constitution.md</code> and reference it with <code>@constitution.md</code>.</p>
-
-        <h3>Pattern 4 — Claude Code Skills &amp; AGENTS.md</h3>
+        <h3>Pattern 2 — Claude Code Skills &amp; AGENTS.md</h3>
         <p><code>AGENTS.md</code> has become the de facto open standard for giving any coding agent durable project context. <strong>Claude Code Skills</strong> are shareable workspace macros in <code>.claude/skills/</code> that encode team conventions — file structure, test patterns, accessibility rules — as on-demand commands injected straight into the terminal runtime loop.</p>
         <div class="code-card">
           <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">CLAUDE.md example</span><button class="copy-btn" data-copy>Copy</button></div>
@@ -823,25 +816,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
         <hr class="div">
 
         <h3>The Upside and the Downside</h3>
-        <p>Studies show real benefits when the spec is paired with short feedback loops — but only if the problem is complex and involves multiple people. For small changes, SDD can be overkill.</p>
-
-        <div class="stat-grid">
-          <div class="stat">
-            <span class="big">+19% / -31%</span>
-            <span class="lbl">Velocity gain and defect‑density drop in a quasi‑experiment pairing Scrum with an architectural spec.</span>
-            <span class="src">sMBSAP study, Colorado State, 2023</span>
-          </div>
-          <div class="stat">
-            <span class="big">~-50%</span>
-            <span class="lbl">Fewer defects on a semiconductor product after introducing a full reviewed spec.</span>
-            <span class="src">Single product‑line case report</span>
-          </div>
-          <div class="stat">
-            <span class="big">&gt;33%→single digits</span>
-            <span class="lbl">Drop in urgent defect‑fixing time at a global bank nine months after adopting behavior‑driven specs.</span>
-            <span class="src">Global bank case report</span>
-          </div>
-        </div>
+        <p>Teams that pair SDD with short feedback loops generally report real benefits — but mainly when the problem is complex and involves multiple people. For small changes, SDD can be overkill.</p>
 
         <div class="callout warn">
           <span class="tag">BUT THERE'S A DOWNSIDE</span>
@@ -999,25 +974,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
       <section class="sheet" id="sec-10">
         <div class="sheet-label"><span class="num">10</span><span class="of">Sheet 10 of 14</span><span class="rule"></span></div>
         <h2>Adoption Signals: Is This Actually Catching On?</h2>
-        <p>SDD could easily be dismissed as another framework-of-the-month. The data from the last year of AI-coding adoption suggests otherwise — but it also shows the industry still has a trust problem SDD is explicitly trying to close.</p>
-
-        <div class="stat-grid">
-          <div class="stat">
-            <span class="big">9.8–42.1%</span>
-            <span class="lbl">of AI-generated code contains vulnerabilities, depending on benchmark — the core problem SDD's constraint layer targets.</span>
-            <span class="src">Yan et al., 2025</span>
-          </div>
-          <div class="stat">
-            <span class="big">90% / 13%</span>
-            <span class="lbl">of developers use AI at work, but only 13% use it across the entire SDLC — the gap SDD tooling is racing to close.</span>
-            <span class="src">JetBrains AI Pulse, Jan 2026</span>
-          </div>
-          <div class="stat">
-            <span class="big">70%→60%</span>
-            <span class="lbl">drop in developer trust toward AI-generated code accuracy from 2023–24 to 2025, even as usage kept climbing.</span>
-            <span class="src">Stack Overflow Developer Survey</span>
-          </div>
-        </div>
+        <p>SDD could easily be dismissed as another framework-of-the-month. Two things suggest otherwise: real production tooling has shipped around it (not just demos), and the industry-wide drop in developer trust toward unstructured AI-generated code is exactly the gap SDD's constraint layer is built to close.</p>
 
         <p>Concrete case studies are starting to back the claims up: AWS has documented an internal notification feature that shipped in roughly two days of human effort as a Kiro-authored spec, versus an estimated two weeks the conventional way. And teams are combining tools: one report found that implementing Kiro-authored specs with Claude Code was roughly <strong>4× faster</strong> than using Kiro alone.</p>
 
@@ -1180,7 +1137,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
         <ul>
           <li><a href="https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html" target="_blank" class="source-link">Martin Fowler / Thoughtworks — Understanding Spec-Driven-Development</a> — in-depth analysis (Birgitta Böckeler, Oct 2025)</li>
           <li><a href="https://www.deeplearning.ai/courses/" target="_blank" class="source-link">DeepLearning.AI</a> — "Spec-Driven Development with Coding Agents" course</li>
-          <li><a href="https://arxiv.org/abs/2602.12345" target="_blank" class="source-link">arXiv — "Spec-Driven Development: From Code to Contract in the Age of AI"</a> (Feb 2026)</li>
+          <li>An early-2026 arXiv paper titled "Spec-Driven Development: From Code to Contract in the Age of AI" — search arXiv directly for the current preprint, as the ID could not be independently confirmed at time of writing</li>
           <li>METR (2025) — controlled study on AI-assisted developer speed perception vs. measured outcome on a mature repository (sixteen developers)</li>
         </ul>
 
