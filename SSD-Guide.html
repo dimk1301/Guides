@@ -310,13 +310,12 @@
       <li><a href="#sec-06"><span class="n">06</span> Spec in Scrum &amp; Kanban</a></li>
       <li><a href="#sec-07"><span class="n">07</span> SDD vs TDD vs BDD</a></li>
       <li><a href="#sec-08"><span class="n">08</span> Tooling Landscape (Kiro + Claude)</a></li>
-      <li><a href="#sec-09"><span class="n">09</span> LLM Support Matrix</a></li>
-      <li><a href="#sec-10"><span class="n">10</span> Vibe vs Spec: The Call</a></li>
-      <li><a href="#sec-11"><span class="n">11</span> Adoption Signals</a></li>
-      <li><a href="#sec-12"><span class="n">12</span> Honest Limits</a></li>
-      <li><a href="#sec-13"><span class="n">13</span> Quick Start</a></li>
-      <li><a href="#sec-14"><span class="n">14</span> Acronyms &amp; Glossary</a></li>
-      <li><a href="#sec-15"><span class="n">15</span> Sources</a></li>
+      <li><a href="#sec-09"><span class="n">09</span> Vibe vs Spec: The Call</a></li>
+      <li><a href="#sec-10"><span class="n">10</span> Adoption Signals</a></li>
+      <li><a href="#sec-11"><span class="n">11</span> Honest Limits</a></li>
+      <li><a href="#sec-12"><span class="n">12</span> Quick Start</a></li>
+      <li><a href="#sec-13"><span class="n">13</span> Acronyms &amp; Glossary</a></li>
+      <li><a href="#sec-14"><span class="n">14</span> Sources</a></li>
     </ul>
   </nav>
 
@@ -341,7 +340,7 @@
     <div class="content-inner">
       <!-- 01 -->
       <section class="sheet" id="sec-01">
-        <div class="sheet-label"><span class="num">01</span><span class="of">Sheet 01 of 15</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">01</span><span class="of">Sheet 01 of 14</span><span class="rule"></span></div>
         <h2>What is Spec-Driven Development?</h2>
         <p class="lede">Spec-Driven Development (SDD) is the structural successor to <strong>"vibe coding"</strong> — the term Andrej Karpathy coined in February 2025 for the ad-hoc, prompt-and-pray loop of throwing natural-language instructions at a model until something works. Vibe coding was even crowned Collins Dictionary's Word of the Year for 2025. By 2026 it had also become clear that it doesn't hold up once real users, real security requirements, and real teammates are in the loop.</p>
         <p>SDD is a methodology in which a written specification is treated as the primary, executable artifact of a software project, and code is a regenerable output produced from that spec by humans, AI agents, or both. The specification file, not the eventual codebase, becomes the single source of truth. Instead of describing a system brick-by-brick through an endless chat, you hand an autonomous agent a complete engineering blueprint. It builds against that blueprint, and when requirements change, you edit the spec and regenerate the code rather than hand-patch the output.</p>
@@ -360,7 +359,7 @@
 
       <!-- 02 -->
       <section class="sheet" id="sec-02">
-        <div class="sheet-label"><span class="num">02</span><span class="of">Sheet 02 of 15</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">02</span><span class="of">Sheet 02 of 14</span><span class="rule"></span></div>
         <h2>The Continuum of Commitment</h2>
         <p>Rolling SDD into a real engineering team isn't binary — it sits on a spectrum of how much authority you're willing to hand the spec. Most teams start at level one and drift toward level two; very few production shops run level three today. As Thoughtworks' Birgitta Böckeler notes, "all SDD approaches and definitions I've found are spec-first, but not all strive to be spec-anchored or spec-as-source."</p>
 
@@ -416,7 +415,7 @@
 
       <!-- 03 -->
       <section class="sheet" id="sec-03">
-        <div class="sheet-label"><span class="num">03</span><span class="of">Sheet 03 of 15</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">03</span><span class="of">Sheet 03 of 14</span><span class="rule"></span></div>
         <h2>Core Workflow: The 4-Phase Loop</h2>
         <p>Tools differ in naming, but a production-grade SDD pipeline converges on the same rigorous execution loop. This loop is a continuous cycle, not a one‑off sequence; at every step, the output is validated back against the original specification to prevent drift.</p>
 
@@ -532,7 +531,7 @@
 
       <!-- 04 -->
       <section class="sheet" id="sec-04">
-        <div class="sheet-label"><span class="num">04</span><span class="of">Sheet 04 of 15</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">04</span><span class="of">Sheet 04 of 14</span><span class="rule"></span></div>
         <h2>Writing Requirements with EARS Notation</h2>
         <p>The weakest link in any spec is still the sentence a human wrote. <strong>EARS (Easy Approach to Requirements Syntax)</strong> is the notation most SDD tools now lean on to keep those sentences testable — it originated in 2009 at Rolls-Royce, where engineers analyzing jet-engine control regulations noticed that good requirements all shared the same clause order. It has since been adopted by Airbus, Bosch, NASA, and Siemens, and since 2025 it's been baked directly into AI-native tools, most visibly Kiro's requirements phase.</p>
         <p>EARS gives you five patterns. Each one forces you to be explicit about the thing vague requirements always hide: <strong>what triggers this, and under what conditions.</strong></p>
@@ -569,7 +568,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <!-- 05 — UPDATED to explicitly map Constitution to each tool -->
       <section class="sheet" id="sec-05">
-        <div class="sheet-label"><span class="num">05</span><span class="of">Sheet 05 of 15</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">05</span><span class="of">Sheet 05 of 14</span><span class="rule"></span></div>
         <h2>Global Context vs. Feature Specs</h2>
         <p>Scaling SDD past a single feature means separating two kinds of documents that get conflated constantly: the spec for <em>this</em> change, and the standing rules that apply to <em>every</em> change. As Birgitta Böckeler puts it: "general context are things like rules files, or high level descriptions of the product and the codebase. Some tools call this context a memory bank… whereas specs only relevant to the tasks that actually create or change that particular functionality."</p>
         <ul>
@@ -618,7 +617,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <!-- 06 — REVISED FOR CLARITY -->
       <section class="sheet" id="sec-06">
-        <div class="sheet-label"><span class="num">06</span><span class="of">Sheet 06 of 15</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">06</span><span class="of">Sheet 06 of 14</span><span class="rule"></span></div>
         <h2>Where the Spec Lives in Scrum &amp; Kanban</h2>
 
         <h3>The Big Misconception: "Waterfall in Markdown"</h3>
@@ -796,7 +795,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <!-- 07 -->
       <section class="sheet" id="sec-07">
-        <div class="sheet-label"><span class="num">07</span><span class="of">Sheet 07 of 15</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">07</span><span class="of">Sheet 07 of 14</span><span class="rule"></span></div>
         <h2>SDD vs. TDD vs. BDD</h2>
         <p>SDD gets confused with test-driven and behavior-driven development constantly, because all three share the same instinct: define correctness before you write the implementation. The difference is <em>what document is treated as the canonical, load-bearing artifact.</em></p>
 
@@ -818,7 +817,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <!-- 08 — UPDATED TO ONLY INCLUDE KIRO AND CLAUDE CODE -->
       <section class="sheet" id="sec-08">
-        <div class="sheet-label"><span class="num">08</span><span class="of">Sheet 08 of 15</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">08</span><span class="of">Sheet 08 of 14</span><span class="rule"></span></div>
         <h2>The Tooling Landscape: Kiro CLI &amp; Claude Code</h2>
         <p>The ecosystem has moved fast from auto-complete helpers to full agentic SDD frameworks. As of mid-2026, the two tools actually worth your time for a production spec‑first workflow are <strong>Kiro CLI</strong> and <strong>Claude Code</strong>. They take different approaches to the same problem, and you can even use them together.</p>
 
@@ -851,32 +850,9 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <hr class="div">
 
-      <!-- 09 -->
+      <!-- 09 — was 10 -->
       <section class="sheet" id="sec-09">
-        <div class="sheet-label"><span class="num">09</span><span class="of">Sheet 09 of 15</span><span class="rule"></span></div>
-        <h2>LLM Support Matrix</h2>
-        <p>SDD reframes an LLM from a creative text engine into a strict, deterministic compiler of human intent. How well that works still depends on the model underneath.</p>
-
-        <h3>Anthropic Claude</h3>
-        <p>Primary execution engine behind Claude Code, and the model most commonly used with Kiro CLI's Spec agent. Large context windows let it hold an entire project's spec hierarchy at once, and it tends to handle structured requirements (EARS, Gherkin) well without needing a visual feedback loop. Reusable macros live in <code>.claude/skills/</code>, forcing automated workspace checks and constitution validation before any diff gets proposed.</p>
-
-        <h3>OpenAI (GPT / o-series)</h3>
-        <p>Commonly wired in as an interchangeable orchestration engine inside custom workspace extensions, leaning on structured JSON output and function-calling to check feature definitions against the central spec before code generation runs.</p>
-
-        <h3>Google Gemini</h3>
-        <p>Its long-context strength is most useful for ingesting a legacy codebase alongside a brand-new spec and mapping cross-module side effects before touching a file.</p>
-
-        <div class="callout warn">
-          <span class="tag">DON'T OVER-INDEX ON BENCHMARKS</span>
-          <p>Model capability is a fast-moving target — treat this matrix as a snapshot of architectural role, not a permanent leaderboard. Re-check current model support before betting a pipeline on any one vendor.</p>
-        </div>
-      </section>
-
-      <hr class="div">
-
-      <!-- 10 -->
-      <section class="sheet" id="sec-10">
-        <div class="sheet-label"><span class="num">10</span><span class="of">Sheet 10 of 15</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">09</span><span class="of">Sheet 09 of 14</span><span class="rule"></span></div>
         <h2>Vibe Coding vs. Spec-Driven: The Honest Call</h2>
         <p>SDD provides structural reliability, but it's genuine overhead for small tasks — turning a one-line fix into a web of user stories and acceptance criteria is its own anti-pattern, sometimes called <strong>"a sledgehammer to crack a nut."</strong></p>
 
@@ -932,9 +908,9 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <hr class="div">
 
-      <!-- 11 -->
-      <section class="sheet" id="sec-11">
-        <div class="sheet-label"><span class="num">11</span><span class="of">Sheet 11 of 15</span><span class="rule"></span></div>
+      <!-- 10 — was 11 -->
+      <section class="sheet" id="sec-10">
+        <div class="sheet-label"><span class="num">10</span><span class="of">Sheet 10 of 14</span><span class="rule"></span></div>
         <h2>Adoption Signals: Is This Actually Catching On?</h2>
         <p>SDD could easily be dismissed as another framework-of-the-month. The data from the last year of AI-coding adoption suggests otherwise — but it also shows the industry still has a trust problem SDD is explicitly trying to close.</p>
 
@@ -965,9 +941,9 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <hr class="div">
 
-      <!-- 12 -->
-      <section class="sheet" id="sec-12">
-        <div class="sheet-label"><span class="num">12</span><span class="of">Sheet 12 of 15</span><span class="rule"></span></div>
+      <!-- 11 — was 12 -->
+      <section class="sheet" id="sec-11">
+        <div class="sheet-label"><span class="num">11</span><span class="of">Sheet 11 of 14</span><span class="rule"></span></div>
         <h2>The Honest Limits</h2>
         <p>Every team adopting SDD should walk in aware of where it currently breaks down.</p>
 
@@ -994,9 +970,9 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <hr class="div">
 
-      <!-- 13 — UPDATED QUICK START FOR KIRO + CLAUDE CODE -->
-      <section class="sheet" id="sec-13">
-        <div class="sheet-label"><span class="num">13</span><span class="of">Sheet 13 of 15</span><span class="rule"></span></div>
+      <!-- 12 — was 13 -->
+      <section class="sheet" id="sec-12">
+        <div class="sheet-label"><span class="num">12</span><span class="of">Sheet 12 of 14</span><span class="rule"></span></div>
         <h2>Quick Start</h2>
 
         <h3>Option 1: Kiro CLI (built‑in spec agent)</h3>
@@ -1066,9 +1042,9 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <hr class="div">
 
-      <!-- 14 -->
-      <section class="sheet" id="sec-14">
-        <div class="sheet-label"><span class="num">14</span><span class="of">Sheet 14 of 15</span><span class="rule"></span></div>
+      <!-- 13 — was 14 -->
+      <section class="sheet" id="sec-13">
+        <div class="sheet-label"><span class="num">13</span><span class="of">Sheet 13 of 14</span><span class="rule"></span></div>
         <h2>Acronyms &amp; Glossary</h2>
         <p>Navigating the SDD ecosystem means decoding a dense alphabet soup of terms. Here is a curated list of the most important acronyms and their meanings in the context of Spec-Driven Development.</p>
         <div class="table-wrap">
@@ -1093,9 +1069,9 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <hr class="div">
 
-      <!-- 15 -->
-      <section class="sheet" id="sec-15">
-        <div class="sheet-label"><span class="num">15</span><span class="of">Sheet 15 of 15</span><span class="rule"></span></div>
+      <!-- 14 — was 15 -->
+      <section class="sheet" id="sec-14">
+        <div class="sheet-label"><span class="num">14</span><span class="of">Sheet 14 of 14</span><span class="rule"></span></div>
         <h2>Sources &amp; Further Reading</h2>
         <p>This guide draws on and paraphrases reporting and documentation from the following, current as of mid-2026. Click any link to explore the original source.</p>
 
