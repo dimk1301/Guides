@@ -464,6 +464,11 @@
 
         <hr class="div" style="margin:20px 0;">
 
+        <h3>Greenfield vs. Brownfield: Where Phase 1 Actually Starts</h3>
+        <p>The four phases are the same either way, but Phase 1 starts from a different place. <strong>Greenfield</strong> — there's no existing code to contradict, so the spec you write is genuinely the first source of truth. <strong>Brownfield</strong> — the codebase already has an implicit spec: however it actually behaves today, documented or not. Skip acknowledging that, and Phase 1 will happily draft requirements that quietly conflict with what's already shipped. Both tools have a specific fix for this — see Sheet 08 for the exact commands.</p>
+
+        <hr class="div" style="margin:20px 0;">
+
         <h3>Phase 1 — Specify &amp; Clarify</h3>
 
         <h4 style="color:var(--cyan);">What the AI Agent does:</h4>
@@ -876,6 +881,9 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
         <h4>Claude Code extras: Skills &amp; AGENTS.md</h4>
         <p>Beyond the spec workflow itself, Claude Code has two more building blocks worth knowing. <code>AGENTS.md</code> has become the de facto open standard for giving any coding agent — not just Claude Code — durable project context, so it's worth using instead of a Claude-only file if you work across multiple agent tools. <strong>Claude Code Skills</strong> are shareable workspace macros stored in <code>.claude/skills/</code> that encode team conventions — file structure, test patterns, accessibility rules — as on-demand commands Claude can invoke directly, giving you a way to package recurring, spec-adjacent knowledge (like "how we structure API routes") without stuffing it into <code>CLAUDE.md</code> itself.</p>
 
+        <h4>Starting on an existing codebase (brownfield)</h4>
+        <p>Both tools have a built-in way to bootstrap the Constitution from a codebase that already exists, instead of writing it blank. <strong>Kiro</strong>: use <strong>Generate Steering Docs</strong> (a button in the IDE, and the same capability in the CLI and Web) to scan the existing repo and auto-draft <code>product.md</code>, <code>tech.md</code>, and <code>structure.md</code> from what's actually there. <strong>Claude Code</strong>: run <code>/init</code> in the repo before writing anything by hand — it detects your build system, test framework, and code patterns, and drafts a starter <code>CLAUDE.md</code> you refine from there. Either way, do this before your first spec, not after — it's what stops Phase 1 from drafting requirements that quietly contradict how the codebase already works.</p>
+
         <div class="callout tip">
           <span class="tag">PICKING ONE</span>
           <p>If you want zero setup and an opinionated structure, start with <strong>Kiro CLI</strong>. If you already use Claude Code and want flexibility, start with <strong>Specifico</strong> or build custom slash commands. And if you want the best of both, start the spec in Kiro and implement it with Claude Code — the files are portable.</p>
@@ -964,7 +972,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
         <p>Every team adopting SDD should walk in aware of where it currently breaks down.</p>
 
         <h3>1. The brownfield adoption gap</h3>
-        <p>SDD frameworks shine on greenfield projects where the agent builds from a clean slate. Dropping a full SDD pipeline onto a large legacy codebase in one go rarely works — it needs progressive, iterative adoption, feature by feature, not a big-bang rewrite.</p>
+        <p>SDD frameworks shine on greenfield projects where the agent builds from a clean slate. Dropping a full SDD pipeline onto a large legacy codebase in one go rarely works — it needs progressive, iterative adoption, feature by feature, not a big-bang rewrite. Both tools have a specific onboarding step for this (see Sheet 08), but even with it, treat the first few brownfield specs as trust-building exercises, not a reason to spec the entire legacy system at once.</p>
 
         <h3>2. The Markdown Monster risk</h3>
         <p>Adopt complex spec workflows without changing how your team actually collaborates, and you get documentation overhead instead of clarity. If a simple change spawns hundreds of verbose planning files, you're now spending more time reviewing prose than reviewing the code it produced. As Böckeler notes, "it is easy to end up with 100s of markdown files."</p>
