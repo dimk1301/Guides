@@ -425,25 +425,25 @@
             <thead><tr><th>Phase</th><th>What the <strong style="color:var(--cyan);">AI Agent</strong> does</th><th>What <strong style="color:var(--amber);">You (the Human)</strong> does</th><th>Handoff / Checkpoint</th></tr></thead>
             <tbody>
               <tr>
-                <td><strong>1. Specify</strong></td>
+                <td style="white-space:nowrap;"><strong>1. Specify</strong></td>
                 <td>Drafts the initial spec, asks clarifying questions, flags gaps</td>
                 <td>Writes the initial description, reviews the drafted spec, answers questions, approves it</td>
                 <td>You say "yes, proceed" — spec is locked</td>
               </tr>
               <tr>
-                <td><strong>2. Plan</strong></td>
+                <td style="white-space:nowrap;"><strong>2. Plan</strong></td>
                 <td>Reads the spec, generates a technical architecture plan</td>
                 <td>Reviews the plan, checks feasibility, approves or requests changes</td>
                 <td>You say "yes, proceed" — plan is locked</td>
               </tr>
               <tr>
-                <td><strong>3. Tasks</strong></td>
+                <td style="white-space:nowrap;"><strong>3. Tasks</strong></td>
                 <td>Breaks the plan into an ordered checklist of micro-tasks</td>
                 <td>Reviews the task list, checks completeness, approves it</td>
                 <td>You say "yes, proceed" — task list is locked</td>
               </tr>
               <tr>
-                <td><strong>4. Implement</strong></td>
+                <td style="white-space:nowrap;"><strong>4. Implement</strong></td>
                 <td>Executes the tasks one by one, writes code, runs tests</td>
                 <td>Reviews the targeted diffs, validates against the spec, approves the merge</td>
                 <td>You review each change; agent loops back if you request fixes</td>
