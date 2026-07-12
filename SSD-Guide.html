@@ -306,16 +306,15 @@
       <li><a href="#sec-02"><span class="n">02</span> Maturity Levels</a></li>
       <li><a href="#sec-03"><span class="n">03</span> The 4-Phase Loop</a></li>
       <li><a href="#sec-04"><span class="n">04</span> Writing Specs with EARS</a></li>
-      <li><a href="#sec-05"><span class="n">05</span> Context &amp; Memory Patterns</a></li>
-      <li><a href="#sec-06"><span class="n">06</span> Spec in Scrum &amp; Kanban</a></li>
-      <li><a href="#sec-07"><span class="n">07</span> SDD vs TDD vs BDD</a></li>
-      <li><a href="#sec-08"><span class="n">08</span> Tooling Landscape (Kiro + Claude)</a></li>
-      <li><a href="#sec-09"><span class="n">09</span> Vibe vs Spec: The Call</a></li>
-      <li><a href="#sec-10"><span class="n">10</span> Adoption Signals</a></li>
-      <li><a href="#sec-11"><span class="n">11</span> Honest Limits</a></li>
-      <li><a href="#sec-12"><span class="n">12</span> Quick Start</a></li>
-      <li><a href="#sec-13"><span class="n">13</span> Acronyms &amp; Glossary</a></li>
-      <li><a href="#sec-14"><span class="n">14</span> Sources</a></li>
+      <li><a href="#sec-05"><span class="n">05</span> Spec in Scrum &amp; Kanban</a></li>
+      <li><a href="#sec-06"><span class="n">06</span> SDD vs TDD vs BDD</a></li>
+      <li><a href="#sec-07"><span class="n">07</span> Tooling Landscape (Kiro + Claude)</a></li>
+      <li><a href="#sec-08"><span class="n">08</span> Vibe vs Spec: The Call</a></li>
+      <li><a href="#sec-09"><span class="n">09</span> Adoption Signals</a></li>
+      <li><a href="#sec-10"><span class="n">10</span> Honest Limits</a></li>
+      <li><a href="#sec-11"><span class="n">11</span> Quick Start</a></li>
+      <li><a href="#sec-12"><span class="n">12</span> Acronyms &amp; Glossary</a></li>
+      <li><a href="#sec-13"><span class="n">13</span> Sources</a></li>
     </ul>
   </nav>
 
@@ -340,7 +339,7 @@
     <div class="content-inner">
       <!-- 01 -->
       <section class="sheet" id="sec-01">
-        <div class="sheet-label"><span class="num">01</span><span class="of">Sheet 01 of 14</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">01</span><span class="of">Sheet 01 of 13</span><span class="rule"></span></div>
         <h2>What is Spec-Driven Development?</h2>
         <p class="lede">Spec-Driven Development (SDD) is the structural successor to <strong>"vibe coding"</strong> — the term Andrej Karpathy coined in February 2025 for the ad-hoc, prompt-and-pray loop of throwing natural-language instructions at a model until something works. Vibe coding was even crowned Collins Dictionary's Word of the Year for 2025. By 2026 it had also become clear that it doesn't hold up once real users, real security requirements, and real teammates are in the loop.</p>
         <p>SDD is a methodology in which a written specification is treated as the primary, executable artifact of a software project, and code is a regenerable output produced from that spec by humans, AI agents, or both. The specification file, not the eventual codebase, becomes the single source of truth. Instead of describing a system brick-by-brick through an endless chat, you hand an autonomous agent a complete engineering blueprint. It builds against that blueprint, and when requirements change, you edit the spec and regenerate the code rather than hand-patch the output.</p>
@@ -351,7 +350,7 @@
 
         <div class="callout info">
           <span class="tag">CONTEXT</span>
-          <p>Independent research is now catching up to the practice: an early-2026 academic paper on spec-driven development draws the line explicitly — a traditional spec is read by humans, an SDD spec executes as a validation gate that an agent's output has to pass. See Sheet 14 for the reference.</p>
+          <p>This distinction is echoed by the tooling itself: GitHub Spec Kit (see Sheet 13) frames it as specifications becoming <em>living, executable artifacts</em> rather than static documents — a traditional spec is read by humans, an SDD spec is meant to be consumed and acted on by an agent.</p>
         </div>
       </section>
 
@@ -359,7 +358,7 @@
 
       <!-- 02 -->
       <section class="sheet" id="sec-02">
-        <div class="sheet-label"><span class="num">02</span><span class="of">Sheet 02 of 14</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">02</span><span class="of">Sheet 02 of 13</span><span class="rule"></span></div>
         <h2>The Continuum of Commitment</h2>
         <p>Rolling SDD into a real engineering team isn't binary — it sits on a spectrum of how much authority you're willing to hand the spec. Most teams start at level one and drift toward level two; very few production shops run level three today. As Thoughtworks' Birgitta Böckeler notes, "all SDD approaches and definitions I've found are spec-first, but not all strive to be spec-anchored or spec-as-source."</p>
 
@@ -415,7 +414,7 @@
 
       <!-- 03 — COMPLETELY REVISED WITH CLEAR HUMAN/AI ROLES -->
       <section class="sheet" id="sec-03">
-        <div class="sheet-label"><span class="num">03</span><span class="of">Sheet 03 of 14</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">03</span><span class="of">Sheet 03 of 13</span><span class="rule"></span></div>
         <h2>Core Workflow: The 4-Phase Loop</h2>
 
         <p class="lede">The SDD loop is a <strong>collaboration</strong> between you (the human) and the AI agent. Each phase has a clear division of labour: the agent drafts, you review and approve. Here's exactly who does what.</p>
@@ -556,6 +555,9 @@
 
         <hr class="div" style="margin:20px 0;">
 
+        <h3>Two Kinds of Document: Feature Spec vs. Standing Context</h3>
+        <p>Everything above — <code>spec.md</code>, <code>plan.md</code>, <code>tasks.md</code> — is <strong>temporary and localized</strong>. It exists for this one feature or bug fix, and once it ships you archive or freeze it. But every project also needs a second, different kind of document: standing rules that apply to <em>every</em> change, not just this one. As Birgitta Böckeler of Thoughtworks puts it: "general context are things like rules files, or high level descriptions of the product and the codebase… whereas specs [are] only relevant to the tasks that actually create or change that particular functionality." That standing-rules document is what the rest of this section covers — the Constitution.</p>
+
         <h3>The Constitution: Your Immutable Foundation</h3>
         <p>A <strong>Constitution</strong> defines non‑negotiable principles that apply to every change — testing philosophy, security baselines, code style, and opinionated technology choices. This ensures organizational standards are baked into every project from the start.</p>
         <div class="callout info">
@@ -622,7 +624,7 @@
 
       <!-- 04 -->
       <section class="sheet" id="sec-04">
-        <div class="sheet-label"><span class="num">04</span><span class="of">Sheet 04 of 14</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">04</span><span class="of">Sheet 04 of 13</span><span class="rule"></span></div>
         <h2>Writing Requirements with EARS Notation</h2>
         <p>The weakest link in any spec is still the sentence a human wrote. <strong>EARS (Easy Approach to Requirements Syntax)</strong> is the notation most SDD tools now lean on to keep those sentences testable — it originated in 2009 at Rolls-Royce, where engineers analyzing jet-engine control regulations noticed that good requirements all shared the same clause order. It has since been adopted by Airbus, Bosch, NASA, and Siemens, and since 2025 it's been baked directly into AI-native tools, most visibly Kiro's requirements phase.</p>
         <p>EARS gives you five patterns. Each one forces you to be explicit about the thing vague requirements always hide: <strong>what triggers this, and under what conditions.</strong></p>
@@ -657,47 +659,9 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
       <hr class="div">
 
-      <!-- 05 — UPDATED to explicitly map Constitution to each tool -->
+      <!-- 05 — REVISED FOR CLARITY -->
       <section class="sheet" id="sec-05">
-        <div class="sheet-label"><span class="num">05</span><span class="of">Sheet 05 of 14</span><span class="rule"></span></div>
-        <h2>Global Context vs. Feature Specs</h2>
-        <p>Scaling SDD past a single feature means separating two kinds of documents that get conflated constantly: the spec for <em>this</em> change, and the standing rules that apply to <em>every</em> change. As Birgitta Böckeler puts it: "general context are things like rules files, or high level descriptions of the product and the codebase. Some tools call this context a memory bank… whereas specs only relevant to the tasks that actually create or change that particular functionality."</p>
-        <ul>
-          <li><strong>Feature specifications</strong> — temporary, localized to one task or bug fix. Once it ships, archive or freeze it.</li>
-          <li><strong>Memory banks / context files</strong> — persistent documents loaded into every session. They're your organization's standing source of truth, not this sprint's.</li>
-        </ul>
-
-        <h3>Pattern 1 — The Project Constitution</h3>
-        <p>Sheet 03 covers what the Constitution is, where the term comes from, and how it maps onto Kiro's steering files and Claude Code's <code>CLAUDE.md</code>. Here's the one thing worth adding at the project-scaling level: keep the Constitution content identical in spirit across tools even though the file location differs, so a rule doesn't quietly diverge between a Kiro-authored spec and a Claude Code session on the same repo.</p>
-        <div class="code-card">
-          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">Constitution rules (apply to both tools)</span><button class="copy-btn" data-copy>Copy</button></div>
-          <pre><code><span class="tok-c"># Project Constitution</span>
-- All backend routes <span class="tok-s">MUST</span> enforce strict Zod runtime schema validation.
-- Write Vitest unit tests <span class="tok-s">before</span> implementing any business logic.
-- No inline styles — Tailwind utility classes only.</code></pre>
-        </div>
-
-        <h3>Pattern 2 — Claude Code Skills &amp; AGENTS.md</h3>
-        <p><code>AGENTS.md</code> has become the de facto open standard for giving any coding agent durable project context. <strong>Claude Code Skills</strong> are shareable workspace macros in <code>.claude/skills/</code> that encode team conventions — file structure, test patterns, accessibility rules — as on-demand commands injected straight into the terminal runtime loop.</p>
-        <div class="code-card">
-          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">CLAUDE.md example</span><button class="copy-btn" data-copy>Copy</button></div>
-          <pre><code><span class="tok-c"># Project rules (Constitution)</span>
-- Read the feature spec before writing any code.
-- Never expand scope beyond what the spec defines.
-- Write tests before marking a task complete.
-- If the implementation needs to drift from the spec, update the spec first.
-
-<span class="tok-c"># Reference a detailed constitution if needed</span>
-@constitution.md</code></pre>
-        </div>
-        <p>Keep the instruction layer (Constitution / <code>CLAUDE.md</code>) and the feature layer (this week's spec) in separate files. Collapsing them is the single most common reason teams end up rewriting their "constitution" every sprint.</p>
-      </section>
-
-      <hr class="div">
-
-      <!-- 06 — REVISED FOR CLARITY -->
-      <section class="sheet" id="sec-06">
-        <div class="sheet-label"><span class="num">06</span><span class="of">Sheet 06 of 14</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">05</span><span class="of">Sheet 05 of 13</span><span class="rule"></span></div>
         <h2>Where the Spec Lives in Scrum &amp; Kanban</h2>
 
         <h3>The Big Misconception: "Waterfall in Markdown"</h3>
@@ -856,8 +820,8 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
       <hr class="div">
 
       <!-- 07 -->
-      <section class="sheet" id="sec-07">
-        <div class="sheet-label"><span class="num">07</span><span class="of">Sheet 07 of 14</span><span class="rule"></span></div>
+      <section class="sheet" id="sec-06">
+        <div class="sheet-label"><span class="num">06</span><span class="of">Sheet 06 of 13</span><span class="rule"></span></div>
         <h2>SDD vs. TDD vs. BDD</h2>
         <p>SDD gets confused with test-driven and behavior-driven development constantly, because all three share the same instinct: define correctness before you write the implementation. The difference is <em>what document is treated as the canonical, load-bearing artifact.</em></p>
 
@@ -878,8 +842,8 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
       <hr class="div">
 
       <!-- 08 — UPDATED TO ONLY INCLUDE KIRO AND CLAUDE CODE -->
-      <section class="sheet" id="sec-08">
-        <div class="sheet-label"><span class="num">08</span><span class="of">Sheet 08 of 14</span><span class="rule"></span></div>
+      <section class="sheet" id="sec-07">
+        <div class="sheet-label"><span class="num">07</span><span class="of">Sheet 07 of 13</span><span class="rule"></span></div>
         <h2>The Tooling Landscape: Kiro CLI &amp; Claude Code</h2>
         <p>The ecosystem has moved fast from auto-complete helpers to full agentic SDD frameworks. As of mid-2026, the two tools actually worth your time for a production spec‑first workflow are <strong>Kiro CLI</strong> and <strong>Claude Code</strong>. They take different approaches to the same problem, and you can even use them together.</p>
 
@@ -904,6 +868,9 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
         <p>Claude Code doesn't have a built‑in spec agent. Instead, you bring your own workflow through plugins, slash commands, hooks, and skills. The most complete plugin is <strong>Specifico</strong>, which enforces a strict spec → plan → tasks → execute → verify → merge loop. It produces structured artifacts (<code>SPEC.md</code>, <code>PLAN.md</code>, <code>TASKS.md</code>, <code>STATE.json</code>, <code>DECISIONS.md</code>) and maintains shared project memory in <code>MEMORY.md</code> and <code>MEMORY.json</code> for conflict detection across features.</p>
         <p>You can also build your own workflow using Claude Code's <code>.claude/commands/</code> directory and skills. A popular pattern is the <strong>Kiro‑style workflow</strong> implemented with custom slash commands like <code>/kiro:spec-init</code>, <code>/kiro:spec-requirements</code>, <code>/kiro:spec-design</code>, <code>/kiro:spec-tasks</code>. This enforces a 3‑phase approval process (Requirements → Design → Tasks → Implementation) where each phase requires human review and you cannot skip phases.</p>
 
+        <h4>Claude Code extras: Skills &amp; AGENTS.md</h4>
+        <p>Beyond the spec workflow itself, Claude Code has two more building blocks worth knowing. <code>AGENTS.md</code> has become the de facto open standard for giving any coding agent — not just Claude Code — durable project context, so it's worth using instead of a Claude-only file if you work across multiple agent tools. <strong>Claude Code Skills</strong> are shareable workspace macros stored in <code>.claude/skills/</code> that encode team conventions — file structure, test patterns, accessibility rules — as on-demand commands Claude can invoke directly, giving you a way to package recurring, spec-adjacent knowledge (like "how we structure API routes") without stuffing it into <code>CLAUDE.md</code> itself.</p>
+
         <div class="callout tip">
           <span class="tag">PICKING ONE</span>
           <p>If you want zero setup and an opinionated structure, start with <strong>Kiro CLI</strong>. If you already use Claude Code and want flexibility, start with <strong>Specifico</strong> or build custom slash commands. And if you want the best of both, start the spec in Kiro and implement it with Claude Code — the files are portable.</p>
@@ -913,8 +880,8 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
       <hr class="div">
 
       <!-- 09 — was 10 -->
-      <section class="sheet" id="sec-09">
-        <div class="sheet-label"><span class="num">09</span><span class="of">Sheet 09 of 14</span><span class="rule"></span></div>
+      <section class="sheet" id="sec-08">
+        <div class="sheet-label"><span class="num">08</span><span class="of">Sheet 08 of 13</span><span class="rule"></span></div>
         <h2>Vibe Coding vs. Spec-Driven: The Honest Call</h2>
         <p>SDD provides structural reliability, but it's genuine overhead for small tasks — turning a one-line fix into a web of user stories and acceptance criteria is its own anti-pattern, sometimes called <strong>"a sledgehammer to crack a nut."</strong></p>
 
@@ -971,8 +938,8 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
       <hr class="div">
 
       <!-- 10 — was 11 -->
-      <section class="sheet" id="sec-10">
-        <div class="sheet-label"><span class="num">10</span><span class="of">Sheet 10 of 14</span><span class="rule"></span></div>
+      <section class="sheet" id="sec-09">
+        <div class="sheet-label"><span class="num">09</span><span class="of">Sheet 09 of 13</span><span class="rule"></span></div>
         <h2>Adoption Signals: Is This Actually Catching On?</h2>
         <p>SDD could easily be dismissed as another framework-of-the-month. Two things suggest otherwise: real production tooling has shipped around it (not just demos), and the industry-wide drop in developer trust toward unstructured AI-generated code is exactly the gap SDD's constraint layer is built to close.</p>
 
@@ -986,8 +953,8 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
       <hr class="div">
 
       <!-- 11 — was 12 -->
-      <section class="sheet" id="sec-11">
-        <div class="sheet-label"><span class="num">11</span><span class="of">Sheet 11 of 14</span><span class="rule"></span></div>
+      <section class="sheet" id="sec-10">
+        <div class="sheet-label"><span class="num">10</span><span class="of">Sheet 10 of 13</span><span class="rule"></span></div>
         <h2>The Honest Limits</h2>
         <p>Every team adopting SDD should walk in aware of where it currently breaks down.</p>
 
@@ -1015,8 +982,8 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
       <hr class="div">
 
       <!-- 12 — was 13 -->
-      <section class="sheet" id="sec-12">
-        <div class="sheet-label"><span class="num">12</span><span class="of">Sheet 12 of 14</span><span class="rule"></span></div>
+      <section class="sheet" id="sec-11">
+        <div class="sheet-label"><span class="num">11</span><span class="of">Sheet 11 of 13</span><span class="rule"></span></div>
         <h2>Quick Start</h2>
 
         <h3>Option 1: Kiro CLI (built‑in spec agent)</h3>
@@ -1087,8 +1054,8 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
       <hr class="div">
 
       <!-- 13 — was 14 -->
-      <section class="sheet" id="sec-13">
-        <div class="sheet-label"><span class="num">13</span><span class="of">Sheet 13 of 14</span><span class="rule"></span></div>
+      <section class="sheet" id="sec-12">
+        <div class="sheet-label"><span class="num">12</span><span class="of">Sheet 12 of 13</span><span class="rule"></span></div>
         <h2>Acronyms &amp; Glossary</h2>
         <p>Navigating the SDD ecosystem means decoding a dense alphabet soup of terms. Here is a curated list of the most important acronyms and their meanings in the context of Spec-Driven Development.</p>
         <div class="table-wrap">
@@ -1114,8 +1081,8 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
       <hr class="div">
 
       <!-- 14 — was 15 -->
-      <section class="sheet" id="sec-14">
-        <div class="sheet-label"><span class="num">14</span><span class="of">Sheet 14 of 14</span><span class="rule"></span></div>
+      <section class="sheet" id="sec-13">
+        <div class="sheet-label"><span class="num">13</span><span class="of">Sheet 13 of 13</span><span class="rule"></span></div>
         <h2>Sources &amp; Further Reading</h2>
         <p>This guide draws on and paraphrases reporting and documentation from the following, current as of mid-2026. Click any link to explore the original source.</p>
 
@@ -1123,23 +1090,24 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
         <ul>
           <li><a href="https://kiro.dev/docs/cli/v3/specs/" target="_blank" class="source-link">Kiro CLI — Specs documentation</a> — official docs for the <code>/spec</code> workflow</li>
           <li><a href="https://kiro.dev/docs/cli/v3/" target="_blank" class="source-link">Kiro CLI 3.0 (Early Access)</a> — what's new in the unified engine</li>
+          <li><a href="https://aws.amazon.com/blogs/industries/from-spec-to-production-a-three-week-drug-discovery-agent-using-kiro/" target="_blank" class="source-link">AWS — From Spec to Production: a three-week drug discovery agent using Kiro</a> — a real, detailed production case study with steering-file examples</li>
         </ul>
 
         <h3>Claude Code</h3>
         <ul>
-          <li><a href="https://www.npmjs.com/package/specifico" target="_blank" class="source-link">Specifico — SDD for Claude Code</a> — spec → plan → tasks → execute → verify → merge</li>
-          <li><a href="https://github.com/genkovich/sdd" target="_blank" class="source-link">SDD — Spec‑Driven Development for Claude Code</a> — 18 atomic skills + TDD engine</li>
-          <li><a href="https://github.com/s-hiraoku/cc-flow" target="_blank" class="source-link">cc-flow — Kiro‑style SDD for Claude Code</a> — slash commands, hooks, and agents</li>
-          <li><a href="https://github.com/vlkalex/ai-agent-coding-standards/blob/HEAD/agents/claude-md-guide.md" target="_blank" class="source-link">How to Write Effective CLAUDE.md Files</a> — practical guide</li>
+          <li><a href="https://code.claude.com/docs/en/best-practices" target="_blank" class="source-link">Claude Code — Best Practices</a> — official Anthropic docs on <code>CLAUDE.md</code>, skills, permissions, and workflow patterns</li>
+          <li><a href="https://www.humanlayer.dev/blog/writing-a-good-claude-md" target="_blank" class="source-link">HumanLayer — Writing a Good CLAUDE.md</a> — practical, widely-cited guidance on keeping your Constitution file lean and effective</li>
         </ul>
 
         <h3>References &amp; Background</h3>
         <ul>
           <li><a href="https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html" target="_blank" class="source-link">Martin Fowler / Thoughtworks — Understanding Spec-Driven-Development</a> — in-depth analysis (Birgitta Böckeler, Oct 2025)</li>
-          <li><a href="https://www.deeplearning.ai/courses/" target="_blank" class="source-link">DeepLearning.AI</a> — "Spec-Driven Development with Coding Agents" course</li>
           <li><a href="https://github.com/github/spec-kit" target="_blank" class="source-link">GitHub Spec Kit</a> — the open-source toolkit that coined "constitution.md" and the specify → plan → tasks → implement flow; supports both Kiro and Claude Code as integrations, worth a look once you outgrow a two-tool setup</li>
           <li><a href="https://alistairmavin.com/ears/" target="_blank" class="source-link">Alistair Mavin — EARS: Easy Approach to Requirements Syntax</a> — the original creator's own guide to the notation, straight from its source</li>
+          <li>METR (2025) — controlled study on AI-assisted developer speed perception vs. measured outcome on a mature repository (sixteen developers)</li>
         </ul>
+
+        <p>Facts and figures above are paraphrased summaries for a developer audience, not verbatim reproductions — check primary sources directly for exact numbers before citing them elsewhere.</p>
 
         <a class="backtotop" href="#main-content">↑ Back to top</a>
       </section>
