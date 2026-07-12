@@ -654,7 +654,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
           <span class="tag">WHY IT MATTERS FOR AI AGENTS</span>
           <p>EARS' real payoff in an SDD pipeline isn't grammar — it's that each requirement becomes directly testable, with an unambiguous trigger and expected response an agent can decompose straight into a task and a test. It also front-loads the exact questions your clarification step needs to ask.</p>
         </div>
-        <p>EARS isn't universal, though — requirements with more than two or three preconditions get unreadable as a single sentence, and pure architectural constraints don't fit an event/response shape at all. Reach for a decision table or a diagram instead when you notice yourself stacking more than two <code>While</code>/<code>When</code> clauses.</p>
+        <p>EARS works best for one trigger → one response. Stack more than two <code>While</code>/<code>When</code> clauses in a sentence and it turns into a puzzle instead of a requirement — switch to a decision table at that point. And some things aren't trigger-and-response at all: if it's about how components relate or fit together — architecture, service ownership, system layout — draw a diagram; if it's a standing rule with no trigger at all, one that's just always true, that's Constitution material (see Sheet 03), not a spec requirement.</p>
       </section>
 
       <hr class="div">
@@ -1097,9 +1097,6 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
         <ul>
           <li><a href="https://code.claude.com/docs/en/best-practices" target="_blank" class="source-link">Claude Code — Best Practices</a> — official Anthropic docs on <code>CLAUDE.md</code>, skills, permissions, and workflow patterns</li>
           <li><a href="https://www.humanlayer.dev/blog/writing-a-good-claude-md" target="_blank" class="source-link">HumanLayer — Writing a Good CLAUDE.md</a> — practical, widely-cited guidance on keeping your Constitution file lean and effective</li>
-           <li><a href="https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents">Anthropic — Effective Context Engineering for AI Agents</a></li>
-           <li><a href="https://claude.com/blog/how-claude-code-works-in-large-codebases-best-practices-and-where-to-start">Anthropic — How Claude Code Works in Large Codebases</a></li>
-           <li><a href="https://github.com/hesreallyhim/awesome-claude-code">Awesome Claude Code — Curated Community Resource List</a></li>
         </ul>
 
         <h3>References &amp; Background</h3>
@@ -1107,7 +1104,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
           <li><a href="https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html" target="_blank" class="source-link">Martin Fowler / Thoughtworks — Understanding Spec-Driven-Development</a> — in-depth analysis (Birgitta Böckeler, Oct 2025)</li>
           <li><a href="https://github.com/github/spec-kit" target="_blank" class="source-link">GitHub Spec Kit</a> — the open-source toolkit that coined "constitution.md" and the specify → plan → tasks → implement flow; supports both Kiro and Claude Code as integrations, worth a look once you outgrow a two-tool setup</li>
           <li><a href="https://alistairmavin.com/ears/" target="_blank" class="source-link">Alistair Mavin — EARS: Easy Approach to Requirements Syntax</a> — the original creator's own guide to the notation, straight from its source</li>
-           <li><a href="https://www.thoughtworks.com/en-us/radar/techniques/spec-driven-development">Thoughtworks Technology Radar — Spec-Driven Development</a></li>
+          <li>METR (2025) — controlled study on AI-assisted developer speed perception vs. measured outcome on a mature repository (sixteen developers)</li>
         </ul>
 
         <p>Facts and figures above are paraphrased summaries for a developer audience, not verbatim reproductions — check primary sources directly for exact numbers before citing them elsewhere.</p>
