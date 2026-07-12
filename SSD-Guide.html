@@ -413,74 +413,148 @@
 
       <hr class="div">
 
-      <!-- 03 -->
+      <!-- 03 — COMPLETELY REVISED WITH CLEAR HUMAN/AI ROLES -->
       <section class="sheet" id="sec-03">
         <div class="sheet-label"><span class="num">03</span><span class="of">Sheet 03 of 14</span><span class="rule"></span></div>
         <h2>Core Workflow: The 4-Phase Loop</h2>
-        <p>Tools differ in naming, but a production-grade SDD pipeline converges on the same rigorous execution loop. This loop is a continuous cycle, not a one‑off sequence; at every step, the output is validated back against the original specification to prevent drift.</p>
 
-        <div class="diagram-frame">
-          <svg viewBox="0 0 900 260" role="img" aria-label="Four phase diagram: Specify, Plan, Tasks, Implement, looping back to Specify via a continuous validation loop">
-            <defs>
-              <marker id="arrow1" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-                <path d="M0,0 L8,4 L0,8 Z" fill="#7fae95"/>
-              </marker>
-              <marker id="arrow2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-                <path d="M0,0 L8,4 L0,8 Z" fill="#d9a153"/>
-              </marker>
-            </defs>
-            <path d="M175,90 H225" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrow1)"/>
-            <path d="M400,90 H450" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrow1)"/>
-            <path d="M625,90 H675" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrow1)"/>
-            <path d="M800,120 V180 H100 V120" stroke="#d9a153" stroke-width="2" fill="none" stroke-dasharray="6 5" marker-end="url(#arrow2)"/>
+        <p class="lede">The SDD loop is a <strong>collaboration</strong> between you (the human) and the AI agent. Each phase has a clear division of labour: the agent drafts, you review and approve. Here's exactly who does what.</p>
 
-            <g>
-              <rect x="25" y="55" width="150" height="70" rx="10" fill="#221f1b" stroke="#7fae95" stroke-width="1.6"/>
-              <text x="100" y="82" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">01 · SPECIFY</text>
-              <text x="100" y="102" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="15">The Blueprint</text>
-            </g>
-            <g>
-              <rect x="225" y="55" width="175" height="70" rx="10" fill="#221f1b" stroke="#7fae95" stroke-width="1.6"/>
-              <text x="312" y="82" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">02 · PLAN</text>
-              <text x="312" y="102" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="15">Architecture</text>
-            </g>
-            <g>
-              <rect x="450" y="55" width="175" height="70" rx="10" fill="#221f1b" stroke="#d9a153" stroke-width="1.6"/>
-              <text x="537" y="82" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">03 · TASKS</text>
-              <text x="537" y="102" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="15">Task Board</text>
-            </g>
-            <g>
-              <rect x="675" y="55" width="200" height="70" rx="10" fill="#221f1b" stroke="#9bc98f" stroke-width="1.6"/>
-              <text x="775" y="82" text-anchor="middle" fill="#9bc98f" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">04 · IMPLEMENT</text>
-              <text x="775" y="102" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="15">Targeted Diff</text>
-            </g>
-            <text x="450" y="205" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="14" letter-spacing="0.06em" font-weight="600">◂ CONTINUOUS VALIDATION LOOP ▸</text>
-          </svg>
-          <p class="diagram-cap">The loop never truly ends — Implement validates continuously back against Specify, not just once at the end.</p>
+        <!-- WHO DOES WHAT TABLE — NEW -->
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Phase</th><th>What the <strong style="color:var(--cyan);">AI Agent</strong> does</th><th>What <strong style="color:var(--amber);">You (the Human)</strong> does</th><th>Handoff / Checkpoint</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>1. Specify</strong></td>
+                <td>Drafts the initial spec, asks clarifying questions, flags gaps</td>
+                <td>Writes the initial description, reviews the drafted spec, answers questions, approves it</td>
+                <td>You say "yes, proceed" — spec is locked</td>
+              </tr>
+              <tr>
+                <td><strong>2. Plan</strong></td>
+                <td>Reads the spec, generates a technical architecture plan</td>
+                <td>Reviews the plan, checks feasibility, approves or requests changes</td>
+                <td>You say "yes, proceed" — plan is locked</td>
+              </tr>
+              <tr>
+                <td><strong>3. Tasks</strong></td>
+                <td>Breaks the plan into an ordered checklist of micro-tasks</td>
+                <td>Reviews the task list, checks completeness, approves it</td>
+                <td>You say "yes, proceed" — task list is locked</td>
+              </tr>
+              <tr>
+                <td><strong>4. Implement</strong></td>
+                <td>Executes the tasks one by one, writes code, runs tests</td>
+                <td>Reviews the targeted diffs, validates against the spec, approves the merge</td>
+                <td>You review each change; agent loops back if you request fixes</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
-
-        <h3>Phase 1 — Specify &amp; Clarify</h3>
-        <p>You author a structured, behavior-oriented Markdown artifact. Before planning starts, an automated clarification pass surfaces questions <em>before</em> they turn into wrong code. The output is a single source of truth that defines the system's behavior, constraints, and success criteria.</p>
-        <ul>
-          <li><strong>Functional requirements</strong> — user stories and acceptance criteria, often written in EARS notation (more on that in Sheet 04) or GIVEN–WHEN–THEN form.</li>
-          <li><strong>Technical constraints</strong> — data models, target schemas, third-party payloads, architectural layer boundaries.</li>
-          <li><strong>Success criteria</strong> — concrete benchmarks, scale targets, security constraints, deterministic edge cases.</li>
-        </ul>
-
-        <h3>Phase 2 — Plan</h3>
-        <p>The agent parses the finished spec and synthesizes a technical plan without touching a single line of application code. This plan covers state management, dependency choices, data serialization formats, service‑to‑service communication, component and schema design, and an explicit risk pass over security liabilities and integration points.</p>
-
-        <h3>Phase 3 — Tasks</h3>
-        <p>The plan is broken into an ordered checklist of micro‑engineering tasks — isolated enough to implement sequentially without collisions, each with its own definition of done and inline verification instructions. These tasks often map directly to the acceptance criteria of the original requirements. The checklist ensures that progress is measurable and that nothing is overlooked.</p>
-
-        <h3>Phase 4 — Implement</h3>
-        <p>The agent runs the checklist item‑by‑item. Instead of generating a monolithic code dump, the tool produces <strong>targeted diffs</strong> — small, focused changes that are easier to review and understand. Every change is continuously checked back against the Phase 1 blueprint, and the agent may re‑query the spec if ambiguity arises.</p>
 
         <div class="callout tip">
-          <span class="tag">TOOL IMPLEMENTATION</span>
-          <p><strong>Kiro CLI</strong>: The built‑in <code>/spec</code> agent automates this entire loop. Running <code>/spec new</code> starts Phase 1, producing <code>requirements.md</code>. After you review, the agent moves to <code>design.md</code>, then <code>tasks.md</code>. <code>/spec run</code> executes Phase 4 sequentially.</p>
-          <p><strong>Claude Code</strong>: Bring your own workflow. Plugins like <strong>Specifico</strong> provide <code>/specifico:spec</code>, <code>/specifico:plan</code>, <code>/specifico:tasks</code>, <code>/specifico:implement</code>. You can also build custom slash commands that enforce the same phase‑by‑phase approval.</p>
+          <span class="tag">THE GOLDEN RULE</span>
+          <p><strong>The agent never moves to the next phase without your explicit approval.</strong> You are the decision-maker. The agent is the executor. This is what prevents the "automated legacy mess" problem — you stay in control.</p>
         </div>
+
+        <hr class="div" style="margin:20px 0;">
+
+        <h3>Phase 1 — Specify &amp; Clarify</h3>
+
+        <h4 style="color:var(--cyan);">What the AI Agent does:</h4>
+        <ul>
+          <li>Reads your initial description (a few sentences about what you want to build).</li>
+          <li>Drafts a structured <code>spec.md</code> with functional requirements, constraints, and success criteria.</li>
+          <li>Runs a <strong>clarification pass</strong> — it identifies logical gaps, contradictions, and ambiguous statements.</li>
+          <li>Asks you specific questions to fill in the blanks (<em>"What should happen if the API key is invalid?"</em>, <em>"How many requests per second do you expect?"</em>).</li>
+          <li>Updates the spec based on your answers.</li>
+        </ul>
+
+        <h4 style="color:var(--amber);">What You (the Human) do:</h4>
+        <ul>
+          <li>Write the initial description — just a few sentences about what you need.</li>
+          <li>Read the draft spec the agent produces.</li>
+          <li>Answer the agent's clarification questions.</li>
+          <li>Review the final spec and <strong>explicitly approve it</strong> before the agent moves to Phase 2.</li>
+        </ul>
+
+        <div class="callout info">
+          <span class="tag">EXAMPLE CONVERSATION</span>
+          <p><strong>You:</strong> "Build a token-bucket API rate limiter middleware."<br>
+          <strong>Agent:</strong> "I'll draft a spec. How many requests per second? What should the response be when rate-limited?"<br>
+          <strong>You:</strong> "100 per second. Return 429 Too Many Requests."<br>
+          <strong>Agent:</strong> "Here's the complete spec. Does this cover everything?"<br>
+          <strong>You:</strong> "Yes, proceed." → <em>Phase 1 complete.</em></p>
+        </div>
+
+        <hr class="div" style="margin:20px 0;">
+
+        <h3>Phase 2 — Plan</h3>
+
+        <h4 style="color:var(--cyan);">What the AI Agent does:</h4>
+        <ul>
+          <li>Parses the approved spec and generates a technical <code>plan.md</code>.</li>
+          <li>Decides on state management, dependency choices, data serialization formats, service-to-service communication, component and schema design.</li>
+          <li>Runs a risk assessment — flags security liabilities and integration pain points.</li>
+          <li>Produces a detailed architecture document that maps each requirement to a concrete implementation strategy.</li>
+        </ul>
+
+        <h4 style="color:var(--amber);">What You (the Human) do:</h4>
+        <ul>
+          <li>Read the <code>plan.md</code> the agent generates.</li>
+          <li>Check if the technical approach makes sense for your context (e.g., does the chosen database fit your infrastructure?).</li>
+          <li>Flag any concerns or request changes.</li>
+          <li><strong>Explicitly approve the plan</strong> before the agent moves to Phase 3.</li>
+        </ul>
+
+        <hr class="div" style="margin:20px 0;">
+
+        <h3>Phase 3 — Tasks</h3>
+
+        <h4 style="color:var(--cyan);">What the AI Agent does:</h4>
+        <ul>
+          <li>Breaks the plan into an ordered checklist of micro‑tasks in <code>tasks.md</code>.</li>
+          <li>Each task is small and isolated enough to implement sequentially without collisions.</li>
+          <li>Each task includes its own definition of done and inline verification instructions.</li>
+          <li>Tasks map directly to the acceptance criteria from Phase 1.</li>
+        </ul>
+
+        <h4 style="color:var(--amber);">What You (the Human) do:</h4>
+        <ul>
+          <li>Review the <code>tasks.md</code> checklist.</li>
+          <li>Check that all acceptance criteria are covered and the order makes sense.</li>
+          <li>Add or remove tasks if needed.</li>
+          <li><strong>Explicitly approve the task list</strong> before the agent starts writing code.</li>
+        </ul>
+
+        <hr class="div" style="margin:20px 0;">
+
+        <h3>Phase 4 — Implement</h3>
+
+        <h4 style="color:var(--cyan);">What the AI Agent does:</h4>
+        <ul>
+          <li>Executes the tasks one by one, in order.</li>
+          <li>For each task, it writes code — but <strong>not</strong> as a giant dump. It produces <strong>targeted diffs</strong> — small, focused changes.</li>
+          <li>Runs tests and linters against its own changes.</li>
+          <li>Continuously checks its work back against the Phase 1 spec. If it hits ambiguity, it re‑queries you.</li>
+          <li>If a task fails verification, it attempts to fix it or flags it for you.</li>
+        </ul>
+
+        <h4 style="color:var(--amber);">What You (the Human) do:</h4>
+        <ul>
+          <li>Review each <strong>targeted diff</strong> — small changes are easier to understand and validate.</li>
+          <li>Test the code locally or in your staging environment.</li>
+          <li>If a change doesn't match the spec, reject it and the agent re‑works it.</li>
+          <li>Once all tasks are done and verified, approve the final merge.</li>
+        </ul>
+
+        <div class="callout tip">
+          <span class="tag">THE VERIFIER PATTERN</span>
+          <p>The most underused refinement: assign a <strong>separate</strong> agent to verify the implementing agent's work rather than trusting it to self‑check. Treat "verifier" as a distinct role in your pipeline — the same way you wouldn't let one engineer be the only reviewer of their own pull request.</p>
+        </div>
+
+        <hr class="div" style="margin:20px 0;">
 
         <h3>The Constitution: Your Immutable Foundation</h3>
         <p>A <strong>Constitution</strong> defines non‑negotiable principles that apply to every change — testing philosophy, security baselines, code style, and opinionated technology choices. This ensures organizational standards are baked into every project from the start.</p>
@@ -493,6 +567,13 @@
 - Unit tests are required for any newly created utility method.
 - Write tests <span class="tok-s">before</span> implementing any business logic (TDD discipline).</code></pre>
         </div>
+
+        <h4>How the Constitution fits into the loop</h4>
+        <ul>
+          <li><strong>You write it once</strong> at the start of the project.</li>
+          <li><strong>The agent reads it</strong> at the beginning of every session — it's part of its permanent memory.</li>
+          <li><strong>Every phase</strong> respects the Constitution: the agent won't propose a plan that violates it, and you use it as your own checklist during reviews.</li>
+        </ul>
 
         <h4>How to implement the Constitution in each tool</h4>
         <ul>
@@ -524,6 +605,12 @@
         <div class="callout tip">
           <span class="tag">CONSTITUTION = PERSISTENT CONTEXT</span>
           <p>Whether you use Kiro's steering files or Claude's <code>CLAUDE.md</code>, the Constitution is your team's <strong>living rulebook</strong>. It outlasts any single feature spec and ensures every AI session starts with the same non‑negotiable standards. Update it rarely — treat it like a real constitution, not a daily checklist.</p>
+        </div>
+
+        <div class="callout info">
+          <span class="tag">HOW THIS PLAYS OUT IN PRACTICE</span>
+          <p><strong>Kiro CLI</strong>: The built‑in <code>/spec</code> agent automates this entire loop. You run <code>/spec new</code>, the agent produces <code>requirements.md</code>. You review and type "proceed" — agent moves to <code>design.md</code>. You review and type "proceed" — agent moves to <code>tasks.md</code>. You review and type "proceed" — agent runs <code>/spec run</code> and executes the tasks, showing you each diff as it goes.</p>
+          <p><strong>Claude Code</strong>: You bring your own workflow. Plugins like <strong>Specifico</strong> give you <code>/specifico:spec</code>, <code>/specifico:plan</code>, <code>/specifico:tasks</code>, <code>/specifico:implement</code> — each phase requires your explicit approval before moving to the next. You can also build custom slash commands with the same human‑first approval gates.</p>
         </div>
       </section>
 
