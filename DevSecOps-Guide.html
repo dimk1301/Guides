@@ -1,137 +1,1219 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Developer's Guide to DevSecOps</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      /* Colors */
-      --bg: #0A0E17;
-      --panel: #111826;
-      --panel-alt: #161F30;
-      --border: #25314A;
-      --border-soft: #1B2434;
-      --text: #EAEEF7;
-      --text-muted: #95A1BC;
-      --text-faint: #5A6480;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Developer's Guide to DevSecOps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0E17;
+    --panel:#111826;
+    --panel-alt:#161F30;
+    --border:#25314A;
+    --border-soft:#1B2434;
+    --text:#EAEEF7;
+    --text-muted:#95A1BC;
+    --text-faint:#5A6480;
 
-      /* Pipeline colors */
-      --p1: #334155;
-      --p2: #64748B;
-      --p3: #3B82F6;
-      --p4: #F59E0B;
-      --p5: #F97316;
-      --p6: #84CC16;
-      --p7: #6366F1;
-      --p8: #10B981;
-      --p9: #EF4444;
-      --p10: #8B5CF6;
-      --p11: #22D3EE;
-      --p12: #92400E;
+    --p1:#334155; --p2:#64748B; --p3:#3B82F6; --p4:#F59E0B; --p5:#F97316;
+    --p6:#84CC16; --p7:#6366F1; --p8:#10B981; --p9:#EF4444; --p10:#8B5CF6; --p11:#22D3EE; --p12:#92400E;
 
-      --accent: #4C7EF3;
-      --amber: #F0B429;
+    --accent:#4C7EF3;
+    --amber:#F0B429;
 
-      /* Typography & spacing */
-      --radius: 10px;
-      --display: 'Inter', system-ui, sans-serif;
-      --sans: 'Inter', system-ui, sans-serif;
-      --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --radius:10px;
+    --display:'Inter',system-ui,sans-serif;
+    --sans:'Inter',system-ui,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+  }
 
-      --space-xs: 0.5rem;
-      --space-sm: 0.75rem;
-      --space-md: 1rem;
-      --space-lg: 1.5rem;
-      --space-xl: 2rem;
-      --space-2xl: 3rem;
-    }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1100px 550px at 88% -8%, rgba(76,126,243,0.08), transparent 60%),
+      radial-gradient(900px 480px at -8% 12%, rgba(99,102,241,0.08), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent);}
+  ::selection{background:rgba(76,126,243,0.28);}
 
-    * {
-      box-sizing: border-box;
-    }
+  /* progress bar */
+  #progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--p3),var(--accent),var(--p10));z-index:100;width:0%;transition:width .1s linear;}
 
-    html {
-      scroll-behavior: smooth;
-    }
+  /* ---------- layout ---------- */
+  .shell{display:grid;grid-template-columns:272px 1fr;max-width:1320px;margin:0 auto;}
+  .sidebar{
+    position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;
+    padding:30px 18px 40px;border-right:1px solid var(--border-soft);
+  }
+  .sidebar::-webkit-scrollbar{width:6px;}
+  .sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
 
-    body {
-      margin: 0;
-      background:
-        radial-gradient(1100px 550px at 88% -8%, rgba(76, 126, 243, 0.08), transparent 60%),
-        radial-gradient(900px 480px at -8% 12%, rgba(99, 102, 241, 0.08), transparent 55%),
-        var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      line-height: 1.7;
-      -webkit-font-smoothing: antialiased;
-    }
+  .brand{display:flex;align-items:center;gap:11px;margin-bottom:30px;padding-left:4px;}
+  .brand-mark{
+    width:32px;height:32px;border-radius:8px;flex:none;
+    background:conic-gradient(from 200deg,var(--p3),var(--p6),var(--p9),var(--p11),var(--p3));
+    box-shadow:0 0 0 1px var(--border-soft), 0 4px 14px rgba(76,126,243,0.2);
+  }
+  .brand-text{font-family:var(--display);font-size:13px;letter-spacing:.02em;color:var(--text-muted);line-height:1.3;font-weight:500;}
+  .brand-text b{color:var(--text);display:block;font-size:15px;font-weight:700;}
 
-    a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
+  nav.toc{font-family:var(--sans);font-weight:500;font-size:13.5px;}
+  nav.toc a{
+    display:flex;gap:10px;align-items:baseline;color:var(--text-muted);text-decoration:none;
+    padding:8px 12px;border-radius:7px;border-left:2px solid transparent;transition:all .15s ease;
+  }
+  nav.toc a:hover{color:var(--text);background:var(--panel-alt);}
+  nav.toc a.active{color:var(--text);background:var(--panel-alt);border-left-color:var(--accent);}
+  nav.toc a .n{color:var(--text-faint);flex:none;width:18px;}
+  nav.toc a.active .n{color:var(--accent);}
 
-    ::selection {
-      background: rgba(76, 126, 243, 0.28);
-    }
+  main{padding:48px 60px 130px;min-width:0;}
 
-    /* Progress bar */
-    #progress {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--p3), var(--accent), var(--p10));
-      z-index: 100;
-      width: 0%;
-      transition: width 0.1s linear;
-    }
+  /* ---------- hero ---------- */
+  .hero{padding:6px 0 36px;border-bottom:1px solid var(--border-soft);margin-bottom:48px;}
+  .eyebrow{font-family:var(--sans);font-weight:700;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 16px;}
+  h1.title{
+    font-family:var(--display);font-weight:700;font-size:clamp(30px,4.2vw,46px);
+    line-height:1.1;margin:0 0 18px;letter-spacing:-0.02em;
+  }
+  .lede{color:var(--text-muted);font-size:17px;max-width:640px;margin:0 0 30px;}
 
-    /* Layout */
-    .shell {
-      display: grid;
-      grid-template-columns: 272px 1fr;
-      max-width: 1320px;
-      margin: 0 auto;
-    }
+  .mission{
+    display:flex;gap:14px;background:var(--panel);border:1px solid var(--border);
+    border-left:3px solid var(--accent);border-radius:var(--radius);padding:17px 19px;margin-bottom:38px;
+  }
+  .mission .tag{font-family:var(--sans);font-weight:700;font-size:11px;color:var(--accent);letter-spacing:.08em;text-transform:uppercase;flex:none;padding-top:2px;}
+  .mission p{margin:0;color:var(--text);font-size:14.5px;}
 
-    .sidebar {
-      position: sticky;
-      top: 0;
-      align-self: start;
-      height: 100vh;
-      overflow-y: auto;
-      padding: var(--space-xl) var(--space-md) var(--space-2xl);
-      border-right: 1px solid var(--border-soft);
-    }
+  /* signature: pipeline rail (chevron pipeline) */
+  .rail-label{font-family:var(--sans);font-weight:600;font-size:11px;color:var(--text-faint);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;}
+  .rail{display:flex;flex-direction:column;gap:3px;}
+  .rail-row{display:flex;}
+  .rail-seg{
+    position:relative;flex:1;padding:14px 18px 14px 26px;min-height:64px;
+    display:flex;flex-direction:column;justify-content:center;text-decoration:none;
+    clip-path:polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%, 14px 50%);
+    margin-left:-13px;transition:filter .15s ease,transform .15s ease;
+  }
+  .rail-seg:first-child{margin-left:0;clip-path:polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%);}
+  .rail-seg:hover{filter:brightness(1.12);transform:translateY(-1px);}
+  .rail-seg .num{font-family:var(--sans);font-weight:700;font-size:11.5px;color:rgba(255,255,255,0.85);letter-spacing:.04em;text-transform:uppercase;}
+  .rail-seg .lbl{font-family:var(--display);font-size:14px;color:#fff;font-weight:700;margin-top:3px;line-height:1.25;}
 
-    .sidebar::-webkit-scrollbar {
-      width: 6px;
-    }
-    .sidebar::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 4px;
-    }
+  /* ---------- content sections ---------- */
+  section.chapter{margin-bottom:68px;scroll-margin-top:24px;}
+  .chapter-head{display:flex;align-items:center;gap:15px;margin-bottom:24px;}
+  .chapter-num{
+    font-family:var(--display);font-size:14px;color:var(--bg);background:var(--accent);
+    width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+    flex:none;font-weight:700;
+  }
+  h2{font-family:var(--display);font-size:25px;margin:0;letter-spacing:-.015em;font-weight:700;}
+  h3{font-family:var(--display);font-size:17px;color:var(--text);margin:32px 0 13px;letter-spacing:-.005em;font-weight:600;}
+  .sub-inline{color:var(--text-muted);font-family:var(--sans);font-size:14.5px;font-weight:500;}
+  p{color:var(--text);font-size:15.5px;}
+  .sub{color:var(--text-muted);}
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: var(--space-sm);
-      margin-bottom: var(--space-xl);
-      padding-left: 4px;
-    }
+  ul,ol{color:var(--text);font-size:15.5px;padding-left:22px;}
+  li{margin-bottom:6px;}
+  li::marker{color:var(--text-faint);}
 
-    .brand-mark {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      flex: none;
-      background: conic-gradient(from 200deg, var(--p3), var(--p6), var(--p9), var(--p11), var(--p3));
-      box-shadow: 0 0 0 1
+  code, .chip{
+    font-family:var(--mono);font-size:.86em;background:var(--panel-alt);
+    border:1px solid var(--border-soft);border-radius:5px;padding:1px 6px;color:#BFD9FF;
+  }
+
+  /* callouts */
+  .callout{border-radius:var(--radius);padding:17px 19px;margin:20px 0;border:1px solid var(--border);}
+  .callout .tag{font-family:var(--sans);font-weight:700;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px;display:block;}
+  .callout p{margin:0;font-size:15.5px;color:var(--text);}
+  .callout--dev{background:linear-gradient(180deg, rgba(240,180,41,0.08), rgba(240,180,41,0.02));border-color:rgba(240,180,41,0.35);}
+  .callout--dev .tag{color:var(--amber);}
+  .callout--info{background:var(--panel);border-left:3px solid var(--p3);}
+  .callout--info .tag{color:var(--p3);}
+  .callout--rule{background:var(--panel);border-left:3px solid var(--accent);}
+  .callout--rule .tag{color:var(--accent);}
+
+  /* tables */
+  .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);margin:20px 0;}
+  table{width:100%;border-collapse:collapse;font-size:14px;min-width:600px;}
+  thead th{
+    font-family:var(--sans);font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--text-faint);text-align:left;background:var(--panel-alt);padding:12px 14px;border-bottom:1px solid var(--border);
+  }
+  tbody td{padding:12px 14px;border-bottom:1px solid var(--border-soft);color:var(--text);vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:rgba(255,255,255,0.02);}
+  tbody td:first-child{font-family:var(--sans);font-weight:600;color:var(--text);white-space:nowrap;font-size:14px;}
+
+  /* risk badges */
+  .badge{display:inline-flex;align-items:center;gap:7px;font-family:var(--sans);font-weight:700;font-size:12px;letter-spacing:.03em;text-transform:uppercase;}
+  .badge::before{content:"";width:7px;height:7px;border-radius:50%;flex:none;}
+  .badge--crit{color:#FF9A9A;}
+  .badge--crit::before{background:#F04747;}
+  .badge--high{color:#FFC98A;}
+  .badge--high::before{background:#F97316;}
+  .badge--med{color:#FFE28A;}
+  .badge--med::before{background:#F0B429;}
+
+  /* implementation roadmap */
+  .roadmap{position:relative;margin:28px 0 6px;}
+  .roadmap-line{position:absolute;left:22px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--border-soft), var(--border), var(--border-soft));z-index:0;}
+  .step{position:relative;display:flex;gap:22px;padding-bottom:38px;z-index:1;}
+  .step:last-child{padding-bottom:0;}
+  .step-marker{
+    flex:none;width:46px;height:46px;border-radius:50%;background:var(--panel);
+    border:2px solid var(--accent);color:var(--accent);display:flex;align-items:center;justify-content:center;
+    font-family:var(--display);font-weight:700;font-size:17px;position:relative;z-index:2;
+  }
+  .step-content{flex:1;min-width:0;padding-top:9px;}
+  .step-title{font-family:var(--display);font-weight:700;font-size:16.5px;color:var(--text);margin-bottom:14px;}
+  .step-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;}
+  .step-list li{display:flex;gap:11px;align-items:flex-start;font-size:15.5px;color:var(--text);}
+  .step-check{flex:none;width:15px;height:15px;border-radius:4px;border:1.5px solid var(--border);margin-top:3px;background:var(--panel);}
+  .step-list b{color:var(--text);font-weight:600;}
+
+  /* zone cards */
+  .zone-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0;}
+  .zone{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:15px 17px;}
+  .zone .zname{font-family:var(--display);font-size:13px;font-weight:600;color:var(--accent);letter-spacing:.02em;margin-bottom:6px;display:block;}
+  .zone p{font-size:14px;margin:0;color:var(--text-muted);}
+
+  .hub-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin:14px 0;position:relative;overflow:hidden;}
+  .hub-card::before{content:"";position:absolute;top:0;left:0;width:4px;height:100%;}
+  .hub-card.sec::before{background:var(--p7);}
+  .hub-card.open::before{background:var(--p11);}
+  .hub-card .hname{font-family:var(--display);font-weight:700;font-size:15px;margin-bottom:6px;display:block;}
+  .hub-card.sec .hname{color:#9297FF;}
+  .hub-card.open .hname{color:var(--p11);}
+  .hub-card p{font-size:14px;color:var(--text-muted);margin:0;}
+
+  /* glossary */
+  .glossary{columns:2;column-gap:56px;margin:22px 0 4px;}
+  .gterm{break-inside:avoid;display:flex;align-items:baseline;gap:20px;padding:14px 0;border-bottom:1px solid var(--border-soft);}
+  .gterm dt{flex:0 0 88px;margin:0;font-family:var(--display);font-weight:700;font-size:15px;color:var(--accent);letter-spacing:.01em;}
+  .gterm dd{flex:1;margin:0;font-size:14.5px;color:var(--text-muted);}
+
+  /* diagram frame */
+  .diagram{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin:20px 0;overflow-x:auto;}
+  .diagram svg{display:block;margin:0 auto;max-width:100%;height:auto;}
+  .diagram-caption{font-family:var(--sans);font-style:italic;font-size:12.5px;color:var(--text-faint);text-align:center;margin-top:10px;}
+
+  hr.div{border:none;border-top:1px solid var(--border-soft);margin:48px 0;}
+  footer{padding:40px 60px 60px;color:var(--text-faint);font-family:var(--sans);font-weight:500;font-size:12px;letter-spacing:.04em;border-top:1px solid var(--border-soft);}
+
+  .menu-btn{display:none;}
+  @media (max-width:940px){
+    .shell{grid-template-columns:1fr;}
+    .sidebar{position:fixed;inset:0 0 0 auto;width:78vw;max-width:320px;z-index:40;background:var(--bg);transform:translateX(100%);transition:transform .25s ease;box-shadow:-20px 0 40px rgba(0,0,0,0.4);}
+    .sidebar.open{transform:translateX(0);}
+    main{padding:70px 20px 100px;}
+    .menu-btn{display:flex;position:fixed;top:14px;right:14px;z-index:50;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--border);color:var(--text);font-family:var(--sans);font-weight:600;font-size:12.5px;padding:9px 12px;border-radius:8px;cursor:pointer;}
+    .rail-row{flex-direction:column;}
+    .rail-seg{clip-path:none !important;margin-left:0 !important;border-radius:8px;margin-bottom:4px;padding-left:16px;}
+    .zone-grid{grid-template-columns:1fr;}
+    .step{gap:14px;}
+    .step-marker{width:38px;height:38px;font-size:15px;}
+    .roadmap-line{left:18px;}
+    .glossary{columns:1;}
+    .gterm dt{flex:0 0 78px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<button class="menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰ Chapters</button>
+
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-text"><b>DevSecOps</b>Developer Guide</div>
+    </div>
+    <nav class="toc">
+      <a href="#ch1"><span class="n">01</span>Team Rules & Culture</a>
+      <a href="#ch2"><span class="n">02</span>Shift Left Pipeline</a>
+      <a href="#ch3"><span class="n">03</span>Secure Container Images</a>
+      <a href="#ch4"><span class="n">04</span>Developer Tools</a>
+      <a href="#ch5"><span class="n">05</span>Toolkit & Zones</a>
+      <a href="#ch6"><span class="n">06</span>Audit & Evidence</a>
+      <a href="#ch7"><span class="n">07</span>Resilience</a>
+      <a href="#ch8"><span class="n">08</span>AI Assistants</a>
+      <a href="#ch9"><span class="n">09</span>Implementation Checklist</a>
+      <a href="#ch10"><span class="n">10</span>Acronyms</a>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="hero">
+      <p class="eyebrow">Internal Engineering Handbook</p>
+      <h1 class="title">The Developer's Guide<br>to DevSecOps</h1>
+      <p class="lede">A secure, automated pipeline for our on-premise Kubernetes data platform — zero dollars in licensing, built on NIST, OWASP, and CIS.</p>
+
+      <div class="mission">
+        <span class="tag">GOAL</span>
+        <p>We are building a secure, automated pipeline for our on-premise Kubernetes data platform. It costs zero dollars in licensing fees and follows industry gold standards like NIST, OWASP, and CIS.</p>
+      </div>
+
+      <p class="rail-label">The Pipeline — 12 Stages, Requirements to Runtime</p>
+      <div class="rail">
+        <div class="rail-row">
+          <a class="rail-seg" style="background:var(--p1)" href="#ch2"><span class="num">01 · REQUIREMENTS</span><span class="lbl">OWASP ASVS</span></a>
+          <a class="rail-seg" style="background:var(--p2)" href="#ch2"><span class="num">02 · DESIGN</span><span class="lbl">Threat Dragon</span></a>
+          <a class="rail-seg" style="background:var(--p3);color:#0A0E17" href="#ch4"><span class="num" style="color:#0A0E1799">03 · CODE</span><span class="lbl" style="color:#0A0E17">SonarLint / Bearer</span></a>
+          <a class="rail-seg" style="background:var(--p4);color:#0A0E17" href="#ch4"><span class="num" style="color:#0A0E1799">04 · PRE-COMMIT</span><span class="lbl" style="color:#0A0E17">Checkov + Gitleaks</span></a>
+        </div>
+        <div class="rail-row">
+          <a class="rail-seg" style="background:var(--p5);color:#0A0E17" href="#ch2"><span class="num" style="color:#0A0E1799">05 · BUILD</span><span class="lbl" style="color:#0A0E17">dep-scan --deep</span></a>
+          <a class="rail-seg" style="background:var(--p6);color:#0A0E17" href="#ch2"><span class="num" style="color:#0A0E1799">06 · VALIDATE</span><span class="lbl" style="color:#0A0E17">OWASP ZAP</span></a>
+          <a class="rail-seg" style="background:var(--p7)" href="#ch6"><span class="num">07 · GOVERN</span><span class="lbl">SecObserve</span></a>
+          <a class="rail-seg" style="background:var(--p8);color:#0A0E17" href="#ch3"><span class="num" style="color:#0A0E1799">08 · DEPLOY</span><span class="lbl" style="color:#0A0E17">Kyverno + Cosign</span></a>
+        </div>
+        <div class="rail-row">
+          <a class="rail-seg" style="background:var(--p9);color:#0A0E17" href="#ch5"><span class="num" style="color:#0A0E1799">09 · RUNTIME</span><span class="lbl" style="color:#0A0E17">Falco + Tetragon</span></a>
+          <a class="rail-seg" style="background:var(--p10);color:#0A0E17" href="#ch5"><span class="num" style="color:#0A0E1799">10 · AUDIT</span><span class="lbl" style="color:#0A0E17">Kube-bench</span></a>
+          <a class="rail-seg" style="background:var(--p12)" href="#ch5"><span class="num">11 · COMPLIANCE</span><span class="lbl">OpenSCAP + STIG Viewer</span></a>
+          <a class="rail-seg" style="background:var(--p11);color:#0A0E17" href="#ch5"><span class="num" style="color:#0A0E1799">12 · STREAM HUB</span><span class="lbl" style="color:#0A0E17">OpenObserve</span></a>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHAPTER 1 -->
+    <section class="chapter" id="ch1">
+      <div class="chapter-head"><div class="chapter-num">01</div><h2>Team Rules & Security Culture <span class="sub-inline">— NIST SSDF</span></h2></div>
+      <p>Great tools don't matter if we don't have the right habits. This pipeline is built around the <b>NIST Secure Software Development Framework (SSDF)</b>, which focuses on four key areas: preparing our team, protecting our code, producing secure software, and responding to vulnerabilities.</p>
+
+      <h3>Ground Rules</h3>
+      <ul>
+        <li><b>Security Training</b> — Every engineer completes annual secure coding training (OWASP Top 10) before getting CI/CD pipeline access.</li>
+        <li><b>Lock Every Account</b> — MFA is mandatory on every SCM (GitHub/GitLab) account. Stolen or reused passwords are still the #1 way real breaches start, and this one setting blocks most of them before any tool below ever fires.</li>
+        <li><b>Vet New Dependencies Before They Land</b> — Adding a brand-new third-party library takes 30 seconds of sanity-checking first: check the repo's last commit date and open issues, glance at its GitHub "Security" tab for known advisories, look up its <a href="https://deps.dev" target="_blank" rel="noopener">OpenSSF Scorecard</a> on deps.dev for a single 0–10 trust signal, and run a quick <code>dep-scan</code> against it — the same tool our build pipeline already uses, works the same way regardless of language. Catching a bad dependency here is far cheaper than removing it after five other packages depend on it.</li>
+        <li><b>Don't Skip the Gates</b> — Bypassing automated checks (Checkov, Gitleaks, Kyverno) is forbidden unless you have a documented exception signed by a Security Lead.</li>
+        <li><b>Treat Security Rules Like Code</b> — Changing a security rule (Kyverno policy, Falco alert) goes through the same PR process as application code: two reviewers, one signed commit.</li>
+        <li><b>Make It Safe to Report Bugs</b> — <code>SECURITY.md</code> in every repo, <code>security.txt</code> on every live app, so researchers report privately.</li>
+      </ul>
+
+      <p class="sub">This isn't just good habit-forming — it's about to become the law. Starting in 2026–2027, the EU's Cyber Resilience Act (CRA) will require most of what's below for anyone shipping software into the EU. Building these habits now means we're ready, not scrambling, when that day comes.</p>
+
+      <h3>Security Champions</h3>
+      <ul>
+        <li>Reviews security-related PRs</li>
+        <li>Maintains threat models and ASVS checklists</li>
+        <li>Acts as the first escalation point for security questions</li>
+      </ul>
+
+      <h3>Exception-Management Template</h3>
+      <p class="sub">Every documented exception must include:</p>
+      <ul>
+        <li>A clear description</li>
+        <li>Mitigations in place</li>
+        <li>A time-bound expiry (e.g., 30 days)</li>
+        <li>An automatic ticket in SecObserve — our central vulnerability dashboard, covered fully in Chapter 5</li>
+      </ul>
+
+      <h3>Annual Tabletop Exercise</h3>
+      <p class="sub">Once per year, run a simulated incident (leaked secret, CVE exploit) and:</p>
+      <ul>
+        <li>Validate SecObserve workflows</li>
+        <li>Verify MFA, backup restore, and Falco alerting</li>
+        <li>Log lessons learned</li>
+      </ul>
+    </section>
+
+    <hr class="div">
+
+    <!-- CHAPTER 2 -->
+    <section class="chapter" id="ch2">
+      <div class="chapter-head"><div class="chapter-num">02</div><h2>The Game Plan: "Shift Left"</h2></div>
+      <p>Our core strategy is simple: <b>catch bugs early</b>. Instead of waiting for a security audit right before launch, our tools check for issues while you're designing, coding, and building.</p>
+      <p class="sub">We use free, community-driven tools and invest our time in setting them up well, rather than paying for expensive commercial software. Cluster rules follow the <b>OWASP Kubernetes Security Testing Guide</b>; app rules follow the <b>OWASP ASVS</b>.</p>
+
+      <h3>The Lifecycle, Step-by-Step</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Phase</th><th>Tool</th><th>What it Does</th><th>Why it Matters</th></tr></thead>
+          <tbody>
+            <tr><td>1. Requirements</td><td>OWASP ASVS</td><td>Creates security checklists.</td><td>Sets clear security goals before we even write code.</td></tr>
+            <tr><td>2. Design</td><td>Threat Dragon</td><td>Helps us map out potential threats.</td><td>Flushes out bad architectural ideas early.</td></tr>
+            <tr><td>3. Code</td><td>SonarLint & Bearer CLI</td><td>Scans your code right in your IDE.</td><td>Acts like a spellchecker for bugs and data leaks.</td></tr>
+            <tr><td>4. Pre-Commit</td><td>Checkov + Gitleaks</td><td>Checks for bad infra configs and pasted passwords.</td><td>Stops silly mistakes before they reach the main codebase.</td></tr>
+            <tr><td>5. Build</td><td>OWASP dep-scan <code>--deep</code></td><td>Scans app libraries AND the container OS.</td><td>One report of every ingredient and its known vulnerabilities.</td></tr>
+            <tr><td>6. Validate</td><td>OWASP ZAP</td><td>Tests the running app in staging (DAST).</td><td>Catches things code-scanners miss, like broken login flows.</td></tr>
+            <tr><td>7. Govern</td><td>SecObserve</td><td>Central dashboard for all static security alerts.</td><td>Keeps build-time and dependency bugs organized so they get fixed.</td></tr>
+            <tr><td>8. Deploy</td><td>Kyverno + Cosign</td><td>Checks K8s manifests, verifies image signatures.</td><td>A bouncer that rejects manifests breaking cluster rules.</td></tr>
+            <tr><td>9. Runtime</td><td>Falco + Tetragon</td><td>Watches syscalls, enforces kernel boundaries.</td><td>Falco alerts on macro-behavior; Tetragon kills malicious threads in-kernel.</td></tr>
+            <tr><td>10. Audit</td><td>Kube-bench</td><td>Checks K8s settings against CIS standards.</td><td>Confirms our core platform is locked down tight.</td></tr>
+            <tr><td>11. Compliance</td><td>OpenSCAP + STIG Viewer</td><td>Audit-ready reporting.</td><td>Produces reports auditors already recognize.</td></tr>
+            <tr><td>12. Stream Hub</td><td>OpenObserve</td><td>Consolidated, low-resource log/metric database.</td><td>Ingests FluentBit/OTel streams into cheap Parquet storage at 10x less RAM.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Pipeline Controls</h3>
+      <p><b>SBOM Generation</b> — Every CI build must generate a CycloneDX or SPDX SBOM artifact, stored alongside the image. That same artifact is what makes app-level EOL checking free: the framework versions are already listed in it, so checking Django, Spring, or Express against endoflife.date needs no new scan — just a lookup against data you already produce.</p>
+      <p class="sub"><i>Optional, if you want more confidence in your SBOMs later:</i> a free tool called <b>sbomqs</b> can score how complete and well-formed a generated SBOM actually is — <code>sbomqs score sbom.json</code>. Not something to set up on day one — but worth a look if you ever suspect an SBOM is missing components rather than just showing "zero vulnerabilities found."</p>
+      <p><b>Branch-Protection Rules</b> — Codified via Terraform or similar:</p>
+      <ul>
+        <li>Requires signed commits</li>
+        <li>Requires 2 approvals</li>
+        <li>Requires a match between CODEOWNERS</li>
+        <li>Blocks force-pushes and deletion of protected branches</li>
+      </ul>
+      <p><b>Pinned GitHub Actions</b> — every marketplace action referenced in a workflow is pinned to a full-length commit SHA, not a tag (<code>uses: org/action@a1b2c3d...</code>); CI fails on a floating tag. Same principle as the digest-pinning rule for container images in Chapter 3 — a tag can move to point at compromised code without warning, a commit SHA can't.</p>
+      <p><b>Pre-Commit Hooks</b> — Mandatory, enforced via:</p>
+      <ul>
+        <li>A shared <code>.pre-commit-config.yaml</code> in the repo</li>
+        <li>CI validating that hooks ran (<code>pre-commit run --all-files</code>)</li>
+      </ul>
+    </section>
+
+    <hr class="div">
+
+    <!-- CHAPTER 3 -->
+    <section class="chapter" id="ch3">
+      <div class="chapter-head"><div class="chapter-num">03</div><h2>Starting Safe: Secure Container Images</h2></div>
+      <p>Standard container images pulled by default from public hubs are bloated with extra tools like <code>curl</code> or <code>bash</code>. Hackers love these tools. We use stripped-down images instead:</p>
+      <ul>
+        <li><b>dhi.io (Free Tier)</b> — our standard choice for most apps. No shells, no package managers, updates automatically every week.</li>
+        <li><b>gcr.io/distroless</b> — for compiled languages like Go or Rust that need bare-minimum libraries.</li>
+      </ul>
+
+      <h3>Image Comparison Matrix</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Feature</th><th>Standard Public Images</th><th>Our Standard (dhi.io Free)</th><th>Future (dhi.io Enterprise)</th></tr></thead>
+          <tbody>
+            <tr><td>Updates</td><td>Occasional / quarterly</td><td>Weekly automated cycles</td><td>Daily / on-demand</td></tr>
+            <tr><td>Vulnerability Footprint</td><td>Vulnerable between releases</td><td>Near-zero CVEs</td><td>Near-zero + SLAs</td></tr>
+            <tr><td>Hacker Friendly?</td><td>Highly (ships with <code>sh</code>, <code>apt</code>)</td><td>Zero (no shell, no utilities)</td><td>Zero + FIPS crypto</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Proving Our Images Are Ours (Signing)</h3>
+      <p class="sub">We don't just trust images; we verify them.</p>
+      <ol>
+        <li><b>Build</b> — Cosign digitally signs every image we make.</li>
+        <li><b>Deploy</b> — Kyverno checks the signature. No signature? The code doesn't deploy.</li>
+        <li><b>Keys</b> — Signing keys live safely in HashiCorp Vault.</li>
+      </ol>
+
+      <h3>Additional Image Controls</h3>
+      <ul>
+        <li><b>Pinned Digests</b> — all image references use a digest, not a tag (<code>image: dhi.io/app@sha256:...</code>); CI fails on tags.</li>
+        <li><b>Base-Image Update Automation</b> — automated weekly PRs update base images, with a minimum release age of at least a few days before a new version is even proposed. A same-day auto-bump is how several 2025 supply-chain attacks (npm's Shai-Hulud among them) got pulled into production before anyone noticed the compromised release.</li>
+        <li><b>Cosign Key Rotation</b> — keys rotate annually; old keys revoked in Kyverno policy.</li>
+        <li><b>EOL Awareness</b> — a monthly job checks the base OS and language runtime against <a href="https://endoflife.date" target="_blank" rel="noopener">endoflife.date</a> and flags anything within 90 days of end-of-life. This is a different question from a CVE scan: an EOL version can show zero known vulnerabilities simply because no one is looking for new ones anymore, and the fix is usually a planned upgrade, not a patch. The same check applies one layer down to the host OS (Chapter 5) and one layer up to app frameworks (Chapter 2) — same question, asked at every layer that has its own release calendar.</li>
+      </ul>
+    </section>
+
+    <hr class="div">
+
+    <!-- CHAPTER 4 -->
+    <section class="chapter" id="ch4">
+      <div class="chapter-head"><div class="chapter-num">04</div><h2>Developer Tools <span class="sub-inline">— catching bugs before commit</span></h2></div>
+      <p>The cheapest time to fix a bug is while you're writing the code. We run two layers of protection:</p>
+      <ol>
+        <li><b>On your laptop</b> — fast tools that warn you instantly. You can bypass them locally while testing, but they exist to save you a headache later.</li>
+        <li><b>In CI/CD</b> — the unskippable automated gate. A hardcoded password or critical flaw <i>will</i> block the merge.</li>
+      </ol>
+      <p class="sub"><b>Repo Rules:</b> signed commits, a CODEOWNERS file, a shared <code>.gitignore</code> baseline, and a second reviewer on every PR.</p>
+
+      <div class="callout callout--info">
+        <span class="tag">What "Blocking" Actually Means</span>
+        <p>"Unskippable gate" doesn't mean one tool stops everything — three different checkpoints block three different things, each enforced by a different mechanism underneath:</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Checkpoint</th><th>What Gets Blocked</th><th>Enforced By</th></tr></thead>
+          <tbody>
+            <tr><td>Pre-commit hooks</td><td>The <code>git commit</code> itself, on your laptop</td><td>Local git hook (<code>.pre-commit-config.yaml</code>) — a failing check makes <code>git commit</code> exit with an error before the commit is even created</td></tr>
+            <tr><td>CI checks (Checkov, Gitleaks, dep-scan)</td><td>The merge, not the commit — the commit can still exist on a branch</td><td>GitHub branch protection — configured to require these checks pass before the "Merge" button is clickable at all</td></tr>
+            <tr><td>Kyverno</td><td>The deployment — has nothing to do with git or PRs</td><td>Kubernetes' own admission webhook system — intercepts <code>kubectl apply</code> at the API server and rejects it outright if the manifest violates policy</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="sub">In short: <b>commit → merge → deploy</b> is one continuous chain, but each arrow in that chain has its own gatekeeper. A change has to clear all three to reach production.</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 760 380" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5A6480"/></marker>
+          </defs>
+
+          <!-- container -->
+          <rect x="20" y="16" width="720" height="214" rx="14" fill="#111826" stroke="#25314A" stroke-width="1.5"/>
+          <text x="400" y="36" text-anchor="middle" fill="#5A6480" font-family="Inter" font-size="10.5" font-weight="700" style="letter-spacing:1px">LOCAL DEV TOOLING — IDE &amp; PRE-COMMIT</text>
+
+          <text x="400" y="58" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11" font-weight="600">General-purpose</text>
+          <g>
+            <rect x="140" y="66" width="150" height="50" rx="8" fill="#161F30" stroke="#3B82F6" stroke-width="1.5"/>
+            <text x="215" y="87" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">Bearer CLI</text>
+            <text x="215" y="103" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">privacy & data-leak scan</text>
+          </g>
+          <g>
+            <rect x="305" y="66" width="150" height="50" rx="8" fill="#161F30" stroke="#F59E0B" stroke-width="1.5"/>
+            <text x="380" y="87" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">SonarLint</text>
+            <text x="380" y="103" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">code quality & bugs</text>
+          </g>
+          <g>
+            <rect x="470" y="66" width="150" height="50" rx="8" fill="#161F30" stroke="#F43F5E" stroke-width="1.5"/>
+            <text x="545" y="87" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">Gitleaks</text>
+            <text x="545" y="103" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">secret & credential scan</text>
+          </g>
+
+          <line x1="40" y1="132" x2="720" y2="132" stroke="#1B2434" stroke-width="1"/>
+
+          <text x="400" y="152" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11" font-weight="600">Language-specific</text>
+          <g>
+            <rect x="27" y="160" width="130" height="50" rx="8" fill="#161F30" stroke="#0EA5E9" stroke-width="1.5"/>
+            <text x="92" y="181" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="11.5" font-weight="700">ESLint</text>
+            <text x="92" y="197" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">JS / React scan</text>
+          </g>
+          <g>
+            <rect x="171" y="160" width="130" height="50" rx="8" fill="#161F30" stroke="#64748B" stroke-width="1.5"/>
+            <text x="236" y="181" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="11.5" font-weight="700">FindSecBugs</text>
+            <text x="236" y="197" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">Java bytecode scan</text>
+          </g>
+          <g>
+            <rect x="315" y="160" width="130" height="50" rx="8" fill="#161F30" stroke="#22D3EE" stroke-width="1.5"/>
+            <text x="380" y="181" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="11.5" font-weight="700">Bandit</text>
+            <text x="380" y="197" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">Python linter</text>
+          </g>
+          <g>
+            <rect x="459" y="160" width="130" height="50" rx="8" fill="#161F30" stroke="#38BDF8" stroke-width="1.5"/>
+            <text x="524" y="181" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="11.5" font-weight="700">gosec</text>
+            <text x="524" y="197" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">Go security linter</text>
+          </g>
+          <g>
+            <rect x="603" y="160" width="130" height="50" rx="8" fill="#161F30" stroke="#FACC15" stroke-width="1.5"/>
+            <text x="668" y="181" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="11.5" font-weight="700">ShellCheck</text>
+            <text x="668" y="197" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">shell script linter</text>
+          </g>
+
+          <!-- single output flow -->
+          <line x1="400" y1="230" x2="400" y2="300" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrow4)"/>
+          <text x="400" y="270" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12" font-style="italic">auto-runs on save & at commit time</text>
+          <rect x="280" y="300" width="240" height="50" rx="25" fill="#10B981" opacity="0.15" stroke="#10B981" stroke-width="1.5"/>
+          <text x="400" y="331" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">Commit-Ready Code</text>
+        </svg>
+        <p class="diagram-caption">Eight local scanners, grouped by scope — nothing reaches your commit unfixed.</p>
+      </div>
+
+      <h3>What These Tools Do For You</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tool</th><th>What It Catches</th><th>Where It Runs</th></tr></thead>
+          <tbody>
+            <tr><td>Gitleaks</td><td>Accidentally pasted API keys and passwords.</td><td>Pre-commit locally, again in CI.</td></tr>
+            <tr><td>Bearer CLI</td><td>Personal user data (PII) leaking into logs.</td><td>On your laptop.</td></tr>
+            <tr><td>SonarLint</td><td>Common bugs and bad code patterns.</td><td>Right in your code editor.</td></tr>
+            <tr><td>ESLint</td><td>Security bugs specific to JavaScript/React.</td><td>IDE and build phase.</td></tr>
+            <tr><td>FindSecBugs</td><td>Security bugs specific to compiled Java code.</td><td>IDE and build phase.</td></tr>
+            <tr><td>Bandit</td><td>Security bugs specific to Python — hardcoded passwords, unsafe <code>eval</code>/<code>pickle</code>, weak crypto, SQL/command injection patterns.</td><td>IDE and pre-commit hook.</td></tr>
+            <tr><td>gosec</td><td>Security bugs specific to Go — hardcoded credentials, SQL injection, weak crypto, unsafe file permissions, unchecked errors on security-relevant calls.</td><td>IDE and pre-commit hook.</td></tr>
+            <tr><td>ShellCheck</td><td>Injection-prone patterns in shell scripts — unquoted variables, unsafe <code>eval</code>, risky <code>$()</code> expansion in pipeline glue and entrypoint scripts.</td><td>IDE and pre-commit hook.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Developer Environment Controls</h3>
+      <ul>
+        <li><b>IDE Config-as-Code</b> — share SonarLint/ESLint/Bandit/gosec rules as code in <code>.vscode/</code> or <code>.idea/</code>.</li>
+        <li><b>Secret-Detection in CI is Mandatory</b> — CI fails on any Gitleaks hit; remediation requires rotating the secret, adding it to Vault, and updating the code.</li>
+        <li><b>Python Baseline</b> — <code>bandit -r .</code> runs as a pre-commit hook and again in CI via <code>.pre-commit-config.yaml</code>, same unskippable pattern as Checkov and Gitleaks.</li>
+        <li><b>Go Baseline</b> — <code>gosec ./...</code> runs alongside <code>go vet</code> as a pre-commit hook and again in CI; findings block the merge the same way a Gitleaks hit does.</li>
+        <li><b>Shell Script Baseline</b> — <code>shellcheck</code> runs on every <code>.sh</code> file touched in a commit, catching injection-prone patterns in the CI glue and entrypoint scripts the platform relies on.</li>
+      </ul>
+    </section>
+
+    <hr class="div">
+
+    <!-- CHAPTER 5 -->
+    <section class="chapter" id="ch5">
+      <div class="chapter-head"><div class="chapter-num">05</div><h2>Our Security Toolkit & Where Everything Lives</h2></div>
+
+      <p class="sub">This chapter maps every tool from Chapters 2–4 to the zone it runs in, then unpacks the two hubs everything ultimately reports into — and, since SecObserve is the one developers touch daily, a closer look at how its CVE workflow actually runs day-to-day.</p>
+
+      <div class="callout callout--info">
+        <span class="tag">In Short</span>
+        <p>Every tool from Chapters 2–4 runs at a specific checkpoint on the way from your laptop to a live server. This chapter shows where each one sits, the two dashboards everything eventually reports to, and exactly what happens when a vulnerability is found — you don't need to memorize every tool, just trust that your code passes through these checkpoints automatically.</p>
+      </div>
+
+      <h3>Where Each Tool Runs</h3>
+      <p class="sub">Think of a <b>zone</b> as a checkpoint — a specific place in the journey from writing code to a running pod where a specific kind of check happens. Every scanner from Chapters 2–4 runs in one of these, catching a specific class of problem at the point where fixing it is still cheap. Here's that path, checkpoint by checkpoint:</p>
+<div class="zone-grid">
+        <div class="zone"><span class="zname">Planning Zone</span><p>OWASP ASVS and Threat Dragon figure out what needs to be secured before we start typing — the checklist and threat model a PR gets judged against later.</p></div>
+        <div class="zone"><span class="zname">Workstation Zone — Your Laptop</span><p>SonarLint, Bearer CLI, Bandit, gosec, ShellCheck, and Gitleaks keep your local environment safe, catching the same classes of bug CI would — just before you've pushed anything.</p></div>
+        <div class="zone"><span class="zname">Pipeline Zone — CI/CD</span><p>Checkov scans Terraform/Helm, Gitleaks double-checks for passwords, dep-scan <code>--deep</code> checks libraries and the base image OS. Nothing here is optional — this is the unskippable gate from Chapter 4.</p></div>
+        <div class="zone"><span class="zname">Staging Zone</span><p>OWASP ZAP attacks our staging app to find runtime holes — broken auth flows, misconfigured headers, injection points — that no static scanner upstream can see, because they only exist once the app is actually running.</p></div>
+        <div class="zone" style="grid-column:1 / -1;"><span class="zname">Edge Zone — Ingress / Load Balancer</span><p>Before traffic reaches the cluster we enforce HTTPS redirect, HSTS, CSP, and TLS 1.3, and publish <code>security.txt</code>. Baseline config, not a scan — set once per app, closing the exact holes ZAP would otherwise keep flagging in Staging.</p></div>
+      </div>
+
+      <p class="sub" style="margin-top:14px;">Everything above catches problems we already know about — a bad pattern, a leaked secret, a missing header. But once the workload is live, a different kind of problem can appear: some things were fine at build time but aren't anymore, and others only show up once there's real traffic hitting the app. Two more zones keep watching for that:</p>
+<div class="zone-grid" style="margin-top:12px;">
+        <div class="zone" style="grid-column:1 / -1;"><span class="zname">Live Kubernetes Zone</span><p>Kyverno enforces rules at the <b>admission door</b> — think of it as a bouncer checking ID at the entrance, the one moment before a workload is allowed to actually start running. Falco is our broad monitoring camera across user space. Tetragon hooks into the Linux kernel via eBPF to enforce zero-trust runtime boundaries and instantly terminate unauthorized processes — a <b>trust boundary</b> here just means "the line between code we've already checked and code we haven't." Cilium/Calico segments the network. A scheduled <code>dep-scan</code> job continuously re-scans running images for newly disclosed CVEs and feeds results back into SecObserve — see the CVE Lifecycle below.</p></div>
+        <div class="zone" style="grid-column:1 / -1;"><span class="zname">Compliance</span><p>OpenSCAP + STIG Viewer keeps the underlying host operating systems up to code and produces audit-ready reports auditors already recognize, on a cadence independent of any single app's release schedule. The same pass checks that host OS version itself against endoflife.date — a node can be fully patched and still be running a release that's about to lose support entirely.</p></div>
+      </div>
+
+      <p class="sub" style="margin-top:14px;">Nine zones, but only two places where any of it actually gets read. Static findings (a scan result, a CVE, a config drift) and live telemetry (a syscall, a rejected deployment, a kernel-enforced kill) are very different shapes of data. So instead of forcing them into one tool, we split them across two purpose-built hubs.</p>
+
+      <h3>Management Hubs</h3>
+      <p class="sub"><i>In plain terms:</i> think of SecObserve as your inbox for things found before shipping, and OpenObserve as the live camera feed for what's happening right now.</p>
+<div class="hub-card sec">
+        <span class="hname">SecObserve — Static Vulnerability Hub</span>
+        <p>Our central portal for point-in-time security scans, container vulnerability databases, and build-time compliance scores. Every scanner from the Pipeline Zone reports here, so there's one queue to check rather than nine.</p>
+      </div>
+
+      <div class="callout callout--dev">
+        <span class="tag">For Developers</span>
+        <p>This is where the tool earns its keep day to day: a built-in <b>rule engine</b> auto-filters out known false positives and low-risk findings, so your queue stays signal, not noise. It also <b>normalizes results from any scanner</b> into one consistent view, so the dashboard stays familiar even as our tool list changes.</p>
+      </div>
+
+<div class="hub-card open">
+        <span class="hname">OpenObserve — Live Streaming Telemetry Hub</span>
+        <p>A single-binary, Rust-based system that captures and aggregates high-velocity streaming security logs and time-series metrics into highly compressed storage — no heavy database backends required. It's also the reason we could retire our old Java-based ELK/Loki stack (Chapter 6): same visibility, a fraction of the memory footprint.</p>
+      </div>
+
+      <p class="sub">Both hubs feed forward into later chapters: SecObserve's findings become the audit trail in Chapter 6, and OpenObserve's retention settings are what make the disaster-recovery drills in Chapter 7 provable rather than just assumed.</p>
+
+
+<h3>The CVE Lifecycle <span class="sub-inline">— management by exception, not by meeting</span></h3>
+      <p class="sub"><i>30-second version:</i> most CVEs clear themselves automatically. Only a genuinely new HIGH/CRITICAL finding with no existing rule ever reaches a human.</p>
+      <p class="sub"><b>How it actually works:</b></p>
+      <ol>
+        <li><b>Trigger</b> — A commit (e.g., an automated dependency bump) kicks off a build-time scan.</li>
+        <li><b>Auto-check</b> — SecObserve compares the result against every rule already on file. Match found → it clears silently. No alert, no ticket, nobody looks at it.</li>
+        <li><b>Escalation (rare)</b> — Only a new HIGH/CRITICAL finding with <i>no</i> matching rule breaks the pattern. It goes to the Security Champion for one call: fix it, suppress it with a reason, or turn that reason into a rule so it never escalates again.</li>
+        <li><b>Rollout gate</b> — Non-production deployments always proceed, regardless of open findings. Production deployments only proceed once the verdict is clean.</li>
+        <li><b>Ongoing</b> — A scheduled <code>dep-scan</code> job keeps re-checking live deployments against newly disclosed CVEs, feeding results back into the same rule engine — not a separate process.</li>
+      </ol>
+
+      <div class="callout callout--rule">
+        <span class="tag">One Exception to "No One Has to Look"</span>
+        <p>If a newly disclosed CVE is flagged as <b>actively exploited in the wild</b> — not just theoretically possible, but actually being used in real attacks — it skips the normal queue entirely and goes straight to the Security Champion, regardless of severity rating or whether a rule already exists. This is the one case with a real clock attached: once CRA fully applies, actively-exploited vulnerabilities carry mandatory reporting deadlines, so treating this as routine backlog isn't an option.</p>
+      </div>
+
+      <p class="sub" style="margin-bottom:8px;"><i>How to read it:</i> follow the grey arrows left to right for the normal path — most CVEs never leave that line. The colored dashed lines are the exceptions, explained in the legend below the diagram.</p>
+      <div class="diagram">
+        <svg viewBox="0 0 1020 500" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrowCve3" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#5A6480"/></marker>
+          </defs>
+
+          <!-- main pipeline -->
+          <line x1="160" y1="172" x2="175" y2="172" stroke="#5A6480" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
+          <line x1="365" y1="172" x2="380" y2="172" stroke="#5A6480" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
+          <line x1="590" y1="172" x2="605" y2="172" stroke="#5A6480" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
+          <line x1="745" y1="172" x2="760" y2="105" stroke="#22D3EE" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
+          <line x1="745" y1="172" x2="760" y2="282" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
+
+          <!-- exception path -->
+          <line x1="450" y1="216" x2="450" y2="310" stroke="#F59E0B" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
+          <text x="450" y="266" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12" font-style="italic">no rule match</text>
+
+          <line x1="560" y1="310" x2="560" y2="216" stroke="#F59E0B" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#arrowCve3)"/>
+          <text x="560" y="266" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12" font-style="italic">adds rule</text>
+
+          <path d="M 380 342 C 220 342, 110 280, 90 208" fill="none" stroke="#94A3B8" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#arrowCve3)"/>
+          <text x="230" y="300" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12" font-style="italic">no easy fix — sent back to Commit</text>
+
+          <!-- scheduled rescan feedback loop -->
+          <path d="M 760 300 C 640 340, 610 260, 590 205" fill="none" stroke="#3B82F6" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#arrowCve3)"/>
+          <text x="700" y="365" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12.5" font-style="italic">scheduled rescan</text>
+          <text x="700" y="382" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12.5" font-style="italic">OWASP dep-scan</text>
+
+          <!-- Commit -->
+          <rect x="20" y="140" width="140" height="64" rx="10" fill="#161F30" stroke="#F97316" stroke-width="1.5"/>
+          <text x="90" y="168" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Commit</text>
+          <text x="90" y="187" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">dependency bump</text>
+
+          <!-- Build & Scan -->
+          <rect x="175" y="140" width="190" height="64" rx="10" fill="#161F30" stroke="#3B82F6" stroke-width="1.5"/>
+          <text x="270" y="168" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Build & Scan</text>
+          <text x="270" y="187" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">OWASP dep-scan --deep</text>
+
+          <!-- SecObserve auto-triage hub -->
+          <rect x="380" y="128" width="210" height="88" rx="14" fill="#8B5CF6" opacity="0.15" stroke="#8B5CF6" stroke-width="1.5"/>
+          <text x="485" y="160" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="15" font-weight="700">SecObserve</text>
+          <text x="485" y="180" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11.5">auto-triage · rule engine</text>
+          <text x="485" y="197" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11.5">only new HIGH+ escalates ↓</text>
+
+          <!-- Rollout fork -->
+          <polygon points="675,136 745,172 675,208 605,172" fill="#161F30" stroke="#94A3B8" stroke-width="1.5"/>
+          <text x="675" y="178" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13.5" font-weight="700">Rollout</text>
+
+          <!-- Non-Productive -->
+          <rect x="760" y="70" width="230" height="64" rx="10" fill="#161F30" stroke="#22D3EE" stroke-width="1.5" stroke-dasharray="6 4"/>
+          <text x="875" y="98" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Non-Productive</text>
+          <text x="875" y="117" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">no gate — always rolls out</text>
+
+          <!-- Productive -->
+          <rect x="760" y="250" width="230" height="64" rx="10" fill="#161F30" stroke="#10B981" stroke-width="1.5"/>
+          <text x="875" y="278" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Productive</text>
+          <text x="875" y="297" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">gated on CVE verdict</text>
+
+          <!-- Security Champion -->
+          <rect x="380" y="310" width="230" height="64" rx="10" fill="#161F30" stroke="#F59E0B" stroke-width="1.5"/>
+          <text x="495" y="338" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Security Champion</text>
+          <text x="495" y="357" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">one quick call: fix or suppress</text>
+
+          <!-- legend -->
+          <line x1="40" y1="440" x2="72" y2="440" stroke="#5A6480" stroke-width="2.5"/>
+          <text x="80" y="444" fill="#95A1BC" font-family="Inter" font-size="12">automatic flow</text>
+          <line x1="290" y1="440" x2="322" y2="440" stroke="#F59E0B" stroke-width="2.5"/>
+          <text x="330" y="444" fill="#95A1BC" font-family="Inter" font-size="12">escalation (rare)</text>
+          <line x1="40" y1="470" x2="72" y2="470" stroke="#94A3B8" stroke-width="2.5" stroke-dasharray="6 5"/>
+          <text x="80" y="474" fill="#95A1BC" font-family="Inter" font-size="12">no easy fix — back to Commit</text>
+          <line x1="380" y1="470" x2="412" y2="470" stroke="#3B82F6" stroke-width="2.5" stroke-dasharray="6 5"/>
+          <text x="420" y="474" fill="#95A1BC" font-family="Inter" font-size="12">scheduled rescan (already running)</text>
+        </svg>
+        <p class="diagram-caption">Most artifacts flow straight through, auto-cleared by rules already on file. Only a new HIGH/CRITICAL finding with no matching rule ever reaches the Security Champion — and resolving it once means the rule engine catches every future occurrence automatically.</p>
+      </div>
+
+      <div class="callout callout--info">
+        <span class="tag">Security Gate — Non-Productive vs Productive</span>
+        <p>Findings never block a test or staging rollout — developers need room to iterate. Only a <b>productive</b> rollout enforces the rule, e.g. "no unresolved CVE with criticality HIGH or higher." That gives the team the time between the first scan and the productive release to fix or formally suppress a finding, without slowing down everyday testing.</p>
+      </div>
+
+      <div class="callout callout--dev">
+        <span class="tag">What You Actually Do</span>
+        <p>See a new finding in SecObserve? Check whether a rule already covers it before doing anything — most do. If it's genuinely new and HIGH or above, message the Security Champion directly instead of filing a ticket; the resolution is almost always one of three things: bump the dependency, suppress it with a documented reason, or — if it's likely to show up again — turn that reason into a rule. Whichever you pick, the second-reviewer habit from Chapter 1 still applies: someone else merges that change.</p>
+      </div>
+
+      <p class="sub">One note on the CVE workflow above before moving on: automation bots might suggest fixes on your PRs, but only human engineers can approve them — the Security Champion's judgment call is never automated away, only the noise around it is.</p>
+
+<h3>Runtime Telemetry Flow <span class="sub-inline">— platform-team reference</span></h3>
+      <div class="callout callout--info">
+        <span class="tag">Skip Ahead If You Just Need the Takeaway</span>
+        <p>As a developer you don't configure any of this. The short version: <b>every Kyverno rejection, Falco alert, and Tetragon kill is captured automatically by OpenObserve</b> — nothing gets lost. The rest of this section is for anyone curious how that actually works under the hood.</p>
+      </div>
+      <p class="sub">Logs and metrics split at the source into two lightweight collectors, then converge into one unified, low-overhead analytics backend — replacing the heavier ELK/Loki + Grafana stack this used to run on:</p>
+
+      <div class="diagram">
+        <svg viewBox="0 0 700 480" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5A6480"/></marker>
+          </defs>
+
+          <rect x="190" y="10" width="320" height="56" rx="10" fill="#161F30" stroke="#25314A" stroke-width="1.5"/>
+          <text x="350" y="33" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">KUBERNETES WORKLOAD ZONE</text>
+          <text x="350" y="50" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11.5">Pod Workloads / Node Linux Kernel</text>
+
+          <line x1="350" y1="66" x2="350" y2="110" stroke="#5A6480" stroke-width="2"/>
+          <line x1="350" y1="110" x2="200" y2="132" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow5)"/>
+          <line x1="350" y1="110" x2="500" y2="132" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow5)"/>
+          <text x="230" y="96" fill="#95A1BC" font-family="Inter" font-size="11.5" font-style="italic">live JSON events</text>
+          <text x="440" y="96" fill="#95A1BC" font-family="Inter" font-size="11.5" font-style="italic">time-series metrics</text>
+
+          <rect x="70" y="136" width="260" height="60" rx="10" fill="#161F30" stroke="#22D3EE" stroke-width="1.5"/>
+          <text x="200" y="163" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">Log Shipper</text>
+          <text x="200" y="180" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">Vector · FluentBit · Promtail</text>
+
+          <rect x="370" y="136" width="260" height="60" rx="10" fill="#161F30" stroke="#22D3EE" stroke-width="1.5"/>
+          <text x="500" y="163" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">OpenObserve Collector</text>
+          <text x="500" y="180" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">cluster state + Tetragon counters</text>
+
+          <line x1="200" y1="196" x2="350" y2="234" stroke="#22D3EE" stroke-width="2" opacity="0.7"/>
+          <line x1="500" y1="196" x2="350" y2="234" stroke="#22D3EE" stroke-width="2" opacity="0.7"/>
+          <line x1="350" y1="234" x2="350" y2="264" stroke="#22D3EE" stroke-width="2.5" marker-end="url(#arrow5)"/>
+          <text x="380" y="220" fill="#95A1BC" font-family="Inter" font-size="11.5" font-style="italic">OTLP / HTTP JSON</text>
+
+          <rect x="90" y="266" width="520" height="195" rx="14" fill="#22D3EE" opacity="0.08" stroke="#22D3EE" stroke-width="1.5"/>
+          <text x="350" y="298" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="16" font-weight="700">OPENOBSERVE</text>
+          <text x="350" y="317" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">Single-Binary Rust Engine</text>
+          <line x1="130" y1="332" x2="570" y2="332" stroke="#25314A" stroke-width="1"/>
+
+          <circle cx="140" cy="365" r="3" fill="#22D3EE"/>
+          <text x="155" y="370" fill="#EAEEF7" font-family="Inter" font-size="13.5">Columnar Parquet file engine (MinIO / local)</text>
+          <circle cx="140" cy="398" r="3" fill="#22D3EE"/>
+          <text x="155" y="403" fill="#EAEEF7" font-family="Inter" font-size="13.5">Built-in visual dashboards (zero Grafana)</text>
+          <circle cx="140" cy="431" r="3" fill="#22D3EE"/>
+          <text x="155" y="436" fill="#EAEEF7" font-family="Inter" font-size="13.5">Real-time SQL alerting & PromQL engine</text>
+        </svg>
+        <p class="diagram-caption">A lightweight Log Shipper and the OpenObserve Collector converge into one analytics backend.</p>
+      </div>
+
+      <h3>Infrastructure Controls <span class="sub-inline">— platform-team reference</span></h3>
+      <p class="sub">Three standing controls keep the hubs above trustworthy. You don't manage these day to day — just know they exist:</p>
+      <ul>
+        <li><b>Network segmentation is documented, not just assumed</b> — Ingress → DMZ → App tier → Data tier, with Cilium/Calico policy placement marked on paper, so a reviewer can check a proposed change against the real trust boundaries in minutes.</li>
+        <li><b>Every policy decision is logged</b> — a rejected deployment or a killed process is queryable in OpenObserve, never just something that happened and vanished.</li>
+        <li><b>Policies are reviewed annually</b> against current CIS/ASVS baselines, so the rules enforcing zones like Edge and Live Kubernetes don't quietly drift out of date.</li>
+      </ul>
+    </section>
+
+    <hr class="div">
+
+    <!-- CHAPTER 6 -->
+    <section class="chapter" id="ch6">
+      <div class="chapter-head"><div class="chapter-num">06</div><h2>Proving It: Audit & Evidence</h2></div>
+      <p>It's not enough to say we're secure; we have to prove it to auditors and ourselves. Every tool we use generates evidence, feeding into two centralized hubs: <b>SecObserve</b> (static, point-in-time build findings) and <b>OpenObserve</b> (live, high-velocity stream analytics).</p>
+
+      <div class="callout callout--dev">
+        <span class="tag">Developer ROI</span>
+        <p>SecObserve's biggest win for developers is trust: its rule engine auto-clears known false positives and accepted low-risk findings, so what's left in the queue is worth acting on. Less time triaging noise, more confidence in what the audit trail actually flags.</p>
+      </div>
+
+      <h3>The Evidence Matrix</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Tool</th><th>What it Protects</th><th>The Proof it Creates</th><th>Where It Lives</th></tr></thead>
+          <tbody>
+            <tr><td>ASVS & Threat Dragon</td><td>Planning & Design</td><td>Checklists and threat models tracked as tickets before coding begins.</td><td>Project Board</td></tr>
+            <tr><td style="white-space:normal;min-width:150px;line-height:1.5;">SonarLint · Bearer · ESLint · FindSecBugs · Bandit · gosec · ShellCheck</td><td>Local Code Safety</td><td>Local scan histories proving bugs were fixed before commit.</td><td>SCM / PR Logs</td></tr>
+            <tr><td>Kube-bench / Checkov</td><td>Config & Compliance</td><td>Audit-ready reports on our app configs and Kubernetes settings.</td><td>SecObserve</td></tr>
+            <tr><td>OpenSCAP + STIG Viewer</td><td>Host Compliance</td><td>Audit-ready reports auditors already recognize.</td><td>SecObserve</td></tr>
+            <tr><td>Gitleaks</td><td>Secrets</td><td>Pipeline logs proving exposed keys were caught and rotated.</td><td>SecObserve</td></tr>
+            <tr><td>dep-scan <code>--deep</code></td><td>Supply Chain</td><td>SBOMs and vulnerability reports for libraries + base OS.</td><td>SecObserve</td></tr>
+            <tr><td>OWASP ZAP</td><td>Staging / DAST</td><td>Baseline scan reports proving the app was attack-tested.</td><td>SecObserve</td></tr>
+            <tr><td>Kyverno + Cosign</td><td>Deployment Policies</td><td>Logs of rejected deployments (root containers, missing signatures).</td><td>OpenObserve</td></tr>
+            <tr><td>Falco + Falcosidekick</td><td>Live Environment</td><td>Real-time anomaly and threat alerts routed to incident response.</td><td>OpenObserve</td></tr>
+            <tr><td>Tetragon</td><td>Kernel & Process Integrity</td><td>Execution lineage, namespace logs, kernel-enforced <code>SIGKILL</code> trails.</td><td>OpenObserve</td></tr>
+            <tr><td>Velero & etcd Snapshots</td><td>Disaster Recovery</td><td>Successful restore-drill logs as Proof of Protection.</td><td>SecObserve</td></tr>
+            <tr><td>VEX Statements</td><td>Vulnerability Impact</td><td>A formal record of why a flagged CVE does or doesn't actually affect us — so "we saw it and made a call" is provable, not just assumed.</td><td>SecObserve</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout--rule">
+        <span class="tag">Access Control</span>
+        <p>SecObserve is locked down to protect this static evidence. Most of the team can update a finding; only a couple of trusted leads can delete one, so no one can quietly make a finding disappear. Every change needs a short written reason, saved automatically next to the finding, and sensitive cases can require a second sign-off — just like code review.</p>
+      </div>
+
+      <p class="sub">The live telemetry flowing into OpenObserve gets similar rigor: compressed, append-only files on secure storage mean application teams can't alter or delete operational security records — an unalterable trail for forensic audits.</p>
+
+      <h3>Evidence Management</h3>
+      <p><b>Automated Evidence Collection</b> — CI/CD attaches to each release artifact in SecObserve: SBOM, dep-scan report, Checkov report, Gitleaks report, ZAP baseline scan.</p>
+      <p><b>Retention Policy</b>:</p>
+      <ul>
+        <li>Critical findings & kernel security logs — 7 years</li>
+        <li>High/Medium alerts — 2 years</li>
+        <li>Low/Informational — 1 year</li>
+      </ul>
+      <p><b>Read-Only Auditor Role</b> — external auditors get dedicated read-only access to SecObserve dashboards and OpenObserve SQL consoles, zero modify/delete permissions.</p>
+
+      <h3>Our Immediate Action Plan</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Risk</th><th>The Gap</th><th>How We're Fixing It</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge--crit">Critical</span></td><td>Secrets stored in plain text.</td><td>Rolling out HashiCorp Vault.</td></tr>
+            <tr><td><span class="badge badge--crit">Critical</span></td><td>Unverified container images.</td><td>Enforcing Cosign signing + Kyverno verification.</td></tr>
+            <tr><td><span class="badge badge--crit">Critical</span></td><td>Flat network — easy lateral movement.</td><td>Rolling out Cilium/Calico Network Policies.</td></tr>
+            <tr><td><span class="badge badge--crit">Critical</span></td><td>Arbitrary commands possible if a container is compromised.</td><td>Deploying Tetragon TracingPolicies to instantly <code>SIGKILL</code> unapproved executions.</td></tr>
+            <tr><td><span class="badge badge--high">High</span></td><td>SecObserve needs a backup plan.</td><td>Nightly DB backups + tested restore drills.</td></tr>
+            <tr><td><span class="badge badge--med">Medium</span></td><td>Logging environments consume excessive memory/storage.</td><td>Retiring Java-based ELK/Loki; deploying OpenObserve as unified telemetry backend.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr class="div">
+
+    <!-- CHAPTER 7 -->
+    <section class="chapter" id="ch7">
+      <div class="chapter-head"><div class="chapter-num">07</div><h2>Bouncing Back <span class="sub-inline">— Resilience</span></h2></div>
+      <p>Disaster recovery is a core part of security. Even with every prevention tool running, things can still go wrong — a bad deploy, a hardware failure, a real attack. What matters is whether we can get back the data and systems we lost.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>What</th><th>Tool</th><th>How Often</th><th>How We Prove It Works</th></tr></thead>
+          <tbody>
+            <tr><td>Cluster State (etcd)</td><td>Native etcd snapshotting</td><td>Daily, off-cluster</td><td>Quarterly restore onto a separate test cluster</td></tr>
+            <tr><td>App Volumes</td><td>Velero</td><td>Daily</td><td>Same quarterly restore test</td></tr>
+            <tr><td>Application Data (DBs)</td><td><code>pg_basebackup</code> etc.</td><td>Continuous + daily full backup</td><td>Quarterly point-in-time restore, data verified</td></tr>
+            <tr><td>SecObserve records</td><td>DB export, outside cluster</td><td>Nightly</td><td>Restore tests logged back into SecObserve</td></tr>
+            <tr><td>Network Containment</td><td>Cilium/Calico Network Policies</td><td>Always running</td><td>Traffic logs reviewed after any real incident</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout--info">
+        <span class="tag">The One Rule</span>
+        <p>Backups are stored somewhere even our own cluster administrators can't delete or change. Full admin access to the cluster should still not reach yesterday's backup — that's the difference between a bad day and a permanent loss. In practice: <b>WORM (Write Once, Read Many)</b> object-lock on backup storage, enforced by the storage system itself, not Kubernetes permissions — so it still protects us even if K8s access is fully compromised.</p>
+      </div>
+
+      <h3>Resilience Controls</h3>
+      <ul>
+        <li><b>Backup Test Automation</b> — quarterly restore tests, automated via scripts, logged in SecObserve with pass/fail status.</li>
+        <li><b>RPO/RTO Definitions</b> — Critical: RPO &lt; 15 min, RTO &lt; 4 hrs. Non-critical: RPO &lt; 24 hrs, RTO &lt; 24 hrs.</li>
+      </ul>
+    </section>
+
+    <hr class="div">
+
+    <!-- CHAPTER 8 -->
+    <section class="chapter" id="ch8">
+      <div class="chapter-head"><div class="chapter-num">08</div><h2>AI Assistants <span class="sub-inline">— helping, not taking over</span></h2></div>
+      <p class="sub"><i>In plain terms:</i> the AI can suggest a fix, draft a policy, or group related alerts together — but it never gets to click the final "approve," "merge," or "deploy" button. That's always a person.</p>
+      <p>We use AI agents to move faster, but <b>humans are always in control of the big decisions</b>. This section is the floor, not the ceiling — anchored to the <b>OWASP Top 10 for Agentic Applications (ASI Top 10)</b> and two guiding ideas: <b>Least-Agency</b> (only the autonomy a task actually needs) and <b>Strong Observability</b> (always know what it did, why, under which identity).</p>
+
+      <h3>The Agent Responsibility Model</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Stage</th><th>Agent Role</th><th>Human Role</th><th>Guardrail</th></tr></thead>
+          <tbody>
+            <tr><td>Plan</td><td>Draft security requirements, threat-model checklists.</td><td>Approve scope and risk ratings.</td><td>Agents cannot accept risk or change severity.</td></tr>
+            <tr><td>Design</td><td>Suggest security patterns/mitigations.</td><td>Own data flows, trust boundaries.</td><td>Agents cannot approve architecture or reclassify data.</td></tr>
+            <tr><td>Code</td><td>Propose secure refactors and fixes.</td><td>Own intent and merge decisions.</td><td>Agents never push to protected branches.</td></tr>
+            <tr><td>Test / Review</td><td>Generate candidate tests, first-pass comments.</td><td>Curate tests, final review.</td><td>Agents cannot merge tests or PRs.</td></tr>
+            <tr><td>Deploy</td><td>Enrich deploy checks with risk context.</td><td>Decide rollout and rollback.</td><td>Agents cannot trigger deploys or rollbacks.</td></tr>
+            <tr><td>Runtime / Operate</td><td>Correlate alerts, draft runbook steps.</td><td>Own incident severity, RCA, containment.</td><td>Agents cannot close incidents.</td></tr>
+            <tr><td>Maintain</td><td>Open PRs for low-risk updates.</td><td>Approve changes for critical systems.</td><td>Auto-fix limited to well-tested repos.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="sub">Agents are never allowed to initiate design changes, alter deployment pipelines, perform incident RCA, or trigger production deploys or rollbacks.</p>
+
+      <h3>The Autonomous Loop <span class="sub-inline">— low-blast-radius work</span></h3>
+
+      <div class="diagram">
+        <svg viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow8" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#5A6480"/></marker>
+            <marker id="arrow8b" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8B96AC"/></marker>
+
+            <linearGradient id="gradFind" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#EF4444" stop-opacity="0.24"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.05"/>
+            </linearGradient>
+            <linearGradient id="gradFix" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.24"/><stop offset="100%" stop-color="#8B5CF6" stop-opacity="0.05"/>
+            </linearGradient>
+            <linearGradient id="gradVerify" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.24"/><stop offset="100%" stop-color="#3B82F6" stop-opacity="0.05"/>
+            </linearGradient>
+            <linearGradient id="gradApprove" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#10B981" stop-opacity="0.24"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.05"/>
+            </linearGradient>
+          </defs>
+
+          <!-- CARD 1 · FIND -->
+          <rect x="30" y="54" width="170" height="78" rx="14" fill="url(#gradFind)" stroke="#EF4444" stroke-width="1.5"/>
+          <circle cx="30" cy="54" r="15" fill="#EF4444" stroke="#111826" stroke-width="3"/>
+          <text x="30" y="59" text-anchor="middle" fill="#fff" font-family="Inter" font-size="13" font-weight="700">1</text>
+          <g transform="translate(58,93)" stroke="#EF4444" stroke-width="1.8" fill="none" stroke-linecap="round">
+            <circle cx="0" cy="0" r="6"/>
+            <line x1="4.3" y1="4.3" x2="9" y2="9"/>
+          </g>
+          <text x="80" y="88" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">FIND</text>
+          <text x="80" y="106" fill="#95A1BC" font-family="Inter" font-size="11">Scanner flags issue</text>
+
+          <line x1="200" y1="93" x2="243" y2="93" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow8)"/>
+
+          <!-- CARD 2 · FIX -->
+          <rect x="245" y="54" width="170" height="78" rx="14" fill="url(#gradFix)" stroke="#8B5CF6" stroke-width="1.5"/>
+          <circle cx="245" cy="54" r="15" fill="#8B5CF6" stroke="#111826" stroke-width="3"/>
+          <text x="245" y="59" text-anchor="middle" fill="#fff" font-family="Inter" font-size="13" font-weight="700">2</text>
+          <g transform="translate(273,93)" stroke="#8B5CF6" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="0" cy="0" r="5.5"/>
+            <circle cx="0" cy="0" r="1.6" fill="#8B5CF6" stroke="none"/>
+            <line x1="0" y1="-8.5" x2="0" y2="-5.8"/>
+            <line x1="7.4" y1="-4.3" x2="5" y2="-2.9"/>
+            <line x1="7.4" y1="4.3" x2="5" y2="2.9"/>
+            <line x1="0" y1="8.5" x2="0" y2="5.8"/>
+            <line x1="-7.4" y1="4.3" x2="-5" y2="2.9"/>
+            <line x1="-7.4" y1="-4.3" x2="-5" y2="-2.9"/>
+          </g>
+          <text x="295" y="88" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">FIX</text>
+          <text x="295" y="106" fill="#95A1BC" font-family="Inter" font-size="11">Agent applies change</text>
+
+          <line x1="415" y1="93" x2="458" y2="93" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow8)"/>
+
+          <!-- CARD 3 · VERIFY -->
+          <rect x="460" y="54" width="170" height="78" rx="14" fill="url(#gradVerify)" stroke="#3B82F6" stroke-width="1.5"/>
+          <circle cx="460" cy="54" r="15" fill="#3B82F6" stroke="#111826" stroke-width="3"/>
+          <text x="460" y="59" text-anchor="middle" fill="#fff" font-family="Inter" font-size="13" font-weight="700">3</text>
+          <g transform="translate(488,93)" stroke="#3B82F6" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M0,-9 L6,-6 L6,1 C6,5.5 3,8.5 0,9.5 C-3,8.5 -6,5.5 -6,1 L-6,-6 Z"/>
+            <path d="M-3,0.5 L-0.8,3 L3.3,-3" stroke-width="1.6"/>
+          </g>
+          <text x="510" y="88" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">VERIFY</text>
+          <text x="510" y="106" fill="#95A1BC" font-family="Inter" font-size="11">Tests & policies</text>
+
+          <line x1="630" y1="93" x2="673" y2="93" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow8)"/>
+
+          <!-- CARD 4 · APPROVE -->
+          <rect x="675" y="54" width="170" height="78" rx="14" fill="url(#gradApprove)" stroke="#10B981" stroke-width="1.5"/>
+          <circle cx="675" cy="54" r="15" fill="#10B981" stroke="#111826" stroke-width="3"/>
+          <text x="675" y="59" text-anchor="middle" fill="#fff" font-family="Inter" font-size="13" font-weight="700">4</text>
+          <g transform="translate(703,93)" stroke="#10B981" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="0" cy="-4" r="3.2"/>
+            <path d="M-6,8 C-6,2.5 6,2.5 6,8"/>
+          </g>
+          <text x="725" y="88" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">APPROVE</text>
+          <text x="725" y="106" fill="#95A1BC" font-family="Inter" font-size="11">Reviews & merges</text>
+
+          <!-- loop-back arc -->
+          <path d="M 760 132 C 760 216, 115 216, 115 132" fill="none" stroke="#8B96AC" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow8b)"/>
+          <circle cx="437" cy="221" r="13" fill="#161F30" stroke="#8B96AC" stroke-width="1.3"/>
+          <text x="437" y="226" text-anchor="middle" fill="#8B96AC" font-family="Inter" font-size="14">&#8635;</text>
+        </svg>
+        <p class="diagram-caption">Constrained loop for dependency bumps and static-analysis refactors — repeats for the next low-risk change, but step 4 (human approval) is never skipped.</p>
+      </div>
+
+      <p class="sub">Limited to dependency bumps and static-analysis-driven refactors. Policy synthesis can use this loop too, but because a wrong policy can fail silently, it never skips the two-reviewer rule.</p>
+
+      <div class="callout callout--info">
+        <span class="tag">Why This Loop Works: RCI</span>
+        <p>This loop is a real, named technique called <b>RCI (Recursive Criticism and Improvement)</b> — originally built for AI agents, later adapted for secure code generation too. The mechanic is simple: ask the AI to critique its own output, then improve it based on what it found. Research on this found it can cut security weaknesses by up to 77% compared to trusting the first answer — for zero cost beyond two follow-up questions.</p>
+        <p style="margin-top:10px;">Applied to an agent, it works one step earlier than it does for code: before the agent applies a fix, ask it to critique its own <i>plan</i> first — "here's what you're about to do, find problems with it" — then let it revise the plan before touching anything. Catching a bad approach before it acts is cheaper than catching a bad result after.</p>
+      </div>
+
+      <h3>Where Agents Plug Into the Pipeline</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Pillar</th><th>What It Does</th><th>On-Premise Implementation</th></tr></thead>
+          <tbody>
+            <tr><td>Reachability Triage</td><td>Decides if a CVE is actually reachable, produces a VEX verdict.</td><td>Walks the call graph, updates the dependency, re-runs tests, opens a PR.</td></tr>
+            <tr><td>Policy Synthesis</td><td>Turns plain-text NIST/CIS rules into Kyverno/Checkov policy.</td><td>Drafts validated YAML, links test cases, proposes via PR.</td></tr>
+            <tr><td>Alert Correlation</td><td>Groups related Falco alerts, drafts a first-pass runbook.</td><td>Clusters by host/workload, attaches logs — never closes the incident.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Agent Controls</h3>
+      <ul>
+        <li><b>Identity and Audit Trail</b> — dedicated service account, logged with <code>service=ai-agent</code>, human approval required for production changes.</li>
+        <li><b>Agent-Generated Code Review Checklist</b> — secrets scanned, CVEs triaged, policy changes reviewed, humans check off before merge.</li>
+      </ul>
+
+      <h3>Securing Your Own AI Assistant <span class="sub-inline">— what to put in your Claude.md / Copilot / Cursor rules file</span></h3>
+      <p class="sub">Everything above covers AI agents acting inside our pipeline. But most of us also use an AI assistant directly in the IDE every day — Copilot, Cursor, Claude Code, and similar. That assistant reads a project instructions file (<code>CLAUDE.md</code>, a Copilot instructions file, Cursor rules, etc.), and a few lines in that file measurably reduce the vulnerabilities it suggests.</p>
+
+      <div class="callout callout--dev">
+        <span class="tag">Watch For: Package Hallucination</span>
+        <p>AI assistants sometimes suggest a dependency that doesn't actually exist. Attackers know this and pre-register those exact hallucinated names on npm/PyPI with malicious code inside — a technique called <b>"slopsquatting."</b> This is one more reason the <b>Vet New Dependencies</b> habit from Chapter 1 applies double to anything an AI suggests: don't add a package just because the assistant named it with confidence.</p>
+      </div>
+
+      <p class="sub">A starting instructions snippet worth adding to your project's AI assistant config:</p>
+      <ul>
+        <li>Validate all inputs; use parameterized queries, never string-built SQL.</li>
+        <li>Never hard-code secrets, API keys, or passwords — use environment variables or Vault references.</li>
+        <li>Handle errors gracefully; don't leak stack traces or internal details in user-facing messages.</li>
+        <li>Prefer well-known, actively-maintained libraries; never add a dependency you can't verify actually exists.</li>
+        <li>Pin container images by digest, not tag; use minimal/distroless base images (see Chapter 3).</li>
+        <li>Flag any AI-generated placeholder or <code>TODO</code> code as needing a security review before merge.</li>
+      </ul>
+
+      <div class="callout callout--info">
+        <span class="tag">Use RCI Here Too</span>
+        <p>Same technique as the Autonomous Loop earlier in this chapter: ask <i>"Review your previous answer and find problems with it,"</i> then <i>"Based on the problems you found, improve your answer."</i> Costs nothing, takes 30 seconds, and applies to any code your assistant just wrote for you.</p>
+      </div>
+    </section>
+
+    <hr class="div">
+
+    <!-- CHAPTER 9 -->
+    <section class="chapter" id="ch9">
+      <div class="chapter-head"><div class="chapter-num">09</div><h2>Step-by-Step Implementation Checklist</h2></div>
+      <p class="sub"><i>Note on ordering:</i> these steps follow rollout dependency, not the chapter order above — e.g., Image Provenance is step 6 even though Chapter 3 covered container images, because it depends on Vault and admission control being in place first. Each phase title links back to its source chapter.</p>
+
+      <div class="roadmap">
+        <div class="roadmap-line"></div>
+
+        <div class="step">
+          <div class="step-marker">1</div>
+          <div class="step-content">
+            <div class="step-title">Foundations & Code Security Gatekeeping <a href="#ch1" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.1 & Ch.4</a></div>
+            <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> make sure a bad commit can't quietly slip into the codebase. <span style="color:var(--text-faint);font-size:12px;">— Quick win, mostly configuration</span></p>
+            <ul class="step-list">
+              <li><span class="step-check"></span><span><b>Org-Wide MFA</b> — across all SCM accounts.</span></li>
+              <li><span class="step-check"></span><span><b>Branch Protection</b> — signed commits, two reviews, CODEOWNERS validation.</span></li>
+              <li><span class="step-check"></span><span><b>Local Security Tooling</b> — SonarLint, Bearer CLI, Bandit, gosec, ShellCheck, Gitleaks; shared <code>.gitignore</code> baseline.</span></li>
+              <li><span class="step-check"></span><span><b>Dependency Vetting Habit</b> — run <code>dep-scan</code> ad hoc before adding any new third-party library, alongside a quick check of its repo health and GitHub Security tab.</span></li>
+              <li><span class="step-check"></span><span><b>Pre-Commit Enforcement</b> — shared config, CI verifies hooks ran.</span></li>
+              <li><span class="step-check"></span><span><b>Vulnerability Management Engine</b> — stand up SecObserve as the central static reporting hub.</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-marker">2</div>
+          <div class="step-content">
+            <div class="step-title">CI/CD Guardrails & Software Supply Chain <a href="#ch2" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.2</a></div>
+            <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> catch bad dependencies and missing SBOMs before they reach a build artifact. <span style="color:var(--text-faint);font-size:12px;">— 1–2 weeks</span></p>
+            <ul class="step-list">
+              <li><span class="step-check"></span><span><b>Pipeline Manifest Scanning</b> — Checkov + Gitleaks in unskippable CI loops.</span></li>
+              <li><span class="step-check"></span><span><b>Dependency Triage</b> — OWASP dep-scan <code>--deep</code> in build pipelines.</span></li>
+              <li><span class="step-check"></span><span><b>SBOM</b> — CycloneDX or SPDX generated on every production build.</span></li>
+              <li><span class="step-check"></span><span><b>Dynamic Application Testing</b> — OWASP ZAP in staging on every deploy.</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-marker">3</div>
+          <div class="step-content">
+            <div class="step-title">Core Platform Ingress & Cluster Admission <a href="#ch5" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.5</a></div>
+            <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> stop untrusted traffic and non-compliant deployments at the front door. <span style="color:var(--text-faint);font-size:12px;">— 1–2 weeks</span></p>
+            <ul class="step-list">
+              <li><span class="step-check"></span><span><b>Edge Hardening</b> — HTTPS redirect, HSTS, CSP, TLS 1.3 at ingress.</span></li>
+              <li><span class="step-check"></span><span><b>Vulnerability Disclosure</b> — <code>SECURITY.md</code> per repo, <code>security.txt</code> on live properties.</span></li>
+              <li><span class="step-check"></span><span><b>Admission Control</b> — Kyverno as primary cluster bouncer.</span></li>
+              <li><span class="step-check"></span><span><b>Network Micro-Segmentation</b> — Cilium/Calico policies replace the flat network.</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-marker">4</div>
+          <div class="step-content">
+            <div class="step-title">Unified Observability Infrastructure <a href="#ch5" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.5</a></div>
+            <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> give every later phase somewhere to send its logs and alerts. <span style="color:var(--text-faint);font-size:12px;">— ~1 week, mostly deployment</span></p>
+            <ul class="step-list">
+              <li><span class="step-check"></span><span><b>Log Optimization Engine</b> — deploy OpenObserve via Helm, compressed append-only storage or MinIO.</span></li>
+              <li><span class="step-check"></span><span><b>Platform Metric Scraping</b> — OpenObserve Collector DaemonSet across the cluster.</span></li>
+              <li><span class="step-check"></span><span><b>Cluster Logging Architecture</b> — deploy the chosen Log Shipper to feed OpenObserve.</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-marker">5</div>
+          <div class="step-content">
+            <div class="step-title">Runtime Shielding & Kernel Enforcement <a href="#ch5" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.5</a></div>
+            <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> detect and stop malicious behavior in a container that's already running. <span style="color:var(--text-faint);font-size:12px;">— 2–3 weeks, includes a 7-day observation period</span></p>
+            <ul class="step-list">
+              <li><span class="step-check"></span><span><b>Behavioral Auditing</b> — Falco + Falcosidekick, alerts to team messaging.</span></li>
+              <li><span class="step-check"></span><span><b>Kernel Security Engine</b> — deploy Tetragon across all nodes.</span></li>
+              <li><span class="step-check"></span><span><b>Tetragon Profiling Baseline</b> — 7+ days in Audit Mode before enforcing.</span></li>
+              <li><span class="step-check"></span><span><b>Active Containment</b> — targeted TracingPolicies, switch to Enforcement Mode with <code>SIGKILL</code>.</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-marker">6</div>
+          <div class="step-content">
+            <div class="step-title">Image Provenance & Platform Hardening <a href="#ch3" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.3</a></div>
+            <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> prove every image is exactly what we built, and keep it patched. <span style="color:var(--text-faint);font-size:12px;">— 2–3 weeks</span></p>
+            <ul class="step-list">
+              <li><span class="step-check"></span><span><b>Secrets Lifecycle</b> — roll out HashiCorp Vault, remove plain-text configs.</span></li>
+              <li><span class="step-check"></span><span><b>Image Trust Framework</b> — Cosign signing + Kyverno key validation.</span></li>
+              <li><span class="step-check"></span><span><b>Immutable Base Layers</b> — migrate to dhi.io or Distroless.</span></li>
+              <li><span class="step-check"></span><span><b>Host Compliance Auditing</b> — OpenSCAP + STIG Viewer across node hosts, producing audit-ready reports auditors already recognize.</span></li>
+              <li><span class="step-check"></span><span><b>EOL Tracking</b> — scheduled check of base OS and language runtime versions against endoflife.date, flagging anything nearing end-of-life.</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-marker">7</div>
+          <div class="step-content">
+            <div class="step-title">Disaster Resilience & Autonomous Operations <a href="#ch7" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.7 & Ch.8</a></div>
+            <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> make sure a bad day doesn't become a permanent loss, and set safe boundaries for AI helpers. <span style="color:var(--text-faint);font-size:12px;">— Ongoing</span></p>
+            <ul class="step-list">
+              <li><span class="step-check"></span><span><b>Disaster Recovery Pipelines</b> — daily snapshots for etcd, Velero volumes, databases.</span></li>
+              <li><span class="step-check"></span><span><b>Immutable Storage Controls</b> — WORM object locking on backup storage.</span></li>
+              <li><span class="step-check"></span><span><b>Disaster Drill Verification</b> — automated quarterly test-restores, logged to SecObserve.</span></li>
+              <li><span class="step-check"></span><span><b>Agentic AI Assistance</b> — approved LLM interfaces for reachability triage, policy drafts, alert correlation.</span></li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <hr class="div">
+
+    <!-- CHAPTER 10 -->
+    <section class="chapter" id="ch10">
+      <div class="chapter-head"><div class="chapter-num">10</div><h2>Acronyms</h2></div>
+      <dl class="glossary">
+        <div class="gterm"><dt>AI</dt><dd>Artificial Intelligence</dd></div>
+        <div class="gterm"><dt>API</dt><dd>Application Programming Interface</dd></div>
+        <div class="gterm"><dt>ASI</dt><dd>Agentic Security Initiative (OWASP's agentic-AI security project)</dd></div>
+        <div class="gterm"><dt>ASVS</dt><dd>Application Security Verification Standard</dd></div>
+        <div class="gterm"><dt>CI/CD</dt><dd>Continuous Integration / Deployment</dd></div>
+        <div class="gterm"><dt>CIS</dt><dd>Center for Internet Security</dd></div>
+        <div class="gterm"><dt>CLI</dt><dd>Command Line Interface</dd></div>
+        <div class="gterm"><dt>CRA</dt><dd>Cyber Resilience Act (EU)</dd></div>
+        <div class="gterm"><dt>CSP</dt><dd>Content Security Policy</dd></div>
+        <div class="gterm"><dt>CVE</dt><dd>Common Vulnerabilities and Exposures</dd></div>
+        <div class="gterm"><dt>DAST</dt><dd>Dynamic Application Security Testing</dd></div>
+        <div class="gterm"><dt>DB</dt><dd>Database</dd></div>
+        <div class="gterm"><dt>DMZ</dt><dd>Demilitarized Zone (a buffer network between untrusted and trusted zones)</dd></div>
+        <div class="gterm"><dt>eBPF</dt><dd>Extended Berkeley Packet Filter (lets tools like Tetragon watch/control the kernel safely)</dd></div>
+        <div class="gterm"><dt>ELK</dt><dd>Elasticsearch, Logstash, Kibana (the logging stack OpenObserve replaced)</dd></div>
+        <div class="gterm"><dt>EOL</dt><dd>End of Life (a software version no longer receiving updates)</dd></div>
+        <div class="gterm"><dt>FIPS</dt><dd>Federal Information Processing Standards (U.S. government-grade cryptography rules)</dd></div>
+        <div class="gterm"><dt>HSTS</dt><dd>HTTP Strict Transport Security</dd></div>
+        <div class="gterm"><dt>HTTP</dt><dd>HyperText Transfer Protocol</dd></div>
+        <div class="gterm"><dt>IaC</dt><dd>Infrastructure as Code</dd></div>
+        <div class="gterm"><dt>IDE</dt><dd>Integrated Development Environment (your code editor)</dd></div>
+        <div class="gterm"><dt>LLM</dt><dd>Large Language Model</dd></div>
+        <div class="gterm"><dt>MFA</dt><dd>Multi-Factor Authentication</dd></div>
+        <div class="gterm"><dt>NIST</dt><dd>National Institute of Standards and Technology</dd></div>
+        <div class="gterm"><dt>OS</dt><dd>Operating System</dd></div>
+        <div class="gterm"><dt>OTLP</dt><dd>OpenTelemetry Protocol (a standard format for shipping logs/metrics)</dd></div>
+        <div class="gterm"><dt>OWASP</dt><dd>Open Web Application Security Project (nonprofit behind most free security standards we use)</dd></div>
+        <div class="gterm"><dt>PII</dt><dd>Personally Identifiable Information</dd></div>
+        <div class="gterm"><dt>PR</dt><dd>Pull Request</dd></div>
+        <div class="gterm"><dt>RCA</dt><dd>Root Cause Analysis</dd></div>
+        <div class="gterm"><dt>RPO</dt><dd>Recovery Point Objective</dd></div>
+        <div class="gterm"><dt>RTO</dt><dd>Recovery Time Objective</dd></div>
+        <div class="gterm"><dt>SAST</dt><dd>Static Application Security Testing</dd></div>
+        <div class="gterm"><dt>SBOM</dt><dd>Software Bill of Materials</dd></div>
+        <div class="gterm"><dt>SCM</dt><dd>Source Control Management (e.g., GitHub, GitLab)</dd></div>
+        <div class="gterm"><dt>SHA</dt><dd>Secure Hash Algorithm (used to uniquely identify a specific commit)</dd></div>
+        <div class="gterm"><dt>SPDX</dt><dd>Software Package Data Exchange (an SBOM format)</dd></div>
+        <div class="gterm"><dt>SSDF</dt><dd>Secure Software Development Framework (NIST)</dd></div>
+        <div class="gterm"><dt>STIG</dt><dd>Security Technical Implementation Guide</dd></div>
+        <div class="gterm"><dt>TLS</dt><dd>Transport Layer Security</dd></div>
+        <div class="gterm"><dt>VEX</dt><dd>Vulnerability Exploitability eXchange</dd></div>
+        <div class="gterm"><dt>WORM</dt><dd>Write Once, Read Many (storage that can't be edited or deleted)</dd></div>
+        <div class="gterm"><dt>ZAP</dt><dd>Zed Attack Proxy (OWASP ZAP's full name)</dd></div>
+      </dl>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  DEVSECOPS · INTERNAL ENGINEERING HANDBOOK · ON-PREM KUBERNETES DATA PLATFORM
+</footer>
+
+<script>
+  // reading progress bar
+  const progress = document.getElementById('progress');
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    progress.style.width = scrolled + '%';
+  });
+
+  // scrollspy for sidebar nav
+  const links = document.querySelectorAll('nav.toc a');
+  const sections = document.querySelectorAll('section.chapter');
+  const map = {};
+  links.forEach(l => map[l.getAttribute('href').slice(1)] = l);
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const id = entry.target.getAttribute('id');
+      if(entry.isIntersecting){
+        links.forEach(l => l.classList.remove('active'));
+        if(map[id]) map[id].classList.add('active');
+      }
+    });
+  }, { rootMargin: '-15% 0px -70% 0px', threshold: 0 });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
