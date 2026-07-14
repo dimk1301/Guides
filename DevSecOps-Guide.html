@@ -372,6 +372,56 @@
         </table>
       </div>
 
+      <div class="diagram">
+        <svg viewBox="0 0 940 220" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrowEnv" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#5A6480"/></marker>
+            <linearGradient id="gradCommit" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#64748B" stop-opacity="0.22"/><stop offset="100%" stop-color="#64748B" stop-opacity="0.05"/>
+            </linearGradient>
+            <linearGradient id="gradTest" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.22"/><stop offset="100%" stop-color="#3B82F6" stop-opacity="0.05"/>
+            </linearGradient>
+            <linearGradient id="gradProd" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#10B981" stop-opacity="0.22"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.05"/>
+            </linearGradient>
+          </defs>
+
+          <!-- COMMIT -->
+          <rect x="40" y="60" width="230" height="90" rx="14" fill="url(#gradCommit)" stroke="#64748B" stroke-width="1.5"/>
+          <text x="155" y="90" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Commit</text>
+          <text x="155" y="110" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">Pre-commit hooks +</text>
+          <text x="155" y="125" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">dep-scan on build</text>
+
+          <line x1="270" y1="105" x2="313" y2="105" stroke="#5A6480" stroke-width="2" marker-end="url(#arrowEnv)"/>
+
+          <!-- DEV -->
+          <rect x="315" y="45" width="270" height="120" rx="14" fill="url(#gradTest)" stroke="#3B82F6" stroke-width="1.5"/>
+          <text x="450" y="75" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Dev Environment</text>
+          <text x="450" y="95" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">Fast, shallow check —</text>
+          <text x="450" y="111" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">OWASP ZAP against the branch</text>
+          <text x="450" y="132" text-anchor="middle" fill="#F59E0B" font-family="Inter" font-size="10.5" font-weight="600">Break build on failure</text>
+
+          <line x1="585" y1="105" x2="628" y2="105" stroke="#5A6480" stroke-width="2" marker-end="url(#arrowEnv)"/>
+
+          <!-- PRODUCTION -->
+          <rect x="630" y="40" width="270" height="130" rx="14" fill="url(#gradProd)" stroke="#10B981" stroke-width="1.5"/>
+          <text x="765" y="70" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Production</text>
+          <text x="765" y="90" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">Last gate — deep, full-app scan,</text>
+          <text x="765" y="106" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">not just the diff, right before</text>
+          <text x="765" y="122" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">real users see it</text>
+          <text x="765" y="143" text-anchor="middle" fill="#F59E0B" font-family="Inter" font-size="10.5" font-weight="600">Break build on failure</text>
+
+          <text x="470" y="200" text-anchor="middle" fill="#5A6480" font-family="Inter" font-size="11" font-style="italic">Two environments, two depths of check — same rule: nothing skips ahead on a failure.</text>
+        </svg>
+        <p class="diagram-caption">The same lifecycle from the table above, compressed to what most small teams actually run: one Dev environment, one Production environment.</p>
+      </div>
+
+      <div class="callout callout--dev">
+        <span class="tag">The Bare Minimum: Dev and Production</span>
+        <p>Dev and Production are all you actually need to start. Run your early, fast check against Dev on every merge, and your deeper, more thorough check as the last gate before Production — same "stop on failure" rule either way. If you later add a Test or Staging environment, the same two checks just spread across more stops; nothing about the approach changes, there's just more room between them.</p>
+      </div>
+
       <h3>Pipeline Controls</h3>
       <p><b>SBOM Generation</b> — Every CI build must generate a CycloneDX or SPDX SBOM artifact, stored alongside the image. That same artifact is what makes app-level EOL checking free: the framework versions are already listed in it, so checking Django, Spring, or Express against endoflife.date needs no new scan — just a lookup against data you already produce.</p>
       <p class="sub"><i>Optional, if you want more confidence in your SBOMs later:</i> a free tool called <b>sbomqs</b> can score how complete and well-formed a generated SBOM actually is — <code>sbomqs score sbom.json</code>. Not something to set up on day one — but worth a look if you ever suspect an SBOM is missing components rather than just showing "zero vulnerabilities found."</p>
@@ -723,45 +773,91 @@
       <p class="sub">Logs and metrics split at the source into two lightweight collectors, then converge into one unified, low-overhead analytics backend — replacing the heavier ELK/Loki + Grafana stack this used to run on:</p>
 
       <div class="diagram">
-        <svg viewBox="0 0 700 480" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 700 560" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <marker id="arrow5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5A6480"/></marker>
+            <marker id="arrow5" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#22D3EE"/></marker>
+            <linearGradient id="gradSource" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#64748B" stop-opacity="0.22"/><stop offset="100%" stop-color="#64748B" stop-opacity="0.05"/>
+            </linearGradient>
+            <linearGradient id="gradCollect" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#22D3EE" stop-opacity="0.20"/><stop offset="100%" stop-color="#22D3EE" stop-opacity="0.04"/>
+            </linearGradient>
+            <linearGradient id="gradEngine" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#22D3EE" stop-opacity="0.14"/><stop offset="100%" stop-color="#22D3EE" stop-opacity="0.03"/>
+            </linearGradient>
           </defs>
 
-          <rect x="190" y="10" width="320" height="56" rx="10" fill="#161F30" stroke="#25314A" stroke-width="1.5"/>
-          <text x="350" y="33" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">KUBERNETES WORKLOAD ZONE</text>
-          <text x="350" y="50" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11.5">Pod Workloads / Node Linux Kernel</text>
+          <!-- SOURCE: Kubernetes Workload Zone -->
+          <rect x="165" y="20" width="380" height="66" rx="14" fill="url(#gradSource)" stroke="#64748B" stroke-width="1.5"/>
+          <g transform="translate(205,53)" stroke="#94A3B8" stroke-width="1.6" fill="none" stroke-linejoin="round">
+            <path d="M0,-9 L8,-4.5 L8,4.5 L0,9 L-8,4.5 L-8,-4.5 Z"/>
+            <path d="M0,-9 L0,9 M-8,-4.5 L8,4.5 M8,-4.5 L-8,4.5" stroke-width="1"/>
+          </g>
+          <text x="365" y="49" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">KUBERNETES WORKLOAD ZONE</text>
+          <text x="365" y="67" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11.5">Pod Workloads / Node Linux Kernel</text>
 
-          <line x1="350" y1="66" x2="350" y2="110" stroke="#5A6480" stroke-width="2"/>
-          <line x1="350" y1="110" x2="200" y2="132" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow5)"/>
-          <line x1="350" y1="110" x2="500" y2="132" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow5)"/>
-          <text x="230" y="96" fill="#95A1BC" font-family="Inter" font-size="11.5" font-style="italic">live JSON events</text>
-          <text x="440" y="96" fill="#95A1BC" font-family="Inter" font-size="11.5" font-style="italic">time-series metrics</text>
+          <!-- Branch: source down to split -->
+          <path d="M350,86 C350,104, 350,104, 350,112" fill="none" stroke="#5A6480" stroke-width="2"/>
+          <path d="M350,112 C350,132, 232,128, 195,152" fill="none" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow5)"/>
+          <path d="M350,112 C350,132, 468,128, 505,152" fill="none" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow5)"/>
 
-          <rect x="70" y="136" width="260" height="60" rx="10" fill="#161F30" stroke="#22D3EE" stroke-width="1.5"/>
-          <text x="200" y="163" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">Log Shipper</text>
-          <text x="200" y="180" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">Vector · FluentBit · Promtail</text>
+          <rect x="188" y="104" width="100" height="22" rx="11" fill="#111826" stroke="#25314A" stroke-width="1"/>
+          <text x="238" y="119" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5" font-style="italic">live log events</text>
+          <rect x="412" y="104" width="112" height="22" rx="11" fill="#111826" stroke="#25314A" stroke-width="1"/>
+          <text x="468" y="119" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5" font-style="italic">time-series metrics</text>
 
-          <rect x="370" y="136" width="260" height="60" rx="10" fill="#161F30" stroke="#22D3EE" stroke-width="1.5"/>
-          <text x="500" y="163" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">OpenObserve Collector</text>
-          <text x="500" y="180" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">cluster state + Tetragon counters</text>
+          <!-- COLLECTORS -->
+          <rect x="65" y="152" width="260" height="64" rx="14" fill="url(#gradCollect)" stroke="#22D3EE" stroke-width="1.5"/>
+          <g transform="translate(95,184)" stroke="#22D3EE" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M-8,-6 L8,-6 L4,6 L-4,6 Z"/>
+          </g>
+          <text x="205" y="180" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">Log Shipper</text>
+          <text x="205" y="198" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">Vector · FluentBit · Promtail</text>
 
-          <line x1="200" y1="196" x2="350" y2="234" stroke="#22D3EE" stroke-width="2" opacity="0.7"/>
-          <line x1="500" y1="196" x2="350" y2="234" stroke="#22D3EE" stroke-width="2" opacity="0.7"/>
-          <line x1="350" y1="234" x2="350" y2="264" stroke="#22D3EE" stroke-width="2.5" marker-end="url(#arrow5)"/>
-          <text x="380" y="220" fill="#95A1BC" font-family="Inter" font-size="11.5" font-style="italic">OTLP / HTTP JSON</text>
+          <rect x="375" y="152" width="260" height="64" rx="14" fill="url(#gradCollect)" stroke="#22D3EE" stroke-width="1.5"/>
+          <g transform="translate(405,184)" stroke="#22D3EE" stroke-width="1.7" fill="none" stroke-linecap="round">
+            <path d="M-7,5 C-7,-3 7,-3 7,5" />
+            <line x1="0" y1="5" x2="0" y2="9"/>
+            <circle cx="0" cy="-6" r="1.4" fill="#22D3EE" stroke="none"/>
+          </g>
+          <text x="515" y="180" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">OpenObserve Collector</text>
+          <text x="515" y="198" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">cluster state + Tetragon counters</text>
 
-          <rect x="90" y="266" width="520" height="195" rx="14" fill="#22D3EE" opacity="0.08" stroke="#22D3EE" stroke-width="1.5"/>
-          <text x="350" y="298" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="16" font-weight="700">OPENOBSERVE</text>
-          <text x="350" y="317" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">Single-Binary Rust Engine</text>
-          <line x1="130" y1="332" x2="570" y2="332" stroke="#25314A" stroke-width="1"/>
+          <!-- Converge into engine -->
+          <path d="M205,216 C205,244, 300,254, 344,264" fill="none" stroke="#22D3EE" stroke-width="2" opacity="0.8"/>
+          <path d="M515,216 C515,244, 400,254, 356,264" fill="none" stroke="#22D3EE" stroke-width="2" opacity="0.8"/>
+          <path d="M350,262 C350,272, 350,272, 350,282" fill="none" stroke="#22D3EE" stroke-width="2.5" marker-end="url(#arrow5)"/>
+          <rect x="418" y="248" width="128" height="24" rx="12" fill="#111826" stroke="#22D3EE" stroke-width="1"/>
+          <text x="482" y="264" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5" font-style="italic">OTLP / HTTP JSON</text>
 
-          <circle cx="140" cy="365" r="3" fill="#22D3EE"/>
-          <text x="155" y="370" fill="#EAEEF7" font-family="Inter" font-size="13.5">Columnar Parquet file engine (MinIO / local)</text>
-          <circle cx="140" cy="398" r="3" fill="#22D3EE"/>
-          <text x="155" y="403" fill="#EAEEF7" font-family="Inter" font-size="13.5">Built-in visual dashboards (zero Grafana)</text>
-          <circle cx="140" cy="431" r="3" fill="#22D3EE"/>
-          <text x="155" y="436" fill="#EAEEF7" font-family="Inter" font-size="13.5">Real-time SQL alerting & PromQL engine</text>
+          <!-- OPENOBSERVE ENGINE -->
+          <rect x="80" y="286" width="540" height="234" rx="16" fill="url(#gradEngine)" stroke="#22D3EE" stroke-width="1.5"/>
+          <g transform="translate(120,318)" stroke="#22D3EE" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="-10" y="-9" width="20" height="18" rx="3"/>
+            <line x1="-10" y1="-2" x2="10" y2="-2"/>
+            <circle cx="-5" cy="-5.5" r="0.9" fill="#22D3EE" stroke="none"/>
+            <circle cx="-5" cy="4.5" r="0.9" fill="#22D3EE" stroke="none"/>
+          </g>
+          <text x="360" y="316" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="17" font-weight="700">OPENOBSERVE</text>
+          <text x="360" y="336" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">Single-Binary Rust Engine</text>
+          <line x1="115" y1="354" x2="605" y2="354" stroke="#25314A" stroke-width="1"/>
+
+          <g transform="translate(148,388)" stroke="#22D3EE" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M-9,-6 L9,-6 M-9,0 L9,0 M-9,6 L9,6"/>
+            <path d="M-9,-9 L9,-9 L9,9 L-9,9 Z" opacity="0.5"/>
+          </g>
+          <text x="172" y="393" fill="#EAEEF7" font-family="Inter" font-size="13.5">Columnar Parquet file engine (MinIO / local)</text>
+
+          <g transform="translate(148,426)" stroke="#22D3EE" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M-9,9 L-9,-2 M-3,9 L-3,-9 M3,9 L3,2 M9,9 L9,-6"/>
+          </g>
+          <text x="172" y="431" fill="#EAEEF7" font-family="Inter" font-size="13.5">Built-in visual dashboards (zero Grafana)</text>
+
+          <g transform="translate(148,464)" stroke="#22D3EE" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M0,-9 C5,-9 7,-5 7,0 C7,4 8,6 9,7 L-9,7 C-8,6 -7,4 -7,0 C-7,-5 -5,-9 0,-9 Z"/>
+            <path d="M-3,7 C-3,9.5 3,9.5 3,7"/>
+          </g>
+          <text x="172" y="469" fill="#EAEEF7" font-family="Inter" font-size="13.5">Real-time SQL alerting & PromQL engine</text>
         </svg>
         <p class="diagram-caption">A lightweight Log Shipper and the OpenObserve Collector converge into one analytics backend.</p>
       </div>
