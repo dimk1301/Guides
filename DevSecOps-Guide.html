@@ -312,7 +312,6 @@
         <li>Maintains threat models and ASVS checklists — stored in the repo alongside the code, not a one-off document, so they get revisited as the architecture actually changes</li>
         <li>Acts as the first escalation point for security questions</li>
       </ul>
-      <p class="sub">Threat models live in the repo, next to the code they describe — not a one-off slide deck or a document buried in a shared drive. Versioned like everything else, so they get revisited whenever the architecture actually changes, not just once at launch.</p>
 
       <div class="callout callout--info">
         <span class="tag">Beyond the Formal Review</span>
@@ -362,7 +361,7 @@
             <tr><td>3. Code</td><td>SonarLint & Bearer CLI</td><td>Scans your code right in your IDE.</td><td>Acts like a spellchecker for bugs and data leaks.</td></tr>
             <tr><td>4. Pre-Commit</td><td>Checkov + Gitleaks</td><td>Checks for bad infra configs and pasted passwords.</td><td>Stops silly mistakes before they reach the main codebase.</td></tr>
             <tr><td>5. Build</td><td>OWASP dep-scan <code>--deep</code></td><td>Scans app libraries AND the container OS.</td><td>One report of every ingredient and its known vulnerabilities.</td></tr>
-            <tr><td>6. Validate</td><td>OWASP ZAP</td><td>Tests the running app in staging (DAST).</td><td>Catches things code-scanners miss, like broken login flows.</td></tr>
+            <tr><td>6. Validate</td><td>OWASP ZAP</td><td>Tests the running app in a live environment (DAST).</td><td>Catches things code-scanners miss, like broken login flows.</td></tr>
             <tr><td>7. Govern</td><td>SecObserve</td><td>Central dashboard for all static security alerts.</td><td>Keeps build-time and dependency bugs organized so they get fixed.</td></tr>
             <tr><td>8. Deploy</td><td>Kyverno + Cosign</td><td>Checks K8s manifests, verifies image signatures.</td><td>A bouncer that rejects manifests breaking cluster rules.</td></tr>
             <tr><td>9. Runtime</td><td>Falco + Tetragon</td><td>Watches syscalls, enforces kernel boundaries.</td><td>Falco alerts on macro-behavior; Tetragon kills malicious threads in-kernel.</td></tr>
@@ -756,7 +755,7 @@
 
       <div class="callout callout--info">
         <span class="tag">Security Gate — Non-Productive vs Productive</span>
-        <p>Findings never block a test or staging rollout — developers need room to iterate. Only a <b>productive</b> rollout enforces the rule, e.g. "no unresolved CVE with criticality HIGH or higher." That gives the team the time between the first scan and the productive release to fix or formally suppress a finding, without slowing down everyday testing.</p>
+        <p>Findings never block a <b>non-productive</b> rollout — developers need room to iterate. Only a <b>productive</b> rollout enforces the rule, e.g. "no unresolved CVE with criticality HIGH or higher." That gives the team the time between the first scan and the productive release to fix or formally suppress a finding, without slowing down everyday testing.</p>
       </div>
 
       <div class="callout callout--dev">
@@ -997,8 +996,6 @@
 
       <p class="sub">Agents are never allowed to initiate design changes, alter deployment pipelines, perform incident RCA, or trigger production deploys or rollbacks.</p>
 
-      <p class="sub"><i>A useful filter when picking any threat-modeling tool:</i> ones that store models as plain text (YAML/JSON) are far easier for an AI assistant to actually read and draft against at the Plan stage above. Tools that only work through a click-driven interface don't offer that same option — worth weighing if this becomes a bigger part of the workflow.</p>
-
       <h3>The Autonomous Loop <span class="sub-inline">— low-blast-radius work</span></h3>
 
       <div class="diagram">
@@ -1170,7 +1167,7 @@
               <li><span class="step-check"></span><span><b>Pipeline Manifest Scanning</b> — Checkov + Gitleaks in unskippable CI loops.</span></li>
               <li><span class="step-check"></span><span><b>Dependency Triage</b> — OWASP dep-scan <code>--deep</code> in build pipelines.</span></li>
               <li><span class="step-check"></span><span><b>SBOM</b> — CycloneDX or SPDX generated on every production build.</span></li>
-              <li><span class="step-check"></span><span><b>Dynamic Application Testing</b> — OWASP ZAP in staging on every deploy.</span></li>
+              <li><span class="step-check"></span><span><b>Dynamic Application Testing</b> — OWASP ZAP against a live environment on every deploy.</span></li>
             </ul>
           </div>
         </div>
