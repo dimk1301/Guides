@@ -322,6 +322,7 @@
           <li>What's already protecting us, or what still needs to be built, to reduce that risk?</li>
         </ul>
         <p style="margin-top:10px;">This isn't a full threat model — it's a 30-second pause. No tool catches this; it only happens if the habit is part of the culture.</p>
+        <p style="margin-top:10px;font-size:14px;"><i>Don't forget operational threats, not just design ones</i> — e.g., lateral movement after a breach, config drift after deployment, weak separation between prod and non-prod. These only become real once something is actually running.</p>
       </div>
 
       <h3>Exception-Management Template</h3>
@@ -549,6 +550,13 @@
         <li><b>Go Baseline</b> — <code>gosec ./...</code> runs alongside <code>go vet</code> as a pre-commit hook and again in CI; findings block the merge the same way a Gitleaks hit does.</li>
         <li><b>Shell Script Baseline</b> — <code>shellcheck</code> runs on every <code>.sh</code> file touched in a commit, catching injection-prone patterns in the CI glue and entrypoint scripts the platform relies on.</li>
       </ul>
+
+      <h3>Security Education, Just in Time</h3>
+      <p class="sub">Tools catch mistakes. Training reduces how often you make them — but only if it shows up at the right moment. A once-a-year slideshow with a quiz doesn't move the needle; a 2-minute explanation the second a scanner flags your own code does.</p>
+      <div class="callout callout--dev">
+        <span class="tag">What This Looks Like Day to Day</span>
+        <p>Several of the IDE tools in this chapter (SonarLint, Bandit, gosec) can link a flagged issue straight to a short explainer on <i>why</i> that pattern is risky — right there in your editor, in plain language, no video required. If your IDE plugin supports this, turn it on. It's the fastest way to actually get better at this, not just get past the check.</p>
+      </div>
     </section>
 
     <hr class="div">
