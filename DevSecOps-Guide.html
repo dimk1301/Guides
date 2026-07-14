@@ -309,9 +309,10 @@
       <h3>Security Champions</h3>
       <ul>
         <li>Reviews security-related PRs</li>
-        <li>Maintains threat models and ASVS checklists</li>
+        <li>Maintains threat models and ASVS checklists — stored in the repo alongside the code, not a one-off document, so they get revisited as the architecture actually changes</li>
         <li>Acts as the first escalation point for security questions</li>
       </ul>
+      <p class="sub">Threat models live in the repo, next to the code they describe — not a one-off slide deck or a document buried in a shared drive. Versioned like everything else, so they get revisited whenever the architecture actually changes, not just once at launch.</p>
 
       <div class="callout callout--info">
         <span class="tag">Beyond the Formal Review</span>
@@ -992,8 +993,11 @@
           </tbody>
         </table>
       </div>
+      <p class="sub" style="font-size:14px;"><i>On the Plan row:</i> if your threat-modeling tool stores models as YAML or JSON rather than only through a GUI, an AI assistant can actually read and update it directly — worth a factor when picking a tool, not just a nice-to-have.</p>
 
       <p class="sub">Agents are never allowed to initiate design changes, alter deployment pipelines, perform incident RCA, or trigger production deploys or rollbacks.</p>
+
+      <p class="sub"><i>A useful filter when picking any threat-modeling tool:</i> ones that store models as plain text (YAML/JSON) are far easier for an AI assistant to actually read and draft against at the Plan stage above. Tools that only work through a click-driven interface don't offer that same option — worth weighing if this becomes a bigger part of the workflow.</p>
 
       <h3>The Autonomous Loop <span class="sub-inline">— low-blast-radius work</span></h3>
 
