@@ -99,8 +99,6 @@ Only install what you need — if you don't need script execution, skip that ser
 
 ### 4.3 Hands-on: vetting and locking down a server on Linux
 
-These are real commands, not pseudo-code — run them yourself before trusting a new MCP server.
-
 **1. Inspect before installing.** Never trust a package name alone — check what you're actually about to run:
 
 ```bash
