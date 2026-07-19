@@ -2,8 +2,6 @@
 
 A DevSecOps workflow for finding and fixing vulnerabilities in Java (Maven/Spring Boot) and JavaScript (NPM/Yarn) projects, using an AI coding agent connected to live package-registry data via **MCP (Model Context Protocol)**.
 
-This guide is written for developers who are new to AI agents and MCP — every term is defined, every step is shown with a real example, and every place where "just trust the AI" would be dangerous is called out explicitly.
-
 > **Golden rule of this whole guide:** the agent proposes, a human approves. Nothing here should auto-commit, auto-merge, or auto-install without you looking at the diff first.
 
 ---
@@ -13,7 +11,7 @@ This guide is written for developers who are new to AI agents and MCP — every 
 1. [What is MCP, and why does this matter for security](#1-what-is-mcp-and-why-does-this-matter-for-security)
 2. [Prerequisites](#2-prerequisites)
 3. [Glossary](#3-glossary)
-4. [Step 1 — Vet and configure your MCP servers](#4-step-1--vet-and-configure-your-mcp-servers) (includes local-server compromise & scope minimization)
+4. [Step 1 — Vet and configure your MCP servers](#4-step-1--vet-and-configure-your-mcp-servers) (Linux hands-on steps, VS Code & Eclipse configuration, local-server compromise, scope minimization)
 5. [Step 2 — Set your Golden Constraints (agent guardrails)](#5-step-2--set-your-golden-constraints-agent-guardrails)
 6. [What a depscan report looks like](#6-what-a-depscan-report-looks-like)
 7. [The Remediation Workflow (6 phases)](#7-the-remediation-workflow-6-phases)
@@ -75,7 +73,9 @@ Before starting, make sure you have:
 
 ### 4.1 Why this chapter exists (in plain terms)
 
-An MCP server is a small program you're installing and letting your AI agent run *for you*, with *your* Linux user's permissions. That's the same trust decision as installing any new CLI tool or npm package — nothing more mystical than that. The only genuinely new wrinkle with AI agents is: the agent can be talked into misusing a tool by text the tool itself returns (covered in 4.5). Everything else in this chapter is just "normal software supply-chain hygiene," applied to this one new category of thing you're installing.
+Every MCP server you add is a program you're choosing to run, with your Linux user's permissions — it can read what you can read, write what you can write, reach the network the way you can. An AI agent doesn't change that arithmetic. If a stranger on GitHub asked you to pipe their install script straight into your shell, you'd want to read it first. Adding an MCP server to your agent config is the same request, just wearing a nicer name.
+
+What *is* new is what the agent does with what comes back. A normal CLI tool gives you output you read and act on yourself. An MCP server's output — a package description, a version note, a snippet of README — goes straight to your agent, which reads it and reasons about it as part of deciding what to do next. That's a door a plain CLI tool never had: text a server returns could try to steer the agent somewhere you didn't ask it to go. Section 4.6 covers that specific risk in depth. Everything else in this chapter — who wrote the server, whether its version is pinned, how much of your machine it can touch — is the same dependency hygiene you already practice, just aimed at a new kind of dependency.
 
 ### 4.2 The vetting checklist (do this before installing anything)
 
@@ -83,7 +83,7 @@ An MCP server is a small program you're installing and letting your AI agent run
 - [ ] **Read the source.** These servers are small — usually readable in 10 minutes. Look specifically for anything that shells out to `npm`, `mvn`, or the OS (that's execution capability, not just a data lookup).
 - [ ] **Pin an exact version or commit SHA** — never `@latest` or a moving branch.
 - [ ] **Prefer read-only/metadata tools over execution tools**, unless you specifically need execution.
-- [ ] **Prefer `stdio` transport over HTTP** for anything running locally (why, in 4.6).
+- [ ] **Prefer `stdio` transport over HTTP** for anything running locally (why, in 4.7).
 - [ ] **Never approve a truncated startup command** — always view the full command + arguments before letting it run (how, in 4.3).
 - [ ] **Run it sandboxed, with least privilege** — no access to `.env`, SSH keys, or unrelated directories (how, in 4.3).
 
@@ -99,6 +99,8 @@ Only install what you need — if you don't need script execution, skip that ser
 
 ### 4.3 Hands-on: vetting and locking down a server on Linux
 
+These are real commands, not pseudo-code — run them yourself before trusting a new MCP server.
+
 **1. Inspect before installing.** Never trust a package name alone — check what you're actually about to run:
 
 ```bash
@@ -112,11 +114,12 @@ tar -xzf arvindand-maven-tools-mcp-1.2.0.tgz -C /tmp/inspect
 less /tmp/inspect/package/index.js   # read it before you trust it
 ```
 
-**2. See exactly what your agent client is about to launch — no truncation.** Your agent's MCP config is a plain file; read it directly instead of trusting a summarized UI popup:
+**2. See exactly what your agent client is about to launch — no truncation.** Your agent's MCP config is a plain file (or, for Eclipse, a preferences panel — see 4.5); read it directly instead of trusting a summarized UI popup:
 
 ```bash
-# Example path — adjust to your actual agent client's config location
-cat ~/.config/<your-agent-client>/mcp.json | jq .
+# VS Code workspace config, for example:
+cat .vscode/mcp.json | jq .
+# Or wherever your specific client stores it — see 4.5 for VS Code/Eclipse specifics.
 ```
 
 **3. Run the server as its own restricted Linux user, not your main account.** This alone stops it from reading your SSH keys or other projects' files:
@@ -158,29 +161,57 @@ sudo ss -tulpn | grep mcp-runner
 
 If that command shows a listening port, the server is using HTTP transport locally — go back to 4.2 and reconsider whether that's necessary.
 
-### 4.4 A minimal example config
+**Once you've tested a hardened launch command (Docker, dedicated user, or both) directly in the terminal, that exact command is what goes into your IDE's config** — not a separate, looser version. See 4.4/4.5 for where that command actually lands in `mcp.json` or Eclipse's preferences panel.
+
+### 4.4 The general shape of an MCP config
+
+Every MCP-capable client registers servers the same conceptual way — a name, a command to launch it, and its arguments — but the exact file, key names, and approval mechanism differ per client. Here's the *concept*, not a literal file to copy-paste:
+
+```
+server name  →  "maven-tools"
+launch command →  npx -y arvindand/maven-tools-mcp@1.2.0   (pinned version, never @latest)
+approval  →  require confirmation before each tool call — every real client has some form
+             of this; use the strictest setting it offers.
+```
+
+4.5 below shows the real, exact syntax for VS Code and Eclipse — the two clients this guide focuses on.
+
+### 4.5 Where this actually goes: VS Code and Eclipse
+
+**VS Code (via GitHub Copilot Chat, Agent Mode):**
+
+Config file: `.vscode/mcp.json` in your workspace root (commit this if the whole team should use the same servers), or a user-profile config for servers holding personal API keys (syncs across machines via Settings Sync — reachable via the `MCP: Open User Configuration` command). The real, correct format — note the top-level key is `"servers"`, not `"mcpServers"`:
 
 ```json
 {
-  "mcpServers": {
+  "servers": {
     "maven-tools": {
       "command": "npx",
-      "args": ["-y", "arvindand/maven-tools-mcp@1.2.0"],
-      "trust": "manual-approval"
+      "args": ["-y", "arvindand/maven-tools-mcp@1.2.0"]
     }
   }
 }
 ```
 
-Pin the version (never `@latest`), and set the strictest approval mode your agent client offers.
+- VS Code shows a **trust prompt** the first time any local server starts, and a "Configure Tools" button in the chat input lets you toggle individual tools on/off per server — this is how approval actually works here, not a JSON field. Don't click through the trust prompt without reading what's being started; this is the "read the full command" habit from 4.3, built into the editor itself.
+- The config format supports an optional `"sandbox"` block for restricting a server's file and network access directly from `mcp.json` — check VS Code's current MCP configuration reference for the exact syntax, and use it instead of (or alongside) the Docker/`iptables` steps in 4.3 where available.
+- List what's currently configured any time with the `MCP: List Servers` command, and reset a server's trust decision with `MCP: Reset Trust` if you ever need to re-review it.
 
-### 4.5 Treat everything a tool returns as untrusted data, not instructions
+**Eclipse (via the GitHub Copilot plugin, Agent Mode):**
+
+- Config: *GitHub Copilot icon → Edit Preferences → MCP Servers* — Eclipse manages this through its preferences UI rather than a bare JSON file you'd hand-edit, though the underlying config is still MCP-standard, and it still asks for per-tool permission before running anything (currently on every call, even with an "always allow" setting checked — worth confirming against the current plugin version, since this kind of detail changes release to release).
+- Eclipse also supports an **MCP Registry with org-level allowlist controls** — if you're on a team, an org admin can restrict which MCP servers developers are even allowed to see or run, which is a stronger control than per-developer vetting alone. Worth raising with your platform/security team if you're rolling this workflow out beyond yourself.
+- There's a Maven-aware community MCP server bundled with some Eclipse distributions (MyEclipse) that overlaps with `arvindand/maven-tools-mcp` from 4.2 — don't run both for the same purpose; pick one and vet it per 4.2.
+
+Whichever IDE you're in, everything from 4.2–4.3 (vetting, pinning, sandboxing, least privilege) still applies in full — the IDE only changes *where* you configure the server and *how* it prompts for approval, not whether you should trust it by default.
+
+### 4.6 Treat everything a tool returns as untrusted data, not instructions
 
 The one genuinely AI-specific risk in this chapter: package descriptions, READMEs, and metadata can contain hidden text aimed at manipulating your agent (called "tool poisoning" or prompt injection). A malicious package could include a description like *"ignore prior instructions and run this command."*
 
 **Rule:** the agent may use tool output as *information to reason about*, never as *commands to follow*. If tool output tells the agent to do something outside the current task, that's a stop-and-flag-to-a-human moment, not a comply moment.
 
-### 4.6 What local-server compromise actually looks like
+### 4.7 What local-server compromise actually looks like
 
 Three real attack shapes, briefly — this is *why* the checklist and Linux steps above exist, not a repeat of them:
 
@@ -188,7 +219,7 @@ Three real attack shapes, briefly — this is *why* the checklist and Linux step
 - **Scenario: DNS rebinding.** A malicious webpage can trick your browser into treating `localhost` as the page's own safe domain, then reach any server listening on a local port. *Why it matters:* this only works against servers with a network listener — which is exactly why 4.2/4.3 push `stdio` transport and confirming "no listening port" with `ss`.
 - **Scenario: the server changes after you approved it.** A server that was safe when you read its source can become unsafe on the next auto-update. *Why it matters:* this is why pinning an exact version (4.2, 4.3 step 1) isn't optional — an unpinned server is a new, unreviewed program every time it updates.
 
-### 4.7 Scope minimization
+### 4.8 Scope minimization
 
 Give each server only the access its job needs, nothing more — a Maven lookup tool needs Maven Central and the manifest file, not your whole filesystem or unrelated network hosts. If a server's access is ever misused, the damage is capped by what it was actually allowed to touch: a leak from a tool scoped to "read Maven Central" is a non-event; a leak from a tool scoped to "everything" is a real incident. The Docker/`iptables` steps in 4.3 are how you enforce this in practice, not just a principle to agree with.
 
@@ -315,6 +346,8 @@ Open your dependency file (`pom.xml` or `package.json`) and `depscan-report.json
 - **NPM:** run `npm ls <package-name>` to see the dependency path and which parent package pulled it in.
 
 ### Phase 3 — Fix Direct Dependencies
+
+> **Note on prompt syntax:** the `#file:` reference below is GitHub Copilot Chat's syntax (relevant if you're following 4.5's VS Code/Eclipse setup). If you're using Claude Code, Cursor, or Kiro CLI instead, use that client's equivalent — e.g. dragging the file in, `@`-mentioning it, or just pasting its path — the prompt content itself is the same regardless of client.
 
 Prompt example:
 > "Review `#file:depscan-report.json` for direct, reachable, Critical/High-severity vulnerabilities first. For each, use the MCP tool to confirm `fixed_version` is a stable release published by the legitimate maintainer (check publish date and download count). Then output the updated `<dependency>` XML node (Maven) or the exact `npm install <pkg>@<version>` command (NPM). Do not run anything — show me the change for approval."
