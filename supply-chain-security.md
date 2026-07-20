@@ -13,7 +13,7 @@ This guide is written for developers who are new to AI agents and MCP — every 
 1. [What is MCP, and why does this matter for security](#1-what-is-mcp-and-why-does-this-matter-for-security)
 2. [Prerequisites](#2-prerequisites)
 3. [Glossary](#3-glossary)
-4. [Step 1 — Vet and configure your MCP servers](#4-step-1--vet-and-configure-your-mcp-servers) (Linux hands-on steps, VS Code & Eclipse configuration, local-server compromise, scope minimization)
+4. [Step 1 — Vet and configure your MCP servers](#4-step-1--vet-and-configure-your-mcp-servers) (Linux hands-on steps, VS Code & Eclipse configuration, local-server compromise, scope minimization, OWASP-mapped scanners)
 5. [Step 2 — Set your Golden Constraints (agent guardrails)](#5-step-2--set-your-golden-constraints-agent-guardrails)
 6. [What a depscan report looks like](#6-what-a-depscan-report-looks-like)
 7. [The Remediation Workflow (6 phases)](#7-the-remediation-workflow-6-phases)
@@ -250,6 +250,18 @@ Three real attack shapes, briefly — this is *why* the checklist and Linux step
 ### 4.8 Scope minimization
 
 Give each server only the access its job needs, nothing more — a Maven lookup tool needs Maven Central and the manifest file, not your whole filesystem or unrelated network hosts. If a server's access is ever misused, the damage is capped by what it was actually allowed to touch: a leak from a tool scoped to "read Maven Central" is a non-event; a leak from a tool scoped to "everything" is a real incident. The Docker/`iptables` steps in 4.3 are how you enforce this in practice, not just a principle to agree with.
+
+### 4.9 Automating the vetting checklist: OWASP-mapped scanners
+
+4.2's checklist can be partly automated with dedicated scanners that map findings to the **OWASP MCP Top 10** and **OWASP Agentic AI Top 10** frameworks, rather than relying purely on manual review. Three options, in order of how much independent verification they currently have behind them:
+
+| Tool | Covers | Account/token needed? | Status |
+|---|---|---|---|
+| `mcp-audit` — `github.com/apisec-inc/mcp-audit` | OWASP MCP Top 10 (config/protocol layer, cross-server risk) | No — free, Apache-2.0, runs fully offline | Verified: real repo, clear no-telemetry design, SARIF/CycloneDX output |
+| `owasp-agentic-scanner` — `github.com/NP-compete/owasp-agentic-scanner` | OWASP Agentic AI Top 10 (application-code layer) | No — static analysis only, no LLM API calls | Verified: real repo, rule-based, SARIF output |
+| `mcps-audit` — `github.com/razashariff/mcps-audit` | Claims both lists in one tool | No — free, MIT, static analysis only per its README | **Use with caution — see below** |
+
+**Why `mcps-audit` gets a different treatment here:** the tool itself claims free, offline, no-signup coverage of both frameworks in a single CLI, which is exactly what you asked for. But its author posted near-identical self-promotional issues advertising this exact tool across at least nine unrelated major open-source repositories (CrewAI, Microsoft AutoGen, NVIDIA's garak, Microsoft's PyRIT, Meta's PurpleLlama, and others) on the same single day — a mass-promotion pattern rather than organic adoption. That doesn't prove the code is unsafe, but it's precisely the kind of maintainer-reputation red flag 4.2's checklist asks you to catch, so don't skip the checklist just because it's listed here. If you use it: read the source before running it (4.2), pin the exact version, run it sandboxed the first few times (4.3), and don't treat "no code execution, no network calls" claims in its README as verified until you've checked that yourself. Re-evaluate this entry once the tool (or its maintainer's track record) has had more time and independent scrutiny — this table reflects a snapshot, not a permanent verdict.
 
 ---
 
