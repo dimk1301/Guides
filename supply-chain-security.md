@@ -2,6 +2,8 @@
 
 A DevSecOps workflow for finding and fixing vulnerabilities in Java (Maven/Spring Boot) and JavaScript (NPM/Yarn) projects, using an AI coding agent connected to live package-registry data via **MCP (Model Context Protocol)**.
 
+This guide is written for developers who are new to AI agents and MCP — every term is defined, every step is shown with a real example, and every place where "just trust the AI" would be dangerous is called out explicitly.
+
 > **Golden rule of this whole guide:** the agent proposes, a human approves. Nothing here should auto-commit, auto-merge, or auto-install without you looking at the diff first.
 
 ---
@@ -93,9 +95,10 @@ What *is* new is what the agent does with what comes back. A normal CLI tool giv
 |---|---|---|---|
 | Maven/Java metadata | `arvindand/maven-tools-mcp` | Queries Maven Central for versions/stability | Read-only lookup — lower risk |
 | NPM registry metadata | `bsmi021/mcp-npm_docs-server` | Fetches package registry data | Read-only lookup — lower risk |
-| NPM script execution | `fstubner/npm-run-mcp-server` | **Executes** npm scripts | Command-execution — require explicit human confirmation on every call; never auto-approve |
 
-Only install what you need — if you don't need script execution, skip that server entirely; less installed capability is less that can go wrong.
+These two read-only lookup tools are all the CVE-remediation workflow in this guide actually calls for. Every phase that runs `npm install`, `npm ls`, or `npm run test` (Phases 2, 3, and 6) has a **human** running that command directly in a terminal, never the agent — that's Golden Constraint #0 by design, not an oversight. Don't install more capability than the workflow uses.
+
+**Not needed for this guide:** you may come across an npm script-execution server (e.g. `fstubner/npm-run-mcp-server`) recommended alongside the two above elsewhere. It has no role here — this guide never asks the agent to execute anything, only to look up and propose. It would only become relevant if you deliberately chose to change the workflow itself and let the agent run install/test commands directly, which is a bigger trust decision than this guide makes: it would mean granting command-execution capability, requiring explicit human confirmation on literally every call, and re-reading Section 4.6 and 4.7 with that specific tool in mind. If you don't have a concrete reason to make that change, skip it — less installed capability is less that can go wrong.
 
 ### 4.3 Hands-on: vetting and locking down a server on Linux
 
