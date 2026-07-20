@@ -1,10 +1,38 @@
 # Securing the Software Supply Chain with AI Agents and MCP
 
-A DevSecOps workflow for finding and fixing vulnerabilities in Java (Maven/Spring Boot) and JavaScript (NPM/Yarn) projects, using an AI coding agent connected to live package‑registry data via **MCP (Model Context Protocol)**.
+*A DevSecOps workflow for finding and fixing vulnerabilities in Java (Maven/Spring Boot) and JavaScript (NPM/Yarn) projects — using an AI coding agent connected to live package-registry data via MCP (Model Context Protocol).*
 
-Written for developers new to AI agents and MCP — no prior experience with either is assumed.
+Written for developers new to AI agents and MCP. No prior experience with either is assumed.
 
-> **Golden rule of this whole guide:** the agent proposes, a human approves. Nothing here should auto‑commit, auto‑merge, or auto‑install without you looking at the diff first.
+> 🔒 **The golden rule of this whole guide:** the agent proposes, a human approves. Nothing here should auto-commit, auto-merge, or auto-install without you looking at the diff first.
+
+**Legend:** 🔒 hard rule (never skip) · 💡 tip · 🧩 worked example · 🛠️ command to run
+
+---
+
+## Quick Start
+
+If you just want to get moving and treat the rest of this guide as reference:
+
+```bash
+# 1. Install the scanner
+pip install owasp-depscan
+
+# 2. Scan your project
+depscan --src . --reports-dir ./depscan-report
+
+# 3. Connect an MCP server (pick your client's config — see the table in §4.4)
+#    e.g. VS Code: .vscode/mcp.json → { "servers": { "maven-tools": {...} } }
+
+# 4. Ask your agent to review the report and propose fixes (see §7, Phase 3)
+#    — then review every diff before you apply it.
+
+# 5. Validate
+mvn clean test   # or: npm run test
+depscan --src . --reports-dir ./depscan-report   # confirm the CVE is gone
+```
+
+Now the detail — starting with the one piece of new trust you're introducing: the MCP server itself.
 
 ---
 
@@ -14,49 +42,37 @@ Written for developers new to AI agents and MCP — no prior experience with eit
 2. [Prerequisites](#2-prerequisites)
 3. [Glossary](#3-glossary)
 4. [Step 1 — Vet and configure your MCP servers](#4-step-1--vet-and-configure-your-mcp-servers)
-   - [4.1 Why this chapter exists](#41-why-this-chapter-exists-in-plain-terms)
-   - [4.2 The vetting checklist](#42-the-vetting-checklist-do-this-before-installing-anything)
-   - [4.3 Hands‑on: vetting and locking down a server on Linux](#43-handson-vetting-and-locking-down-a-server-on-linux)
-   - [4.4 The MCP config in practice: VS Code and Eclipse](#44-the-mcp-config-in-practice-vs-code-and-eclipse)
-   - [4.5 Treat everything a tool returns as untrusted data, not instructions](#45-treat-everything-a-tool-returns-as-untrusted-data-not-instructions)
-   - [4.6 What local‑server compromise actually looks like](#46-what-localserver-compromise-actually-looks-like)
-   - [4.7 Scope minimisation](#47-scope-minimisation)
-   - [4.8 Automating the vetting checklist: OWASP‑inspired scanners](#48-automating-the-vetting-checklist-owaspinspired-scanners)
 5. [Step 2 — Set your Golden Constraints (agent guardrails)](#5-step-2--set-your-golden-constraints-agent-guardrails)
 6. [What a depscan report looks like](#6-what-a-depscan-report-looks-like)
 7. [The Remediation Workflow (6 phases)](#7-the-remediation-workflow-6-phases)
-8. [Worked Example: fixing a real CVE end‑to‑end](#8-worked-example-fixing-a-real-cve-end-to-end)
+8. [Worked Examples: fixing real CVEs end-to-end](#8-worked-examples-fixing-real-cves-end-to-end)
 9. [When there is no fix available yet](#9-when-there-is-no-fix-available-yet)
-10. [CI/CD integration (automating this safely)](#10-cicd-integration-automating-this-safely)
+10. [CI/CD integration](#10-cicd-integration)
 11. [Troubleshooting](#11-troubleshooting)
 12. [Final Checklist](#12-final-checklist)
+13. [Appendix: Token & Cost Efficiency at Scale](#appendix-token--cost-efficiency-at-scale)
 
 ---
 
 ## 1. What is MCP, and why does this matter for security
 
-**MCP (Model Context Protocol)** is an open standard that lets an AI agent call external tools instead of relying only on what it memorised during training. An **MCP server** is a small program that exposes specific capabilities — for example, “look up the latest stable version of a Maven package” — that your AI agent (GitHub Copilot Chat, Claude Code, Kiro CLI, Cursor, etc.) can call mid‑conversation.
+**MCP (Model Context Protocol)** is an open standard that lets an AI agent call external tools instead of relying only on what it memorized during training. An **MCP server** is a small program that exposes specific capabilities — e.g. "look up the latest stable version of a Maven package" — that your AI agent (GitHub Copilot Chat, Claude Code, Kiro, Cursor, etc.) can call mid-conversation.
 
-Why this matters here: an LLM’s knowledge of “the latest safe version of package X” is frozen at its training cutoff and **will be wrong or outdated**. MCP fixes that by letting the agent query the real, live package registry before it tells you anything.
+Why this matters here: an LLM's knowledge of "the latest safe version of package X" is frozen at its training cutoff and **will be wrong or outdated**. MCP fixes that by letting the agent query the real, live package registry before telling you anything.
 
-**But this cuts both ways.** An MCP server is itself a piece of third‑party software with real capabilities — sometimes including running shell commands. You are extending trust to it the same way you extend trust to any dependency. A guide about supply‑chain security has to treat the MCP servers it recommends with the same suspicion it asks you to apply to `pom.xml`/`package.json` dependencies. Section 4 covers exactly how to vet them before you install anything.
+**But this cuts both ways.** An MCP server is itself third-party software with real capabilities — sometimes including running shell commands. You're extending trust to it the same way you extend trust to any dependency. A guide about supply-chain security has to treat the MCP servers it recommends with the same suspicion it asks you to apply to `pom.xml` / `package.json` dependencies. Section 4 covers exactly how to vet them before you install anything.
 
 ---
 
 ## 2. Prerequisites
 
-Before starting, make sure you have:
-
-- **Java projects:** JDK installed, Maven (`mvn -v` works).
-- **JS projects:** Node.js and npm or Yarn installed.
-- **[depscan](https://github.com/owasp-dep-scan/dep-scan)** (OWASP dep‑scan) installed — the tool that generates the vulnerability report this whole workflow is built around:
-  ```bash
-  pip install owasp-depscan
-  # or via Docker:
-  docker pull ghcr.io/owasp-dep-scan/dep-scan:latest
-  ```
-- **An MCP‑capable AI agent client**, such as GitHub Copilot Chat, Claude Code, Cursor, Windsurf, or Kiro CLI. This guide’s examples use generic syntax that applies to any of them — the underlying MCP concept is the same across all.
-- A basic comfort with reading `git diff` output, since every step below ends with you reviewing one.
+| Need | Check |
+|---|---|
+| Java projects | JDK + Maven installed (`mvn -v` works) |
+| JS projects | Node.js + npm or Yarn installed |
+| Scanner | [depscan](https://github.com/owasp-dep-scan/dep-scan) — `pip install owasp-depscan`, or `docker pull ghcr.io/owasp-dep-scan/dep-scan:latest` |
+| An MCP-capable agent client | GitHub Copilot Chat, Claude Code, **Kiro**, Cursor, Windsurf — this guide gives concrete config for VS Code, Eclipse, Claude Code, and Kiro; the underlying MCP concept is the same everywhere |
+| Comfort reading `git diff` | Every step below ends with you reviewing one |
 
 ---
 
@@ -64,62 +80,66 @@ Before starting, make sure you have:
 
 | Term | Meaning |
 |---|---|
-| **MCP Server** | A program that provides tools (like package lookups) to an AI agent via the Model Context Protocol. |
-| **BOM** | “Bill of Materials” — a Maven parent/import (like `spring-boot-starter-parent`) that centrally pins versions for a whole family of dependencies. |
-| **Transitive dependency** | A dependency of a dependency — something you didn’t add directly but got pulled in. |
-| **Override hierarchy** | The correct place to force a version fix depending on whether the package is direct, BOM‑managed, or transitive. |
-| **CVSS** | Common Vulnerability Scoring System — a 0–10 severity score for a vulnerability. |
-| **EPSS** | Exploit Prediction Scoring System — estimates the probability a CVE will actually be exploited in the wild (helps prioritise beyond raw severity). |
-| **SBOM** | Software Bill of Materials — a full inventory of every package in your build, machine‑readable (CycloneDX format is what depscan produces). |
-| **VEX** | Vulnerability Exploitability eXchange — a document format for saying “yes this CVE is present, but it’s not exploitable in our case, here’s why,” to suppress noise without hiding the finding. |
-| **Reachability** | Whether the vulnerable function/class in a dependency is actually called anywhere in your code — a huge noise‑reducer, since most CVEs in unused code paths pose no real risk. |
-| **Prompt injection / tool poisoning** | An attack where text returned by a tool (e.g. a malicious package’s README) contains hidden instructions aimed at the AI agent, trying to get it to take unintended actions. |
-| **Lockfile** | `package-lock.json`, `yarn.lock` — auto‑generated, exact‑version records. Never hand‑edit these; regenerate them by running the package manager. |
-| **DNS rebinding** | A technique where a domain resolves to a safe address during an initial check, then to `localhost`/an internal address afterward — used to reach services (like a local MCP server) that should only be reachable from the same machine. |
-| **stdio transport** | Direct process‑to‑process communication (standard input/output) between an agent client and a local MCP server — no network port involved, so nothing else on the machine can connect to it. |
+| **MCP Server** | A program that provides tools (like package lookups) to an AI agent via MCP. |
+| **BOM** | "Bill of Materials" — a Maven parent/import (like `spring-boot-starter-parent`) that centrally pins versions for a whole family of dependencies. |
+| **Transitive dependency** | A dependency of a dependency — something you didn't add directly but got pulled in. |
+| **Override hierarchy** | The correct place to force a version fix depending on whether the package is direct, BOM-managed, or transitive. |
+| **CVSS** | Common Vulnerability Scoring System — a 0–10 severity score. |
+| **EPSS** | Exploit Prediction Scoring System — estimated probability a CVE is actually exploited in the wild; helps prioritize beyond raw severity. |
+| **SBOM** | Software Bill of Materials — full machine-readable inventory of every package in your build (depscan produces CycloneDX format). |
+| **VEX** | Vulnerability Exploitability eXchange — a document format for "yes this CVE is present, but not exploitable here, because X," to suppress noise without hiding the finding. |
+| **Reachability** | Whether the vulnerable function/class is actually called anywhere in your code — a huge noise-reducer. |
+| **Prompt injection / tool poisoning** | Text returned by a tool (e.g. a malicious package's README) containing hidden instructions aimed at the AI agent. |
+| **Lockfile** | `package-lock.json`, `yarn.lock` — auto-generated, exact-version records. Never hand-edit; regenerate via the package manager. |
+| **DNS rebinding** | A technique where a domain resolves safely at first, then to `localhost`/an internal address — used to reach services that should only be reachable locally. |
+| **stdio transport** | Direct process-to-process communication (standard input/output) — no network port, so nothing else on the machine can connect to it. |
 
 ---
 
 ## 4. Step 1 — Vet and configure your MCP servers
 
-### 4.1 Why this chapter exists (in plain terms)
+### 4.1 Why this chapter exists
 
-Every MCP server you add is a program you’re choosing to run, with your Linux user’s permissions — it can read what you can read, write what you can write, reach the network the way you can. An AI agent doesn’t change that arithmetic. If a stranger on GitHub asked you to pipe their install script straight into your shell, you’d want to read it first. Adding an MCP server to your agent config is the same request, just wearing a nicer name.
+Every MCP server you add is a program you're choosing to run with your Linux user's permissions — it can read what you can read, write what you can write, reach the network the way you can. If a stranger on GitHub asked you to pipe their install script straight into your shell, you'd want to read it first. Adding an MCP server to your agent config is the same request, wearing a nicer name.
 
-What *is* new is what the agent does with what comes back. A normal CLI tool gives you output you read and act on yourself. An MCP server’s output — a package description, a version note, a snippet of README — goes straight to your agent, which reads it and reasons about it as part of deciding what to do next. That’s a door a plain CLI tool never had: text a server returns could try to steer the agent somewhere you didn’t ask it to go. Section 4.5 covers that specific risk in depth. Everything else in this chapter — who wrote the server, whether its version is pinned, how much of your machine it can touch — is the same dependency hygiene you already practice, just aimed at a new kind of dependency.
+What *is* new: a normal CLI tool gives you output you read and act on yourself. An MCP server's output — a package description, a version note, a README snippet — goes straight to your agent, which reasons about it as part of deciding what to do next. That's a door a plain CLI tool never had (§4.5). Everything else — who wrote the server, whether its version is pinned, how much of your machine it can touch — is the dependency hygiene you already practice, aimed at a new kind of dependency.
 
-### 4.2 The vetting checklist (do this before installing anything)
+### 4.2 The vetting checklist
 
-- [ ] **Check the maintainer/repo health** — commits, issues, real usage, active maintenance.
-- [ ] **Read the source.** These servers are small — usually readable in 10 minutes. Look specifically for anything that shells out to `npm`, `mvn`, or the OS (that’s execution capability, not just a data lookup).
-- [ ] **Pin an exact version or commit SHA** — never `@latest` or a moving branch.
-- [ ] **Prefer read‑only/metadata tools over execution tools**, unless you specifically need execution.
-- [ ] **Prefer `stdio` transport over HTTP** for anything running locally (why, in 4.6).
-- [ ] **Never approve a truncated startup command** — always view the full command + arguments before letting it run (how, in 4.3).
-- [ ] **Run it sandboxed, with least privilege** — no access to `.env`, SSH keys, or unrelated directories (how, in 4.3).
+- [ ] 🔒 **Check maintainer/repo health** — commits, issues, real usage, active maintenance.
+- [ ] 🔒 **Read the source.** These servers are small — usually readable in 10 minutes. Look for anything that shells out to `npm`, `mvn`, or the OS (execution capability, not just a data lookup).
+- [ ] 🔒 **Pin an immutable reference** — a specific version tag *if the maintainer publishes one*, or an image **digest** (`@sha256:...`) if they only publish rolling tags like `:latest`. Never track a moving tag unpinned.
+- [ ] **Prefer read-only/metadata tools over execution tools**, unless you specifically need execution.
+- [ ] **Prefer `stdio` transport over HTTP** for anything running locally (why, in §4.6).
+- [ ] 🔒 **Never approve a truncated startup command** — always view the full command + arguments before letting it run (§4.3).
+- [ ] **Run it sandboxed, with least privilege** — no access to `.env`, SSH keys, or unrelated directories (§4.3).
 
-**Recommended servers for this workflow** (vet them yourself first — don’t skip 4.2 just because they’re named here):
+**Recommended servers for this workflow** — vet them yourself first, don't skip the checklist just because they're named here:
 
 | Purpose | Server | Capability |
 |---|---|---|
-| Maven/Java metadata | `arvindand/maven-tools-mcp` | Queries Maven Central, classifies dependencies as EXPLICIT/MANAGED/EXPLICIT_OVERRIDE, flags BOM conflicts |
-| NPM registry metadata + vulnerability signal | `howmanysmall/npm-registry-mcp` | Package info, version history, license (SPDX risk rating), and a health score that factors in vulnerability count and publish recency |
+| Maven/Java metadata | `arvindand/maven-tools-mcp` | Queries Maven Central across Maven/Gradle/SBT/Mill; classifies dependencies as `EXPLICIT` / `MANAGED` / `EXPLICIT_OVERRIDE`; flags BOM conflicts; can take a raw `pom.xml` and return deterministic version edits |
+| NPM registry metadata + vulnerability signal | `howmanysmall/npm-registry-mcp` | Package info, version history, SPDX license risk rating, and a weighted health score (maintenance, popularity, security, dependency freshness) |
 
-### 4.3 Hands‑on: vetting and locking down a server on Linux
+> 💡 Both are real, small, single-purpose projects with public source — a good template for what "easy to vet in 10 minutes" looks like.
 
-**1. Inspect before installing.** Never trust a package name alone — check what you’re actually about to run. `arvindand/maven-tools-mcp` is distributed as a Docker image, so inspect the source and the image before pulling it into regular use:
+### 4.3 Hands-on: vetting and locking down a server on Linux
+
+**1. Inspect before installing.**
 
 ```bash
 # Read the source before trusting it
 git clone https://github.com/arvindand/maven-tools-mcp /tmp/inspect/maven-tools-mcp
-less /tmp/inspect/maven-tools-mcp/CHANGELOG.md   # check what actually changed release to release
+less /tmp/inspect/maven-tools-mcp/CHANGELOG.md
 
-# Pull a specific tagged version (never :latest) and inspect it before running
-docker pull arvindand/maven-tools-mcp:1.2.0
-docker image inspect arvindand/maven-tools-mcp:1.2.0
+# This project only ships rolling tags (:latest, :latest-noc7, :latest-http) —
+# no semver releases. Pull it once, then pin the resulting DIGEST, not the tag:
+docker pull arvindand/maven-tools-mcp:latest
+docker image inspect arvindand/maven-tools-mcp:latest --format '{{index .RepoDigests 0}}'
+# → use that sha256 digest in your actual config (see §4.4)
 ```
 
-For an `npx`‑distributed server instead, the equivalent is:
+For an `npx`-distributed server instead:
 
 ```bash
 npm view <package> versions --json
@@ -127,64 +147,73 @@ npm view <package> repository
 npm pack <package>@<version> && tar -xzf <package>-<version>.tgz -C /tmp/inspect
 ```
 
-**2. See exactly what your agent client is about to launch — no truncation.** Your agent’s MCP config is a plain file (or, for Eclipse, a preferences panel — see 4.4); read it directly instead of trusting a summarised UI popup:
+> 💡 **Why digest, not tag, for this particular server:** a tag like `:latest` can point to a different image tomorrow; a digest (`@sha256:...`) always resolves to the exact same bytes. If a maintainer *does* publish real version tags (many do), pin those instead — the point is immutability, not any one specific syntax.
+
+**2. See exactly what your agent client is about to launch — no truncation.**
 
 ```bash
 # VS Code workspace config, for example:
 cat .vscode/mcp.json | jq .
-# Or wherever your specific client stores it — see 4.4 for VS Code/Eclipse specifics.
+# Kiro:
+cat .kiro/settings/mcp.json | jq .
+# Or wherever your specific client stores it — see §4.4.
 ```
 
-**3. For an `npx`/Node‑launched server, run it as its own restricted Linux user, not your main account.** This alone stops it from reading your SSH keys or other projects’ files (this step doesn’t apply to Docker‑native servers like `arvindand/maven-tools-mcp` — the container itself is the isolation boundary; see step 4):
+**3. For an `npx`/Node-launched server, run it as its own restricted Linux user** (doesn't apply to Docker-native servers — the container is the isolation boundary; see step 4):
 
 ```bash
 sudo useradd --system --no-create-home --shell /usr/sbin/nologin mcp-runner
 sudo -u mcp-runner npx -y <package>@<version>
 ```
 
-**4. Sandbox a Docker‑native server with hardened flags** (usually simpler than manual Linux permissions, and works the same across distros):
+**4. Sandbox a Docker-native server with hardened flags:**
 
 ```bash
 docker run --rm -i \
-  --read-only \                # filesystem is immutable, attacker can’t write persistence
-  --cap-drop=ALL \             # drop all Linux capabilities, container runs with zero special privileges
-  --security-opt=no-new-privileges \  # prevent privilege escalation via setuid binaries
-  --memory=256m \              # limit memory to prevent DoS
-  --network=bridge \           # allow outbound only to the default bridge network (isolated)
-  -v "$(pwd)/pom.xml:/work/pom.xml:ro" \  # mount the POM read‑only
-  arvindand/maven-tools-mcp:1.2.0
+  --read-only \                        # filesystem is immutable, no persistence
+  --cap-drop=ALL \                     # drop all Linux capabilities
+  --security-opt=no-new-privileges \   # no privilege escalation via setuid binaries
+  --memory=256m \                      # cap memory to prevent DoS
+  --network=bridge \                   # gives outbound internet access, isolated from other containers —
+                                        # NOT a security boundary on its own; step 5 is what actually restricts it
+  -v "$(pwd)/pom.xml:/work/pom.xml:ro" \
+  arvindand/maven-tools-mcp@sha256:<digest>
 ```
 
-This tool genuinely needs network access to query Maven Central, so `--network=none` isn’t an option here — instead, restrict *where* it can go with a firewall rule (next step). If a server doesn’t need any network access at all, use `--network=none` and skip step 5 entirely.
+This tool genuinely needs network access to query Maven Central, so `--network=none` isn't an option here — restrict *where* it can go with a firewall rule instead (next step). If a server needs no network access at all, use `--network=none` and skip step 5.
 
-**5. Restrict network egress to only the registry it needs**, for any server (Docker or not) that requires network access:
+**5. Restrict network egress to only the registry it needs:**
 
 ```bash
-# Only allow the mcp-runner user to reach Maven Central; drop everything else
 sudo iptables -A OUTPUT -m owner --uid-owner mcp-runner -d repo.maven.apache.org -j ACCEPT
 sudo iptables -A OUTPUT -m owner --uid-owner mcp-runner -j DROP
 ```
 
-**6. Confirm it’s not listening on the network** (i.e. it’s really using `stdio`, not HTTP):
+**6. Confirm it's not listening on the network:**
 
 ```bash
 sudo ss -tulpn | grep mcp-runner
 # No output = good. It has no listening port for anything else to connect to.
 ```
 
-If that command shows a listening port, the server is using HTTP transport locally — go back to 4.2 and reconsider whether that’s necessary.
+If that shows a listening port, the server is using HTTP transport locally — go back to §4.2 and reconsider whether that's necessary.
 
-**Once you’ve tested a hardened launch command (Docker, dedicated user, or both) directly in the terminal, that exact command is what goes into your IDE’s config** — not a separate, looser version. See 4.4 for where that command actually lands in `mcp.json` or Eclipse’s preferences panel.
+> 🔒 Once you've tested a hardened launch command (Docker, dedicated user, or both) directly in the terminal, **that exact command is what goes into your client's config** — not a separate, looser version.
 
-### 4.4 The MCP config in practice: VS Code and Eclipse
+### 4.4 The MCP config in practice: VS Code, Eclipse, Claude Code, and Kiro
 
-Every MCP‑capable client registers servers the same conceptual way — a name, a launch command, and arguments — but the exact syntax varies. Below are the concrete configurations for VS Code and Eclipse.
+Every MCP-capable client registers servers the same conceptual way — a name, a launch command, arguments — but the syntax varies enough to trip people up. Here's the same server, four ways:
 
-> **Go binary servers** (like `howmanysmall/npm-registry-mcp`): the `"command"` field is a direct path to the compiled binary, not `npx`. Do not wrap it in a package manager.
+| | Config location | Top-level key | Transport field | Approval model |
+|---|---|---|---|---|
+| **VS Code** (Copilot Chat) | `.vscode/mcp.json` (workspace) or `MCP: Open User Configuration` (personal) | `"servers"` | Explicit `"type": "stdio"` / `"http"` — required, not inferred | Trust prompt on first local start; per-tool toggle via "Configure Tools" |
+| **Eclipse** (Copilot plugin) | GitHub Copilot → Preferences → MCP Servers | plugin-managed UI | plugin-managed | Per-tool approval prompts — behavior varies by plugin version, confirm by testing one call |
+| **Claude Code** | `.mcp.json` (project) or global config | `"mcpServers"` | inferred from fields present | Approval prompt per new tool call, "always allow" option per session |
+| **Kiro** | `.kiro/settings/mcp.json` (workspace) or `~/.kiro/settings/mcp.json` (user) | `"mcpServers"` | inferred from fields present | `autoApprove` array per server to pre-approve specific tool names; `disabledTools` to block specific ones |
 
-**VS Code (via GitHub Copilot Chat, Agent Mode):**
+> 💡 **The #1 copy-paste mistake:** VS Code uses `"servers"`; Claude Code, Cursor, and Kiro all use `"mcpServers"`. Copying a config between them without changing that one key is the most common reason a server "doesn't show up."
 
-Config file: `.vscode/mcp.json` in your workspace root (commit this if the whole team should use the same servers), or a user‑profile config for servers holding personal API keys (syncs across machines via Settings Sync — reachable via the `MCP: Open User Configuration` command). The real, correct format — note the top‑level key is `"servers"`. Here’s `arvindand/maven-tools-mcp`’s actual entry, since it’s Docker‑distributed:
+**VS Code** — `.vscode/mcp.json`:
 
 ```json
 {
@@ -192,58 +221,105 @@ Config file: `.vscode/mcp.json` in your workspace root (commit this if the whole
     "maven-tools": {
       "type": "stdio",
       "command": "docker",
-      "args": ["run", "-i", "--rm", "arvindand/maven-tools-mcp:1.2.0"]
+      "args": ["run", "-i", "--rm", "arvindand/maven-tools-mcp@sha256:<digest>"]
     }
   }
 }
 ```
 
-- VS Code shows a **trust prompt** the first time any local server starts, and a “Configure Tools” button in the chat input lets you toggle individual tools on/off per server — this is how approval actually works here, not a JSON field. Don’t click through the trust prompt without reading what’s being started; this is the “read the full command” habit from 4.3, built into the editor itself.
-- The config format supports an optional `"sandbox"` block for restricting a server’s file and network access directly from `mcp.json` — check VS Code’s current MCP configuration reference for the exact syntax, and use it instead of (or alongside) the Docker/`iptables` steps in 4.3 where available.
-- List what’s currently configured any time with the `MCP: List Servers` command, and reset a server’s trust decision with `MCP: Reset Trust` if you ever need to re‑review it.
+- 🔒 Don't click through the first-run trust prompt without reading what's being started — this is the "read the full command" habit from §4.3, built into the editor.
+- VS Code now supports a native sandbox directly in the config, for local stdio servers on macOS/Linux — this is a real, current alternative to the manual Linux-user/iptables steps in §4.3:
+  ```json
+  {
+    "servers": {
+      "maven-tools": {
+        "type": "stdio",
+        "command": "docker",
+        "args": ["run", "-i", "--rm", "arvindand/maven-tools-mcp@sha256:<digest>"],
+        "sandboxEnabled": true
+      }
+    }
+  }
+  ```
+  Check VS Code's current MCP documentation for the full `sandbox` block syntax (file/network allow-lists) — it's actively evolving.
+- `MCP: List Servers` shows what's configured; `MCP: Reset Trust` lets you re-review a server's trust decision.
 
-**Eclipse (via the GitHub Copilot plugin, Agent Mode):**
+**Eclipse** (via the GitHub Copilot plugin, Agent Mode):
 
-- Open the MCP Servers configuration under **GitHub Copilot → Preferences** (the exact menu name may differ per plugin version; look for “MCP Servers”).
-- Eclipse supports per‑tool approval prompts. **Confirm the current approval behaviour by testing a single call** — some versions may still prompt on every call, others may honour an “allow always” flag.
-- If available, use an **organisation‑level allowlist** (MCP Registry) to control which servers are visible to your team — a stronger control than per‑developer vetting alone.
-- There is a Maven‑aware community MCP server bundled with some Eclipse distributions (MyEclipse) that overlaps with `arvindand/maven-tools-mcp` — don’t run both for the same purpose; pick one and vet it per 4.2.
+- Open MCP Servers config under **GitHub Copilot → Preferences** (menu name may differ by plugin version).
+- 🔒 Confirm the current approval behavior by testing a single call — some versions prompt every call, others honor an "allow always" flag.
+- If available, use an **organization-level allowlist** to control which servers are visible to your team.
+- Some Eclipse distributions (MyEclipse) bundle a community Maven MCP server that overlaps with `arvindand/maven-tools-mcp` — don't run both; pick one and vet it per §4.2.
+
+**Claude Code** — `.mcp.json` in your project root:
+
+```json
+{
+  "mcpServers": {
+    "maven-tools": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "arvindand/maven-tools-mcp@sha256:<digest>"]
+    }
+  }
+}
+```
+
+- Claude Code prompts for approval the first time a tool is called, with an option to allow it for the rest of the session — read that prompt the same way you'd read a `sudo` prompt.
+
+**Kiro** — `.kiro/settings/mcp.json` (workspace) or `~/.kiro/settings/mcp.json` (user):
+
+```json
+{
+  "mcpServers": {
+    "maven-tools": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "arvindand/maven-tools-mcp@sha256:<digest>"],
+      "disabled": false,
+      "autoApprove": [],
+      "disabledTools": []
+    }
+  }
+}
+```
+
+- 🔒 Leave `autoApprove` empty for anything execution-capable. It exists so read-only, low-risk tools (a version lookup) don't nag you every call — it is not meant to blanket-approve a whole server.
+- Kiro CLI's agent config (`~/.kiro/agents/*.json`) has an `includeMcpJson` field: `false` means the agent *only* sees the MCP servers listed explicitly in that agent file, ignoring your broader workspace/user `mcp.json`. Use this the same way you'd use VS Code's custom-agent tool allowlist (§5.1) — to scope a security-focused agent down to only the servers it actually needs.
 
 ### 4.5 Treat everything a tool returns as untrusted data, not instructions
 
-The one genuinely AI‑specific risk in this chapter: package descriptions, READMEs, and metadata can contain hidden text aimed at manipulating your agent (called “tool poisoning” or prompt injection). A malicious package could include a description like *“ignore prior instructions and run this command.”*
+The one genuinely AI-specific risk in this chapter: package descriptions, READMEs, and metadata can contain hidden text aimed at manipulating your agent ("tool poisoning" / prompt injection) — e.g. a malicious package description reading *"ignore prior instructions and run this command."*
 
-**Rule:** the agent may use tool output as *information to reason about*, never as *commands to follow*. If tool output tells the agent to do something outside the current task, that’s a stop‑and‑flag‑to‑a‑human moment, not a comply moment.
+🔒 **Rule:** the agent may use tool output as *information to reason about*, never as *commands to follow*. If tool output tells the agent to do something outside the current task, that's a stop-and-flag-to-a-human moment, not a comply moment.
 
-### 4.6 What local‑server compromise actually looks like
+### 4.6 What local-server compromise actually looks like
 
-Three real attack shapes:
-
-- **Scenario: a hidden second command.** A config entry that looks like it just installs and runs a package can chain something else after it — reading SSH keys, or a destructive command disguised as “cleanup.” *Why it matters:* this is exactly why 4.3 step 2 says to read the full, untruncated command every time, not just recognise the tool’s name.
-- **Scenario: DNS rebinding.** A malicious webpage can trick your browser into treating `localhost` as the page’s own safe domain, then reach any server listening on a local port. *Why it matters:* this only works against servers with a network listener — which is exactly why 4.2/4.3 push `stdio` transport and confirming “no listening port” with `ss`.
-- **Scenario: the server changes after you approved it.** A server that was safe when you read its source can become unsafe on the next auto‑update. *Why it matters:* this is why pinning an exact version (4.2, 4.3 step 1) isn’t optional — an unpinned server is a new, unreviewed program every time it updates.
-
-### 4.7 Scope minimisation
-
-Give each server only the access its job needs, nothing more — a Maven lookup tool needs Maven Central and the manifest file, not your whole filesystem or unrelated network hosts. If a server’s access is ever misused, the damage is capped by what it was actually allowed to touch: a leak from a tool scoped to “read Maven Central” is a non‑event; a leak from a tool scoped to “everything” is a real incident. The Docker/`iptables` steps in 4.3 are how you enforce this in practice, not just a principle to agree with.
-
-### 4.8 Automating the vetting checklist: OWASP‑inspired scanners
-
-4.2’s checklist can be partly automated with dedicated scanners that map findings to community‑curated checklists similar to the OWASP Top‑10 style (note: as of mid‑2024 there is no official “OWASP MCP Top 10” project). Three options, in order of how much independent verification they currently have behind them:
-
-| Tool | Covers |
+| Scenario | Why it matters |
 |---|---|
-| `mcp-audit` — `github.com/apisec-inc/mcp-audit` | Common MCP‑specific risks (inspired by the OWASP API Security Top 10 format) |
-| `owasp-agentic-scanner` — `github.com/NP-compete/owasp-agentic-scanner` | Agent‑focused issues based on community mapping to an “Agentic AI Top 10” |
-| `mcps-audit` — `github.com/razashariff/mcps-audit` | Claims to cover both lists in one tool |
+| **A hidden second command** — a config entry that looks like it just installs and runs a package chains something else after it (reading SSH keys, a destructive "cleanup"). | Exactly why §4.3 step 2 says: read the full, untruncated command every time, not just the tool's name. |
+| **DNS rebinding** — a malicious webpage tricks your browser into treating `localhost` as its own domain, then reaches any locally-listening server. | Only works against servers with a network listener — why §4.2/§4.3 push `stdio` transport and confirming "no listening port" with `ss`. |
+| **The server changes after you approved it** — safe source today, unsafe after an auto-update. | Why pinning an immutable reference (§4.2, §4.3) isn't optional — an unpinned server is a new, unreviewed program every time it updates. |
 
-**Use `mcps-audit` with caution:** its author has a mass self‑promotion pattern across unrelated repos (a maintainer‑reputation red flag) — apply the full 4.2 checklist before running it, and don’t take its README’s claims at face value.
+### 4.7 Scope minimization
+
+Give each server only the access its job needs — a Maven lookup tool needs Maven Central and the manifest file, not your whole filesystem. If access is ever misused, the damage is capped by what it was allowed to touch: a leak from a tool scoped to "read Maven Central" is a non-event; a leak from a tool scoped to "everything" is a real incident. The Docker/iptables steps in §4.3 (or VS Code's `sandboxEnabled`, or Kiro's `autoApprove`/`disabledTools`) are how you enforce this, not just a principle to agree with.
+
+### 4.8 Automating the vetting checklist
+
+The checklist in §4.2 can be partly automated. In rough order of how independently verifiable each one currently is:
+
+| Tool | What it actually does |
+|---|---|
+| **`mcp-audit`** — `github.com/apisec-inc/mcp-audit` | The most mature option currently available. Auto-discovers MCP configs across ~8 client scopes (VS Code, Claude Desktop, Cursor, etc.), detects exposed secrets in server configs, builds an inventory of every API/DB endpoint your MCP servers can reach, flags dangerous *cross-server* tool combinations ("toxic flows" — e.g. one server that can read files paired with one that can make network calls), and maps findings to the **OWASP MCP Top 10 (MCP01–MCP10)**. Ships SARIF + CycloneDX SBOM output and a GitHub Action for CI. Open source, Apache 2.0, runs fully offline. |
+| `owasp-agentic-scanner` — `github.com/NP-compete/owasp-agentic-scanner` | Agent-focused issues mapped to a community "Agentic AI Top 10." Apply the full §4.2 checklist before relying on it — treat this one as unverified until you've read the source yourself. |
+| `mcps-audit` — `github.com/razashariff/mcps-audit` | Claims to cover both lists in one tool. ⚠️ **Use with real caution:** the author has a pattern of mass self-promotion across unrelated repos — a maintainer-reputation red flag. Don't take the README's claims at face value; apply §4.2 in full before running it. |
+
+> 🔒 An automated scanner is a supplement to §4.2, not a replacement for reading the source of anything execution-capable.
 
 ---
 
 ## 5. Step 2 — Set your Golden Constraints (agent guardrails)
 
-Put these in `.github/copilot-instructions.md`, your agent’s `system_prompt`, or your `AGENTS.md`/`CLAUDE.md` file — wherever your specific client reads persistent instructions:
+Put these in `.github/copilot-instructions.md`, `CLAUDE.md`, `.kiro/steering/`, or wherever your client reads persistent instructions:
 
 ```
 DevSecOps Golden Constraints:
@@ -291,12 +367,17 @@ DevSecOps Golden Constraints:
 9. BATCHING: Group findings by root cause (one vulnerable package causing several
    CVE entries = one fix, not several). Process a manageable batch per turn to
    avoid missed or hallucinated details — 5 is a reasonable default, fewer for
-   complex transitive chains.
+   complex transitive chains. This is an ACCURACY control: don't raise the batch
+   size to save tokens (see the workflow's §5.3 for where the real token
+   efficiency levers are — bulk MCP calls, pre-filtered report slices, avoiding
+   duplicate verification across phases).
 ```
 
-### 5.1 Enforcing constraints at the platform level: a VS Code custom agent
+### 5.1 Enforcing constraints at the platform level
 
-`copilot-instructions.md` puts the Golden Constraints in front of the model as text — but the model still has to *choose* to follow them. VS Code’s custom agents (`.github/agents/*.agent.md`) let you go one step further for constraint #3 (scope limit) specifically: you can restrict which tools the agent has access to at all, so “don’t touch application source code” is enforced by the platform, not just requested in prose.
+Persistent-instruction files put the Golden Constraints in front of the model as text — but the model still has to *choose* to follow them. Two clients let you go further and enforce constraint #3 (scope limit) at the tool-access level:
+
+**VS Code custom agent** (`.github/agents/security-fixer.agent.md`):
 
 ```markdown
 ---
@@ -313,37 +394,50 @@ You are a security remediation specialist. Follow these rules:
 5. Use the correct override hierarchy (properties/dependencyManagement for Maven, overrides/resolutions for NPM).
 ```
 
-> **Tip:** If the agent refuses to read files, ensure `codebase` is included in the tool list — it grants workspace read/search access. VS Code silently ignores any tool name it doesn’t recognise, so double‑check the spelling.
+> 💡 If the agent refuses to read files, make sure `codebase` is in the tool list — it grants workspace read/search access. VS Code silently ignores tool names it doesn't recognize, so double-check spelling. Match the `model` field to the *exact* string in your model picker, or omit it entirely and let the agent use whatever's currently selected — a hardcoded name that stops resolving after an update fails silently.
 
-Two details are easy to get wrong here, and both fail silently rather than with a clear error:
+Select it via the Agents dropdown or `@Security Fixer`.
 
-* **Match the `model` field exactly, or omit it.** Valid values are the exact string shown in your IDE’s own model picker (e.g. `GPT-4.1`, `Claude Sonnet 4.6 (copilot)`), not a freeform name you type from memory. If you’re not certain of the current exact string, leave the field out entirely and let the agent use whatever model is currently selected — that’s more robust than hardcoding a name that might not resolve after an update.
+**Kiro custom agent** (`~/.kiro/agents/security-fixer.json`):
 
-Save the file as `.github/agents/security-fixer.agent.md`, then select it from the Agents dropdown in Copilot Chat (or type `@Security Fixer`) instead of pasting the Golden Constraints into every session.
+```json
+{
+  "name": "security-fixer",
+  "description": "Fixes CVEs in Maven/NPM projects using MCP tools",
+  "prompt": "file://./security-fixer-constraints.md",
+  "mcpServers": {
+    "maven-tools": { "command": "docker", "args": ["run", "-i", "--rm", "arvindand/maven-tools-mcp@sha256:<digest>"] },
+    "npm-registry": { "command": "/path/to/npm-registry-mcp" }
+  },
+  "includeMcpJson": false
+}
+```
 
-### 5.2 Token‑efficient prompting once you have a custom agent
+`includeMcpJson: false` is the key line — it means this agent sees *only* the two servers listed here, not every server in your broader workspace/user MCP config. That's the Kiro equivalent of VS Code's `tools:` allowlist: the scope limit is enforced by the platform, not just requested in prose.
 
-Once a custom agent like the one above is active, its body is **automatically prepended to every message you send** — so restating things like “verify via MCP” or “never edit the lockfile” inside every phase prompt means paying for the same instructions twice on every single turn. If you’re using a custom agent, you can shorten the Phase 3–6 prompts considerably:
+### 5.2 Token-efficient prompting with a custom agent active
 
-| Phase | Full prompt (no custom agent / first‑time use) | Short version (with the Security Fixer agent active) |
+Once a custom agent's body is auto-prepended to every message, restating "verify via MCP" or "never edit the lockfile" in every phase prompt pays for the same instructions twice, every turn. Shorten the Phase 3–6 prompts once an agent is active:
+
+| Phase | Full prompt (no custom agent) | Short version (agent active — Copilot / Claude Code / Kiro) |
 |---|---|---|
-| 3 | *“Review `#file:depscan-report.json` for direct, reachable, Critical/High‑severity vulnerabilities first. For each, use the MCP tool to confirm `fixed_version` is a stable release published by the legitimate maintainer... Do not run anything — show me the change for approval.”* | `"Fix direct (type=direct) Critical/High vulnerabilities from #file:depscan-report.json"` |
-| 4 | *“Review `#file:depscan-report.json` for indirect (transitive) vulnerabilities, grouped by root package... Show me the diff — do not edit the lockfile directly.”* | `"Fix transitive (type=transitive) vulnerabilities from #file:depscan-report.json, grouped by root package"` |
-| 5 | *“Using MCP tools, check the proposed `fixed_version`: has the license changed? Is this a normal release or a same‑day rushed hotfix?...”* | `"Audit the proposed fix versions (licence, maintainer, recent CVEs) for all changes suggested above"` |
+| 3 | *"Review `depscan-report.json` for direct, reachable, Critical/High vulnerabilities first. For each, use the MCP tool to confirm `fixed_version` is a stable release published by the legitimate maintainer... Show me the change for approval."* | `"Fix direct (type=direct) Critical/High vulnerabilities from depscan-report.json"` |
+| 4 | *"Review `depscan-report.json` for indirect (transitive) vulnerabilities, grouped by root package... Show me the diff — do not edit the lockfile directly."* | `"Fix transitive (type=transitive) vulnerabilities from depscan-report.json, grouped by root package"` |
+| 5 | *"Using MCP tools, check the proposed `fixed_version`: license changed? Rushed hotfix? Newer CVEs?..."* | `"Audit the proposed fix versions (licence, maintainer, recent CVEs) for all changes suggested above"` |
 
-The short versions work because rules 1–5 in the agent body already cover exactly what the long prompts spell out. One caveat: don’t shorten past the point of losing task‑specific detail the agent body can’t know in advance — which file to check, which phase you’re on, and any one‑off exceptions still need to be in the prompt itself.
+> 💡 Don't shorten past the point of losing task-specific detail the agent body can't know in advance — which file, which phase, any one-off exceptions still belong in the prompt itself. **One more reason to keep it stable:** many AI tools give you a discount when you send the exact same instructions repeatedly in one session — editing the file mid-session to bolt on an exception can lose that discount. Safer to leave it alone and put the exception in your actual message. *(Running this a lot, or on large reports? See the Appendix for more on this.)*
 
 ---
 
 ## 6. What a depscan report looks like
 
-Run depscan and use the **JSON** output, not HTML — JSON is compact and structured, which means the agent parses it accurately instead of guessing at meaning from rendered HTML (which burns tokens and increases hallucination risk).
+Run depscan and point your agent at the JSON output — it's structured, so the agent parses it accurately instead of guessing at meaning from rendered HTML (which burns tokens and increases hallucination risk):
 
 ```bash
-depscan --src . --reports-dir ./depscan-report -o json
+depscan --src . --reports-dir ./depscan-report
 ```
 
-The output is a single file `depscan-report.json` inside the directory you specified. A trimmed example:
+This produces several files inside `./depscan-report/`, including a CycloneDX SBOM and a risk report per project type (e.g. `depscan-risk-java.json`). A trimmed example of the vulnerability content:
 
 ```json
 {
@@ -375,51 +469,42 @@ The output is a single file `depscan-report.json` inside the directory you speci
 }
 ```
 
-Notice the fields the workflow below depends on: `severity`/`cvss_score` (for prioritisation), `type` (direct vs transitive — determines which override strategy applies), `reachable` (for filtering noise), and `fixed_version` (what the agent will verify via MCP before recommending).
+The fields the workflow below depends on: `severity`/`cvss_score` (prioritization), `type` (direct vs transitive — determines override strategy), `reachable` (noise filter), `fixed_version` (what the agent verifies via MCP).
 
 ---
 
 ## 7. The Remediation Workflow (6 phases)
 
-### Phase 0 — Triage (new)
-
-Before touching any code, sort the report:
-
-1. Filter out `reachable: false` findings into a separate “low priority / accepted risk” list — don’t spend agent turns on unreachable code unless you have spare capacity.
-2. Sort the rest by `cvss_score` (and EPSS if your scanner provides it) — Critical/High first.
+**Phase 0 — Triage.** Before touching any code:
+1. Filter out `reachable: false` findings into a "low priority / accepted risk" list.
+2. Sort the rest by `cvss_score` (and EPSS, if your scanner provides it) — Critical/High first.
 3. Group by root package — one vulnerable transitive dependency often produces multiple CVE entries; treat it as one fix.
 
-### Phase 1 — Stage Your Context
+**Phase 1 — Stage your context.** Open your dependency file (`pom.xml`/`package.json`) and the depscan report side by side, and reference both in your prompt. *(Report has dozens of findings? The Appendix shows how to trim it to just what each phase needs.)*
 
-Open your dependency file (`pom.xml` or `package.json`) and `depscan-report.json` side by side in your editor, and reference both in your agent prompt.
+**Phase 2 — Verify the override hierarchy.**
+- Maven: `mvn help:effective-pom`, or Ctrl-click the parent POM, to see if the dependency is already BOM-managed.
+- NPM: `npm ls <package-name>` to see the dependency path and which parent pulled it in.
 
-### Phase 2 — Verify the Override Hierarchy
+**Phase 3 — Fix direct dependencies.**
 
-- **Spring Boot / Maven:** run `mvn help:effective-pom`, or Ctrl‑click the parent POM, to see if the dependency is already managed by the BOM.
-- **NPM:** run `npm ls <package-name>` to see the dependency path and which parent package pulled it in.
+> 💡 Prompt-reference syntax differs by client: GitHub Copilot Chat uses `#file:depscan-report.json`; Claude Code and Cursor accept dragging the file in or `@`-mentioning it; Kiro accepts `@`-mentioning a file in chat, or just its path. The prompt content is the same everywhere.
 
-### Phase 3 — Fix Direct Dependencies
+> 🧩 *"Review the depscan report for direct, reachable, Critical/High-severity vulnerabilities first. If several findings share the same package or come from the same registry, check them together in one request rather than one at a time. For each, confirm `fixed_version` is a stable release published by the legitimate maintainer. Then output the updated `<dependency>` XML node (Maven) or the exact `npm install <pkg>@<version>` command (NPM). Do not run anything — show me the change for approval."*
 
-> **Note on prompt syntax:** the `#file:` reference below is GitHub Copilot Chat’s syntax (relevant if you’re following 4.4’s VS Code/Eclipse setup). If you’re using Claude Code, Cursor, or Kiro CLI instead, use that client’s equivalent — e.g. dragging the file in, `@`‑mentioning it, or just pasting its path — the prompt content itself is the same regardless of client.
+**Phase 4 — Fix transitive vulnerabilities.**
 
-Prompt example:
-> “Review `#file:depscan-report.json` for direct, reachable, Critical/High‑severity vulnerabilities first. For each, use the MCP tool to confirm `fixed_version` is a stable release published by the legitimate maintainer (check publish date and download count). Then output the updated `<dependency>` XML node (Maven) or the exact `npm install <pkg>@<version>` command (NPM). Do not run anything — show me the change for approval.”
+> 🧩 *"Review the depscan report for indirect (transitive) vulnerabilities, grouped by root package. For each root package, look up the lowest stable patched version — check everything under the same root package together in one request instead of one CVE at a time. Maven: generate a `<properties>` override if BOM-managed, or `<dependencyManagement>` if not. NPM: generate the `overrides` (or `resolutions` for Yarn) snippet. Show me the diff — do not edit the lockfile directly."*
 
-### Phase 4 — Fix Transitive Vulnerabilities
+**Phase 5 — Audit & verify the fix itself.**
 
-Prompt example:
-> “Review `#file:depscan-report.json` for indirect (transitive) vulnerabilities, grouped by root package. For each, identify the lowest stable patched version via MCP tool lookup. Maven: generate a `<properties>` override if it’s BOM‑managed, or `<dependencyManagement>` if not. NPM: generate the `overrides` (or `resolutions` for Yarn) snippet. Show me the diff — do not edit the lockfile directly.”
+Phase 3 already confirmed each `fixed_version` is a real, stable release from the legitimate maintainer — don't re-run that check. Phase 5 only needs to add what Phase 3 didn't establish:
 
-### Phase 5 — Audit & Verify the Fix Itself
+> 🧩 *"For the fix versions proposed above, check only what wasn't already verified in Phase 3: has the license changed between `current_version` and `fixed_version`? Are there any CVEs reported against `fixed_version` itself, published after its release date? Skip re-checking publisher legitimacy — that's already confirmed."*
 
-Prompt example:
-> “Using MCP tools, check the proposed `fixed_version`: has the license changed? Is this a normal release or a same‑day rushed hotfix? Are there newer CVEs already reported against it? Does the publisher/maintainer match the package’s history (rule out typosquatting)?”
+**What this doesn't cover:** health-score/metadata tools give strong heuristic signal (downloads, publish recency, vulnerability count, license) — that's not the same as cryptographic proof of who built and published the package. For that stronger guarantee, run a separate manual check — 🛠️ `npm audit signatures` for npm provenance attestations, or a verified-provenance badge on the package's npmjs.com page — rather than assuming the MCP tool's health score already covers it.
 
-**What this doesn’t cover:** the health‑score/metadata tools from 4.2 give you strong heuristic signal (download counts, publish recency, vulnerability count, license), but that’s not the same as cryptographic proof the package was built and published by its legitimate maintainer. If you need that stronger guarantee, run it as a separate, manual check — `npm audit signatures` for npm provenance attestations, or checking for a verified provenance badge on the package’s npmjs.com page — rather than assuming the MCP tool’s health score already covers it.
-
-### Phase 6 — Final Validation
-
-Run these yourself, in order, after reviewing and approving the agent’s proposed diff:
+**Phase 6 — Final validation.** Run these yourself, in order, after reviewing and approving the diff:
 
 ```bash
 # 1. Confirm the dependency tree actually reflects the new version
@@ -431,65 +516,61 @@ mvn clean test
 npm run test
 
 # 3. Confirm the vulnerability is actually gone
-depscan --src . --reports-dir ./depscan-report -o json
+depscan --src . --reports-dir ./depscan-report
 ```
 
-If tests fail: **revert the manifest change** (`git checkout -- pom.xml` / `package.json`), do not attempt a second automated fix on top of a failing one — re‑run Phase 3/4 fresh with the test failure as added context.
+If tests fail: **revert the manifest change** (`git checkout -- pom.xml` / `package.json`). Don't stack a second automated fix on top of a failing one — re-run Phase 3/4 fresh with the failure as added context.
 
 ---
 
-## 8. Worked Example: fixing a real CVE end‑to‑end
+## 8. Worked Examples: fixing real CVEs end-to-end
 
-### Maven example: fixing a direct dependency (CVE‑2024‑38821)
+### 🧩 Maven — direct dependency (CVE-2024-38821)
 
-Using the sample report from Section 6 — fixing `CVE-2024-38821` (Critical, direct dependency, `spring-security-web`):
+Using the sample report from §6 — `spring-security-web`, Critical, direct:
 
-**1. Prompt the agent:**
-> “From `#file:depscan-report.json`, take CVE-2024-38821 (spring-security-web, direct, Critical). Use the Maven MCP tool to confirm 6.2.5 is a real, stable, legitimately‑published version and check for anything newer/safer.”
-
-**2. Agent responds (example):**
-> “MCP lookup confirms `spring-security-web:6.2.5` was published by the Spring team on Maven Central, is marked stable, has no newer CVEs against it, and license is unchanged (Apache‑2.0). Proposed change:
-> ```xml
-> <dependency>
->   <groupId>org.springframework.security</groupId>
->   <artifactId>spring-security-web</artifactId>
->   <version>6.2.5</version>
-> </dependency>
-> ```
-> This is already BOM‑managed by `spring-boot-starter-parent`, so instead of pinning a `<version>` here, bump the parent version first (per Golden Constraint #4) — MCP lookup shows Spring Boot 3.2.6 already includes `spring-security-web:6.2.5`. Recommend bumping the parent instead.”
-
-**3. You review the diff, approve it, and apply the parent version bump.**
-
-**4. Run Phase 6 validation** — `mvn dependency:tree`, `mvn clean test`, re‑run `depscan`. Confirm CVE‑2024‑38821 no longer appears in the report.
-
-### NPM example: fixing a transitive vulnerability
-
-Using the sample report from Section 6, suppose the issue was with a JavaScript package — for example, `CVE-2023-44487` is listed against a transitive dependency `netty-codec-http2` in a Java project; for a realistic JS scenario, replace it with `minimist` (a popular npm package) brought in by `gh-pages`.
-
-**1. Prompt the agent:**
-> “From `#file:depscan-report.json`, take CVE-2023-44487 (transitive, parent `gh-pages`, High). Use the NPM MCP tool to find the lowest patched version of `minimist`, then generate the `overrides` snippet for `package.json`.”
+**1. Prompt:** *"Take CVE-2024-38821 (spring-security-web, direct, Critical) from the report. Use the Maven MCP tool to confirm 6.2.5 is a real, stable, legitimately-published version and check for anything newer/safer."*
 
 **2. Agent responds:**
-> “MCP lookup shows `minimist` version 1.2.8 patches the vulnerability. Override snippet:
+> "MCP lookup confirms `spring-security-web:6.2.5` was published by the Spring team on Maven Central, is stable, has no newer CVEs against it, license unchanged (Apache-2.0). This is already BOM-managed by `spring-boot-starter-parent` — per Golden Constraint #4, bump the parent instead of pinning a `<version>` here. MCP lookup shows Spring Boot 3.2.6 already includes `spring-security-web:6.2.5`. Recommend bumping the parent."
+
+**3. You review the diff, approve, apply the parent version bump.**
+
+**4. Run Phase 6 validation** — `mvn dependency:tree`, `mvn clean test`, re-run depscan. Confirm CVE-2024-38821 no longer appears.
+
+### 🧩 NPM — transitive dependency (CVE-2023-44487, adapted)
+
+The sample report in §6 lists `CVE-2023-44487` against a transitive Java dependency (`netty-codec-http2`); here's the equivalent, fully worked JS scenario — a real transitive vuln pulled in by `gh-pages`: `minimist`.
+
+**1. Prompt:** *"Take the minimist CVE (transitive, parent gh-pages, High) from the report. Use the NPM MCP tool to find the lowest patched version of minimist, then generate the `overrides` snippet for package.json."*
+
+**2. Agent responds:**
+> "MCP lookup shows `minimist` version 1.2.8 patches the vulnerability, published by the original maintainer, no license change, no newer CVEs against 1.2.8. Override snippet:
 > ```json
 > "overrides": {
 >   "minimist": "1.2.8"
 > }
 > ```
-> This pins the transitive dependency without hand‑editing the lockfile. After applying the change, run `npm install` to regenerate the lockfile.”
+> This pins the transitive dependency without hand-editing the lockfile. Run `npm install` afterward to regenerate it."
 
-**3. You review the diff, approve, then run `npm install`.**
+**3. You review the diff, approve, then run:**
 
-**4. Validate** with `npm ls minimist`, `npm test`, and a fresh depscan.
+```bash
+npm install
+npm ls minimist          # confirm 1.2.8 resolved throughout the tree
+npm run test              # confirm nothing broke
+npm audit signatures      # optional: confirm provenance attestation, not just health score
+depscan --src . --reports-dir ./depscan-report   # confirm the CVE is cleared
+```
 
 ---
 
 ## 9. When there is no fix available yet
 
-Not every CVE has a patched version. Don’t leave this unaddressed:
+Not every CVE has a patched version:
 
-1. **Check for a mitigating control**: can the vulnerable feature be disabled, the affected endpoint restricted at the network/WAF layer, or the code path avoided?
-2. **Document an accepted‑risk exception**: who approved it, why, and when it will be re‑checked. A VEX statement is the standard machine‑readable way to record “present but not exploitable here, because X.” Example VEX snippet:
+1. **Check for a mitigating control** — can the vulnerable feature be disabled, the endpoint restricted at the network/WAF layer, or the code path avoided?
+2. **Document an accepted-risk exception** — who approved it, why, and when it'll be re-checked. A VEX statement is the standard machine-readable way to record "present but not exploitable here, because X":
    ```json
    {
      "@context": "https://openvex.dev/ns/v0.2.0",
@@ -499,12 +580,8 @@ Not every CVE has a patched version. Don’t leave this unaddressed:
      "timestamp": "2025-01-15T08:00:00Z",
      "statements": [
        {
-         "vulnerability": {
-           "name": "CVE-2024-9999"
-         },
-         "products": [
-           { "@id": "pkg:maven/org.example/myapp@1.0.0" }
-         ],
+         "vulnerability": { "name": "CVE-2024-9999" },
+         "products": [{ "@id": "pkg:maven/org.example/myapp@1.0.0" }],
          "status": "not_affected",
          "justification": "component_not_present",
          "action_statement": "The vulnerable class is never loaded in our configuration."
@@ -512,17 +589,14 @@ Not every CVE has a patched version. Don’t leave this unaddressed:
      ]
    }
    ```
-   Store this alongside your project or feed it to scanners that support VEX ingestion.
-3. **Track it for re‑scan**: add it to your recurring dependency‑scan job so you’re notified the moment a fix ships, rather than re‑discovering it manually.
-4. **Do not have the agent silently suppress or hide the finding** — suppression must be a deliberate, documented human decision, not an automated one.
+3. **Track it for re-scan** — add it to your recurring scan job so you're notified the moment a fix ships.
+4. 🔒 **Never let the agent silently suppress or hide the finding** — suppression must be a deliberate, documented human decision.
 
 ---
 
-## 10. CI/CD integration (automating this safely)
+## 10. CI/CD integration
 
-Once you trust the manual workflow, you can wire it into CI — but the human‑approval principle doesn’t go away, it just moves to a merge request review.
-
-### GitLab CI example: scheduled depscan with optional remediation
+Once you trust the manual workflow, wire it into CI — the human-approval principle just moves to a merge-request review.
 
 ```yaml
 stages:
@@ -536,21 +610,20 @@ nightly-scan:
   stage: scan
   image: $DEPScan_IMAGE
   script:
-    - depscan --src . --reports-dir ./depscan-report -o json
+    - depscan --src . --reports-dir ./depscan-report
   artifacts:
     paths:
-      - ./depscan-report/depscan-report.json
+      - ./depscan-report/
     expire_in: 7 days
   only:
     - schedules
 
-# The following job is a placeholder — the actual AI remediation action
-# should create a draft merge request, never auto‑merge.
+# Placeholder job — the real remediation action should create a draft MR, never auto-merge (§0).
 ai-propose-fix:
   stage: remediate
-  image: your-org/ai-remediation-agent:v1.0.0   # hypothetical, version‑pinned image
+  image: your-org/ai-remediation-agent:v1.0.0   # hypothetical, version-pinned image
   script:
-    - ai-remediation --report ./depscan-report/depscan-report.json
+    - ai-remediation --report ./depscan-report/depscan-risk-java.json
       --manifest pom.xml --output-branch "fix/cve-batch-$(date +%Y%m%d)"
   artifacts:
     paths:
@@ -558,21 +631,17 @@ ai-propose-fix:
   needs: ["nightly-scan"]
   only:
     - schedules
-  when: manual   # require a human to trigger the fix proposal
+  when: manual   # a human triggers the fix proposal
   variables:
     GIT_STRATEGY: clone
-  # Ensure the agent has NO access to deployment secrets.
-  # The resulting branch should be reviewed in a merge request.
+  # No access to deployment secrets. Review the resulting branch via a standard MR.
 ```
 
-Key points for GitLab CI:
-
-- **Scheduled pipelines** replace the cron trigger — set them under *CI/CD → Schedules* in your project.
-- The `ai-propose-fix` job is a **manual job**; a human triggers it after reviewing the scan results.
-- The agent runs in a locked‑down container (read‑only filesystem, no secrets). It opens a branch that you can inspect and merge via a standard merge request.
-- **Never auto‑merge.** The merge request must be approved by a reviewer.
-- Pin all tooling versions (depscan image, remediation image) to exact tags for reproducibility.
-- Consider cross‑checking with a second scanner (Snyk, Grype, OSV‑Scanner, or your existing Dependabot/Renovate alerts) before treating a depscan finding as ground truth — no single scanner should be your only source of truth.
+- **Scheduled pipelines** replace the cron trigger (*CI/CD → Schedules*).
+- `ai-propose-fix` is a **manual job** — a human triggers it after reviewing scan results.
+- The agent runs in a locked-down container (read-only filesystem, no secrets); it opens a branch for review, never auto-merges.
+- Pin all tooling images to exact tags/digests.
+- Cross-check with a second scanner (Snyk, Grype, OSV-Scanner, or your existing Dependabot/Renovate alerts) before treating a depscan finding as ground truth — no single scanner should be your only source of truth.
 
 ---
 
@@ -580,32 +649,66 @@ Key points for GitLab CI:
 
 | Problem | Likely cause / fix |
 |---|---|
-| Agent states a version without calling the MCP tool | Re‑state Golden Constraint #1 in the prompt; some agents need the reminder per‑session, not just in the system prompt. |
-| MCP server won’t connect | Check the server process starts standalone (run its `command`/`args` directly in a terminal); check pinned version still exists; check no firewall/proxy is blocking it. |
-| `npm ls` / `mvn dependency:tree` output is huge and unreadable | Filter with `-Dincludes=` (Maven) or pipe `npm ls <pkg>` for a single package instead of the whole tree. |
-| Agent proposes editing the lockfile directly | Reject the diff — this violates the override hierarchy rule. Ask it to regenerate the lockfile via the package manager instead. |
-| Tests fail after applying a fix | Revert the manifest change and re‑run Phase 3/4 with the failure output as added context — don’t stack a second fix on top of a broken one. |
-| Same CVE reappears after a “fix” | Check whether the override actually applied (`mvn dependency:tree` / `npm ls` again) — a mistyped package name in an `overrides`/`<properties>` entry silently fails to resolve. |
+| Agent states a version without calling the MCP tool | Re-state Golden Constraint #1 in the prompt; some agents need the reminder per-session, not just in the persistent-instructions file. |
+| MCP server won't connect | Run its `command`/`args` directly in a terminal to confirm it starts standalone; confirm the pinned digest/version still exists; check for a firewall/proxy blocking it. |
+| `npm ls` / `mvn dependency:tree` output is huge | Filter with `-Dincludes=` (Maven) or `npm ls <pkg>` for a single package. |
+| Agent proposes editing the lockfile directly | Reject the diff — violates the override hierarchy. Ask it to regenerate via the package manager instead. |
+| Tests fail after applying a fix | Revert the manifest change, re-run Phase 3/4 with the failure as added context. Don't stack a second fix on a broken one. |
+| Same CVE reappears after a "fix" | Re-check `mvn dependency:tree` / `npm ls` — a mistyped package name in `overrides`/`<properties>` silently fails to resolve. |
+| VS Code: server configured but no tools appear | Confirm Copilot Chat is in **Agent mode**, not Ask mode — MCP tools only fire in Agent mode. |
+| Kiro: agent doesn't see the server you expect | Check `includeMcpJson` on the agent — `false` means it only sees servers listed explicitly in that agent's own config. |
 
 ---
 
 ## 12. Final Checklist
 
-**Security & trust:**
-- [ ] Every MCP server was vetted (source reviewed, version pinned, least‑privilege) before install.
-- [ ] Execution‑capable MCP tools require manual approval on every call — none are auto‑approved.
-- [ ] No agent action (install, manifest edit, commit, push) happened without a human reviewing the diff first.
-- [ ] Agent scope stayed limited to the manifest/lockfile — no unrelated files touched.
+**Security & trust**
+- [ ] Every MCP server was vetted — source reviewed, immutable reference pinned, least-privilege — before install *(§4.2–4.3)*
+- [ ] Execution-capable MCP tools require manual approval on every call — none are auto-approved *(§4.4)*
+- [ ] No agent action (install, manifest edit, commit, push) happened without a human reviewing the diff first *(§0, §5)*
+- [ ] Agent scope stayed limited to the manifest/lockfile — no unrelated files touched *(§5.1)*
 
-**Vulnerability handling:**
-- [ ] Findings were triaged by severity and reachability, not processed in arbitrary order.
-- [ ] JSON report used as input (not HTML).
-- [ ] Correct override mechanism used: `<properties>`/`<dependencyManagement>` (Maven) or `overrides`/`resolutions` (NPM/Yarn) — no hand‑edited lockfiles.
-- [ ] Each proposed fix version was checked for provenance (legitimate publisher, no typosquat, no license surprise, no newer CVEs).
-- [ ] Findings with no available fix were documented as accepted risk (or mitigated), not silently ignored.
+**Vulnerability handling**
+- [ ] Findings triaged by severity and reachability, not processed arbitrarily *(§7, Phase 0)*
+- [ ] JSON report used as input, not HTML *(§6)*
+- [ ] Correct override mechanism used — no hand-edited lockfiles *(§5, Constraint #6)*
+- [ ] Each fix version checked for provenance (legitimate publisher, no typosquat, no license surprise, no newer CVEs) *(§7, Phase 5)*
+- [ ] Findings with no fix documented as accepted risk or mitigated, not silently ignored *(§9)*
 
-**Validation:**
-- [ ] Dependency tree confirms the new version actually resolved.
-- [ ] Full test suite passed.
-- [ ] Re‑scan confirms the CVE is cleared.
-- [ ] SBOM diffed before/after to confirm no unexpected new packages were introduced.
+**Validation**
+- [ ] Dependency tree confirms the new version resolved *(§7, Phase 6)*
+- [ ] Full test suite passed
+- [ ] Re-scan confirms the CVE is cleared
+- [ ] SBOM diffed before/after to confirm no unexpected new packages were introduced
+
+---
+
+## Appendix: Token & Cost Efficiency at Scale
+
+> 💡 **New to this? You can skip this whole appendix.** Everything above works fine without it. This is for once you're running the workflow a lot — a large report, or a recurring CI job (§10) — where the cost of the AI calls starts to add up and it's worth trimming.
+
+**What's actually being measured:** every message you send an agent, and everything it reads or writes back (including MCP tool results), is counted in **tokens** — small chunks of text, roughly ¾ of a word each. Most AI tools charge by the token. None of this changes whether a fix is correct — it only affects speed and cost.
+
+**Three real levers, and one false one:**
+
+- 🔒 **Batch size (Golden Constraint #9) is an accuracy control, not a cost control.** "5 findings per turn" trades tokens for correctness. Don't crank it up to save money — that buys more mistakes, not less spend.
+
+- **Only show the agent the findings the current phase needs.** Phase 3 only cares about direct/Critical/High findings; Phase 4 only cares about transitive ones. On a large report, trim it down first instead of handing over everything every phase. `jq` is a small free command-line tool for slicing JSON files (`sudo apt install jq` / `brew install jq`):
+  ```bash
+  # Phase 3 slice: direct, reachable, Critical/High only
+  jq '[.vulnerabilities[] | select(.type=="direct" and .reachable==true and (.severity=="CRITICAL" or .severity=="HIGH"))]' \
+    depscan-report/depscan-risk-*.json > phase3-direct.json
+
+  # Phase 4 slice: transitive, reachable only
+  jq '[.vulnerabilities[] | select(.type=="transitive" and .reachable==true)]' \
+    depscan-report/depscan-risk-*.json > phase4-transitive.json
+  ```
+  You don't need to understand the syntax — copy it as-is; it just keeps the rows that match. Point Phase 3/4's prompts at these files instead of the full report. Also attach the report once per session rather than re-sharing it every phase — most clients keep it in memory once shared.
+
+- **Ask for one lookup that covers several packages at once, when the server supports it.** Some MCP servers (like the Maven one in this guide) can check a batch of dependencies in a single request instead of one per CVE. If several findings share a package or registry, say so explicitly in your prompt ("check these together in one lookup") instead of letting the agent loop through them one at a time.
+
+- **Don't ask the agent to double-check the same thing twice.** Phase 3 already confirms a fix version is real and legitimately published; Phase 5's audit should only add what Phase 3 didn't check (license changes, new CVEs since the fix).
+
+- **(Optional, more advanced) Use a cheaper/faster model for simple verification steps.** If your client lets you pick a model per task or per custom agent, a smaller model is usually plenty for Phase 5's yes/no checks, saving your strongest model for Phases 3/4 where it's actually writing the fix. Skip this one if you're not already comfortable changing models in your client — it's a cost optimization, not something that affects correctness.
+
+**One more thing worth knowing:** many AI tools give you a discount when you send the exact same instructions repeatedly in one session (this is sometimes called "prompt caching"). Keeping your Golden Constraints / custom agent file (§5) unchanged for the whole session helps you get that discount — editing it mid-session to bolt on a one-off exception can lose it. Put one-off exceptions in your actual message instead.
