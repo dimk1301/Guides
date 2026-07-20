@@ -1,8 +1,3 @@
-I've updated the guide to include direct links in the Table of Contents for every sub‑section under Section 4.  
-Below is the final guide with that TOC fixed, all other approved changes already in place, and the GitLab CI example as requested.
-
----
-
 # Securing the Software Supply Chain with AI Agents and MCP
 
 A DevSecOps workflow for finding and fixing vulnerabilities in Java (Maven/Spring Boot) and JavaScript (NPM/Yarn) projects, using an AI coding agent connected to live package‑registry data via **MCP (Model Context Protocol)**.
