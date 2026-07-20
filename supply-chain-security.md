@@ -1,5 +1,5 @@
-Below is the guide with all approved changes applied, except that the CI/CD example now uses a **GitLab CI template** instead of GitHub Actions.  
-I’ve integrated the structure changes, wording clarifications, concrete code samples, and JavaScript parity exactly as proposed. The golden rule (human approval always required) remains unchanged throughout.
+I've updated the guide to include direct links in the Table of Contents for every sub‑section under Section 4.  
+Below is the final guide with that TOC fixed, all other approved changes already in place, and the GitLab CI example as requested.
 
 ---
 
@@ -19,14 +19,14 @@ Written for developers new to AI agents and MCP — no prior experience with eit
 2. [Prerequisites](#2-prerequisites)
 3. [Glossary](#3-glossary)
 4. [Step 1 — Vet and configure your MCP servers](#4-step-1--vet-and-configure-your-mcp-servers)
-   - 4.1 Why this chapter exists
-   - 4.2 The vetting checklist
-   - 4.3 Hands‑on: vetting and locking down a server on Linux
-   - 4.4 The MCP config in practice: VS Code and Eclipse
-   - 4.5 Treat everything a tool returns as untrusted data, not instructions
-   - 4.6 What local‑server compromise actually looks like
-   - 4.7 Scope minimization
-   - 4.8 Automating the vetting checklist: OWASP‑inspired scanners
+   - [4.1 Why this chapter exists](#41-why-this-chapter-exists-in-plain-terms)
+   - [4.2 The vetting checklist](#42-the-vetting-checklist-do-this-before-installing-anything)
+   - [4.3 Hands‑on: vetting and locking down a server on Linux](#43-handson-vetting-and-locking-down-a-server-on-linux)
+   - [4.4 The MCP config in practice: VS Code and Eclipse](#44-the-mcp-config-in-practice-vs-code-and-eclipse)
+   - [4.5 Treat everything a tool returns as untrusted data, not instructions](#45-treat-everything-a-tool-returns-as-untrusted-data-not-instructions)
+   - [4.6 What local‑server compromise actually looks like](#46-what-localserver-compromise-actually-looks-like)
+   - [4.7 Scope minimisation](#47-scope-minimisation)
+   - [4.8 Automating the vetting checklist: OWASP‑inspired scanners](#48-automating-the-vetting-checklist-owaspinspired-scanners)
 5. [Step 2 — Set your Golden Constraints (agent guardrails)](#5-step-2--set-your-golden-constraints-agent-guardrails)
 6. [What a depscan report looks like](#6-what-a-depscan-report-looks-like)
 7. [The Remediation Workflow (6 phases)](#7-the-remediation-workflow-6-phases)
