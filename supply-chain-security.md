@@ -93,10 +93,12 @@ What *is* new is what the agent does with what comes back. A normal CLI tool giv
 
 | Purpose | Server | Capability | Risk note |
 |---|---|---|---|
-| Maven/Java metadata | `arvindand/maven-tools-mcp` | Queries Maven Central for versions/stability | Read-only lookup — lower risk |
-| NPM registry metadata | `bsmi021/mcp-npm_docs-server` | Fetches package registry data | Read-only lookup — lower risk |
+| Maven/Java metadata | `arvindand/maven-tools-mcp` | Queries Maven Central, classifies dependencies as EXPLICIT/MANAGED/EXPLICIT_OVERRIDE, flags BOM conflicts | Read-only lookup — lower risk, but a single-maintainer project (~17 stars). Vet accordingly, not because it's popular but because it's a good structural fit — pin the version and check it's still active before relying on it. |
+| NPM registry metadata + vulnerability signal | `howmanysmall/npm-registry-mcp` | Package info, version history, license (SPDX risk rating), and a health score that factors in vulnerability count and publish recency | Read-only lookup — lower risk. Also single-maintainer and fairly new; same vetting caveat as above. Note: distributed as a compiled Go binary, not launched via `npx` — see the config note in 4.4. |
 
 These two read-only lookup tools are all the CVE-remediation workflow in this guide actually calls for. Every phase that runs `npm install`, `npm ls`, or `npm run test` (Phases 2, 3, and 6) has a **human** running that command directly in a terminal, never the agent — that's Golden Constraint #0 by design, not an oversight. Don't install more capability than the workflow uses.
+
+Neither of these two servers is the most popular option in its category — Maven/JVM dependency intelligence is a genuinely under-served niche in the MCP ecosystem, and more full-featured npm-docs alternatives exist (e.g. Context7, widely adopted for general "keep the agent's package knowledge current" purposes). They're recommended here because their specific feature set — deterministic override classification for Maven, vulnerability/license signal for npm — lines up unusually well with this guide's actual phases, not because they're the most widely used. Being small, single-maintainer projects, they deserve the full 4.2 checklist, not a pass just because they're named in this table.
 
 **Not needed for this guide:** you may come across an npm script-execution server (e.g. `fstubner/npm-run-mcp-server`) recommended alongside the two above elsewhere. It has no role here — this guide never asks the agent to execute anything, only to look up and propose. It would only become relevant if you deliberately chose to change the workflow itself and let the agent run install/test commands directly, which is a bigger trust decision than this guide makes: it would mean granting command-execution capability, requiring explicit human confirmation on literally every call, and re-reading Section 4.6 and 4.7 with that specific tool in mind. If you don't have a concrete reason to make that change, skip it — less installed capability is less that can go wrong.
 
@@ -104,17 +106,24 @@ These two read-only lookup tools are all the CVE-remediation workflow in this gu
 
 These are real commands, not pseudo-code — run them yourself before trusting a new MCP server.
 
-**1. Inspect before installing.** Never trust a package name alone — check what you're actually about to run:
+**1. Inspect before installing.** Never trust a package name alone — check what you're actually about to run. `arvindand/maven-tools-mcp` is distributed as a Docker image, so inspect the source and the image before pulling it into regular use:
 
 ```bash
-# See real version history and the linked repo for an npm-distributed MCP server
-npm view arvindand/maven-tools-mcp versions --json
-npm view arvindand/maven-tools-mcp repository
+# Read the source before trusting it
+git clone https://github.com/arvindand/maven-tools-mcp /tmp/inspect/maven-tools-mcp
+less /tmp/inspect/maven-tools-mcp/CHANGELOG.md   # check what actually changed release to release
 
-# Download without installing/running it, so you can read the code first
-npm pack arvindand/maven-tools-mcp@1.2.0
-tar -xzf arvindand-maven-tools-mcp-1.2.0.tgz -C /tmp/inspect
-less /tmp/inspect/package/index.js   # read it before you trust it
+# Pull a specific tagged version (never :latest) and inspect it before running
+docker pull arvindand/maven-tools-mcp:1.2.0
+docker image inspect arvindand/maven-tools-mcp:1.2.0
+```
+
+For an `npx`-distributed server instead, the equivalent is:
+
+```bash
+npm view <package> versions --json
+npm view <package> repository
+npm pack <package>@<version> && tar -xzf <package>-<version>.tgz -C /tmp/inspect
 ```
 
 **2. See exactly what your agent client is about to launch — no truncation.** Your agent's MCP config is a plain file (or, for Eclipse, a preferences panel — see 4.5); read it directly instead of trusting a summarized UI popup:
@@ -125,14 +134,14 @@ cat .vscode/mcp.json | jq .
 # Or wherever your specific client stores it — see 4.5 for VS Code/Eclipse specifics.
 ```
 
-**3. Run the server as its own restricted Linux user, not your main account.** This alone stops it from reading your SSH keys or other projects' files:
+**3. For an `npx`/Node-launched server, run it as its own restricted Linux user, not your main account.** This alone stops it from reading your SSH keys or other projects' files (this step doesn't apply to Docker-native servers like `arvindand/maven-tools-mcp` — the container itself is the isolation boundary; see step 4):
 
 ```bash
 sudo useradd --system --no-create-home --shell /usr/sbin/nologin mcp-runner
-sudo -u mcp-runner npx -y arvindand/maven-tools-mcp@1.2.0
+sudo -u mcp-runner npx -y <package>@<version>
 ```
 
-**4. Or sandbox it in Docker** (usually simpler than manual Linux permissions, and works the same across distros):
+**4. Sandbox a Docker-native server with hardened flags** (usually simpler than manual Linux permissions, and works the same across distros):
 
 ```bash
 docker run --rm -i \
@@ -140,14 +149,14 @@ docker run --rm -i \
   --cap-drop=ALL \
   --security-opt=no-new-privileges \
   --memory=256m \
-  --network=none \
+  --network=bridge \
   -v "$(pwd)/pom.xml:/work/pom.xml:ro" \
-  maven-tools-mcp:1.2.0
+  arvindand/maven-tools-mcp:1.2.0
 ```
 
-`--network=none` blocks all network access — only add it back (`--network=bridge`) if the tool genuinely needs to reach a registry, and then restrict *where* it can go with a firewall rule (next step).
+This tool genuinely needs network access to query Maven Central, so `--network=none` isn't an option here — instead, restrict *where* it can go with a firewall rule (next step). If a server doesn't need any network access at all, use `--network=none` and skip step 5 entirely.
 
-**5. Restrict network egress to only the registry it needs**, if not using Docker's `--network=none`:
+**5. Restrict network egress to only the registry it needs**, for any server (Docker or not) that requires network access:
 
 ```bash
 # Only allow the mcp-runner user to reach Maven Central; drop everything else
@@ -171,11 +180,26 @@ If that command shows a listening port, the server is using HTTP transport local
 Every MCP-capable client registers servers the same conceptual way — a name, a command to launch it, and its arguments — but the exact file, key names, and approval mechanism differ per client. Here's the *concept*, not a literal file to copy-paste:
 
 ```
-server name  →  "maven-tools"
-launch command →  npx -y arvindand/maven-tools-mcp@1.2.0   (pinned version, never @latest)
+server name  →  "some-mcp-server"
+launch command →  npx -y <package>@<pinned-version>   (pinned version, never @latest)
 approval  →  require confirmation before each tool call — every real client has some form
              of this; use the strictest setting it offers.
 ```
+
+**Note on `howmanysmall/npm-registry-mcp` specifically:** unlike the two `npx`-launched servers elsewhere in this chapter, this one is a compiled Go binary. The "launch command" in its config entry is a direct path to the binary you built or downloaded, not `npx`:
+
+```json
+{
+  "servers": {
+    "npm-registry": {
+      "command": "/path/to/npm-registry-mcp",
+      "env": { "GITHUB_TOKEN": "ghp_..." }
+    }
+  }
+}
+```
+
+`GITHUB_TOKEN` is optional (raises the API rate limit for commit-activity checks) — don't hardcode it in a committed `mcp.json`; use your client's per-user/secret config location instead (see 4.5 for where that is in VS Code vs. Eclipse).
 
 4.5 below shows the real, exact syntax for VS Code and Eclipse — the two clients this guide focuses on.
 
@@ -183,14 +207,15 @@ approval  →  require confirmation before each tool call — every real client 
 
 **VS Code (via GitHub Copilot Chat, Agent Mode):**
 
-Config file: `.vscode/mcp.json` in your workspace root (commit this if the whole team should use the same servers), or a user-profile config for servers holding personal API keys (syncs across machines via Settings Sync — reachable via the `MCP: Open User Configuration` command). The real, correct format — note the top-level key is `"servers"`, not `"mcpServers"`:
+Config file: `.vscode/mcp.json` in your workspace root (commit this if the whole team should use the same servers), or a user-profile config for servers holding personal API keys (syncs across machines via Settings Sync — reachable via the `MCP: Open User Configuration` command). The real, correct format — note the top-level key is `"servers"`, not `"mcpServers"`. Here's `arvindand/maven-tools-mcp`'s actual entry, since it's Docker-distributed:
 
 ```json
 {
   "servers": {
     "maven-tools": {
-      "command": "npx",
-      "args": ["-y", "arvindand/maven-tools-mcp@1.2.0"]
+      "type": "stdio",
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "arvindand/maven-tools-mcp:1.2.0"]
     }
   }
 }
@@ -364,6 +389,8 @@ Prompt example:
 
 Prompt example:
 > "Using MCP tools, check the proposed `fixed_version`: has the license changed? Is this a normal release or a same-day rushed hotfix? Are there newer CVEs already reported against it? Does the publisher/maintainer match the package's history (rule out typosquatting)?"
+
+**What this doesn't cover:** the health-score/metadata tools from 4.2 give you strong heuristic signal (download counts, publish recency, vulnerability count, license), but that's not the same as cryptographic proof the package was built and published by its legitimate maintainer. If you need that stronger guarantee, run it as a separate, manual check — `npm audit signatures` for npm provenance attestations, or checking for a verified provenance badge on the package's npmjs.com page — rather than assuming the MCP tool's health score already covers it.
 
 ### Phase 6 — Final Validation
 
