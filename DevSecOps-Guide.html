@@ -377,8 +377,8 @@
             <tr><td>5. Build</td><td>OWASP dep-scan <code>--deep</code></td><td>Scans app libraries AND the container OS.</td><td>One report of every ingredient and its known vulnerabilities.</td></tr>
             <tr><td>6. Validate</td><td>OWASP ZAP</td><td>Tests the running app in a live environment (DAST).</td><td>Catches things code-scanners miss, like broken login flows.</td></tr>
             <tr><td>7. Govern</td><td>SecObserve</td><td>Central dashboard for all static security alerts.</td><td>Keeps build-time and dependency bugs organized so they get fixed.</td></tr>
-            <tr><td>8. Deploy</td><td>Kyverno + Cosign</td><td>Checks K8s manifests, verifies image signatures.</td><td>A bouncer that rejects manifests breaking cluster rules.</td></tr>
-            <tr><td>9. Runtime</td><td>Falco + Tetragon</td><td>Watches syscalls, enforces kernel boundaries.</td><td>Falco alerts on macro-behavior; Tetragon kills malicious threads in-kernel.</td></tr>
+            <tr><td>8. Deploy</td><td>Kyverno + Cosign</td><td>Checks K8s manifests, verifies image signatures.</td><td>Admission webhook: validates, mutates, or rejects manifests against custom policy before they're persisted to <code>etcd</code>.</td></tr>
+            <tr><td>9. Runtime</td><td>Falco + Tetragon</td><td>Watches syscalls, enforces kernel boundaries.</td><td>Falco evaluates syscalls in userspace and raises alerts; Tetragon enforces inline via eBPF, terminating a process before a malicious action completes.</td></tr>
             <tr><td>10. Audit</td><td>Kube-bench</td><td>Checks K8s settings against CIS standards.</td><td>Confirms our core platform is locked down tight.</td></tr>
             <tr><td>11. Compliance</td><td>OpenSCAP + STIG Viewer</td><td>Audit-ready reporting.</td><td>Produces reports auditors already recognize.</td></tr>
             <tr><td>12. Stream Hub</td><td>OpenObserve</td><td>Consolidated, low-resource log/metric database.</td><td>Ingests FluentBit/OTel streams into cheap Parquet storage at 10x less RAM.</td></tr>
@@ -646,16 +646,18 @@
         <div class="zone" style="grid-column:1 / -1;"><span class="zname">Edge Zone — Ingress / Load Balancer</span><p>Before traffic reaches the cluster we enforce HTTPS redirect, HSTS, CSP, and TLS 1.3, and publish <code>security.txt</code>. Baseline config, not a scan — set once per app, closing the exact holes ZAP would otherwise keep flagging in Staging.</p></div>
       </div>
 
-      <p class="sub" style="margin-top:14px;">Everything above catches problems we already know about — a bad pattern, a leaked secret, a missing header. But once the workload is live, a different kind of problem can appear: some things were fine at build time but aren't anymore, and others only show up once there's real traffic hitting the app. Two more zones keep watching for that:</p>
+      <p class="sub" style="margin-top:14px;">Everything above catches problems we already know about — a bad pattern, a leaked secret, a missing header. But once a workload is admitted to the cluster, three more layers take over, in order: admission control decides whether it's allowed to start at all, kernel containment restricts what the running process can touch, and runtime detection watches for anything unusual once it's actually executing.</p>
 <div class="zone-grid" style="margin-top:12px;">
-        <div class="zone" style="grid-column:1 / -1;"><span class="zname">Live Kubernetes Zone</span><p>Kyverno enforces rules at the <b>admission door</b> — think of it as a bouncer checking ID at the entrance, the one moment before a workload is allowed to actually start running. Falco is our broad monitoring camera across user space. Tetragon hooks into the Linux kernel via eBPF to enforce zero-trust runtime boundaries and instantly terminate unauthorized processes — a <b>trust boundary</b> here just means "the line between code we've already checked and code we haven't." Cilium/Calico segments the network. A scheduled <code>dep-scan</code> job continuously re-scans running images for newly disclosed CVEs and feeds results back into SecObserve — see the CVE Lifecycle below.</p></div>
+        <div class="zone" style="grid-column:1 / -1;"><span class="zname">Admission Control Zone — kube-apiserver</span><p><b>Pod Security Admission (PSA)</b> is built into the API server itself — no extra install. It checks every Pod against one of three fixed profiles (<code>privileged</code> / <code>baseline</code> / <code>restricted</code>), set per namespace via a label; <code>restricted</code> rejects a Pod requesting root or missing a Seccomp profile, no custom policy required. <b>Kyverno</b> runs alongside it as a fully custom admission webhook covering any resource type, with four operations: <i>validate</i> (reject non-compliant manifests), <i>mutate</i> (e.g. auto-inject a missing <code>seccompProfile</code>), <i>generate</i> (auto-provision related resources like a default <code>NetworkPolicy</code>), and <i>verify images</i> (check a Cosign signature before admission). Both run before the object is persisted to <code>etcd</code> — nothing below this line runs unless both approve.</p></div>
+        <div class="zone" style="grid-column:1 / -1;"><span class="zname">OS Kernel Containment Zone — Node-Level</span><p>Once a Pod is scheduled, three kernel mechanisms restrict what the container process can do on that node, independent of anything Kubernetes itself enforces. <b>Seccomp</b> filters which system calls a process may issue — a call outside the allow-list (e.g. <code>ptrace</code>, <code>unshare</code>, <code>reboot</code>) is blocked before it executes; this is what Kyverno's mutate rule above is usually setting. <b>AppArmor</b> restricts a specific binary to an explicit list of file paths and capabilities — default on Debian/Ubuntu nodes. <b>SELinux</b> does the same job with a stricter model: every process and object gets a security label, and two labels may only interact if a policy rule explicitly permits it — this applies even to root, which is why it can stop a compromised root process from reading another container's files on the same host. Default on RHEL/Fedora/Rocky. KubeArmor (see the pilot card below) gives a Kubernetes-native way to author AppArmor/SELinux policy without hand-writing raw profiles.</p></div>
+        <div class="zone" style="grid-column:1 / -1;"><span class="zname">Live Kubernetes Zone — Runtime Detection</span><p>Falco evaluates syscall streams in userspace against a declarative rule set and raises an alert — e.g. a shell spawned inside a container, or <code>/etc/shadow</code> read unexpectedly — but doesn't block anything itself; a response (like killing the pod) needs an external handler such as Falco Sidekick. Tetragon hooks into the kernel directly via eBPF and can enforce inline: terminating a process with <code>SIGKILL</code> before a malicious action completes, with no round-trip to userspace required. Cilium/Calico segments the network at this same layer. A scheduled <code>dep-scan</code> job continuously re-scans running images for newly disclosed CVEs and feeds results back into SecObserve — see the CVE Lifecycle below.</p></div>
         <div class="zone" style="grid-column:1 / -1;"><span class="zname">Compliance</span><p>OpenSCAP + STIG Viewer keeps the underlying host operating systems up to code and produces audit-ready reports auditors already recognize, on a cadence independent of any single app's release schedule. The same pass checks that host OS version itself against endoflife.date — a node can be fully patched and still be running a release that's about to lose support entirely.</p></div>
       </div>
 
       <p class="sub" style="margin-top:14px;">Nine zones, but only two places where any of it actually gets read. Static findings (a scan result, a CVE, a config drift) and live telemetry (a syscall, a rejected deployment, a kernel-enforced kill) are very different shapes of data. So instead of forcing them into one tool, we split them across two purpose-built hubs.</p>
 
       <h3>Management Hubs</h3>
-      <p class="sub"><i>In plain terms:</i> think of SecObserve as your inbox for things found before shipping, and OpenObserve as the live camera feed for what's happening right now.</p>
+      <p class="sub"><i>In plain terms:</i> SecObserve holds point-in-time findings generated before a workload ships; OpenObserve holds continuous telemetry generated while it's running.</p>
 <div class="hub-card sec">
         <span class="hname">SecObserve — Static Vulnerability Hub</span>
         <p>Our central portal for point-in-time security scans, container vulnerability databases, and build-time compliance scores. Every scanner from the Pipeline Zone reports here, so there's one queue to check rather than nine.</p>
@@ -885,14 +887,14 @@
       </ul>
 
       <h3>Emerging Tools Worth Piloting <span class="sub-inline">— not yet load-bearing</span></h3>
-      <p class="sub">One more tool surfaced recently that's worth watching for the Live Kubernetes Zone above. It's a real, actively-maintained project — not a required addition, and not a replacement for anything already in this chapter — but worth a pilot on a low-risk namespace before deciding whether it earns a permanent spot.</p>
+      <p class="sub">One more tool surfaced recently that's worth watching for the OS Kernel Containment Zone above. It's a real, actively-maintained project — not a required addition, and not a replacement for anything already in this chapter — but worth a pilot on a low-risk namespace before deciding whether it earns a permanent spot.</p>
 
       <div class="pilot-card">
         <div class="pname">KubeArmor <span class="badge badge--pilot">Pilot</span></div>
         <div class="pmeta">CNCF Sandbox project · github.com/kubearmor/KubeArmor</div>
-        <p><span class="plabel">What it does:</span> enforces <b>container-to-host</b> access boundaries — what paths, capabilities, and network interfaces a container may touch — by translating simple, Kubernetes-native policy into AppArmor, SELinux, or BPF-LSM under the hood. Where hand-writing a native AppArmor or SELinux profile is genuinely difficult and easy to get wrong, KubeArmor gives you the same enforcement through a Kubernetes CRD.</p>
-        <p><span class="plabel">How it differs from what we already run:</span> Falco watches broadly for anomalous behavior; Tetragon enforces at the kernel syscall/process level via eBPF. KubeArmor's angle is narrower and more specific — the boundary between a container and its host — and it overlaps with Tetragon's enforcement role more than it complements Falco's alerting role. Running all three from day one is more tool sprawl than most teams need.</p>
-        <p><span class="plabel">When to reach for it:</span> if you want Kubernetes-native LSM policy without hand-authoring AppArmor/SELinux profiles per app, or your nodes support AppArmor/SELinux more cleanly than BPF-LSM. If Tetragon's TracingPolicies already cover your enforcement needs, there's no urgency to add it.</p>
+        <p><span class="plabel">What it does:</span> generates and enforces <b>AppArmor</b>, <b>SELinux</b>, or <b>BPF-LSM</b> policy (see the OS Kernel Containment Zone above) from a Kubernetes CRD instead of a hand-authored native profile, restricting which paths, capabilities, and network interfaces a container may touch on its node.</p>
+        <p><span class="plabel">How it differs from what we already run:</span> Falco evaluates syscalls in userspace and alerts; Tetragon enforces inline at the syscall/process level via eBPF. KubeArmor's scope is narrower — the container-to-host boundary specifically — and overlaps more with Tetragon's enforcement role than with Falco's alerting role. Running all three from day one is more tool sprawl than most teams need.</p>
+        <p><span class="plabel">When to reach for it:</span> if you want AppArmor/SELinux enforcement authored as Kubernetes policy rather than hand-written per node, or your kernels support AppArmor/SELinux more cleanly than BPF-LSM. If Tetragon's TracingPolicies already cover your enforcement needs, there's no urgency to add it.</p>
       </div>
     </section>
 
@@ -1223,7 +1225,7 @@
             <ul class="step-list">
               <li><span class="step-check"></span><span><b>Edge Hardening</b> — HTTPS redirect, HSTS, CSP, TLS 1.3 at ingress.</span></li>
               <li><span class="step-check"></span><span><b>Vulnerability Disclosure</b> — <code>SECURITY.md</code> per repo, <code>security.txt</code> on live properties.</span></li>
-              <li><span class="step-check"></span><span><b>Admission Control</b> — Kyverno as primary cluster bouncer.</span></li>
+              <li><span class="step-check"></span><span><b>Admission Control</b> — Kyverno as the primary policy-driven admission webhook, with Pod Security Admission as the built-in baseline underneath it.</span></li>
               <li><span class="step-check"></span><span><b>Network Micro-Segmentation</b> — Cilium/Calico policies replace the flat network.</span></li>
             </ul>
           </div>
@@ -1320,6 +1322,7 @@
         <div class="gterm"><dt>IDE</dt><dd>Integrated Development Environment (your code editor)</dd></div>
         <div class="gterm"><dt>LLM</dt><dd>Large Language Model</dd></div>
         <div class="gterm"><dt>LSM</dt><dd>Linux Security Module (the kernel framework AppArmor, SELinux, and BPF-LSM plug into; see KubeArmor, Ch.5)</dd></div>
+        <div class="gterm"><dt>MAC</dt><dd>Mandatory Access Control (the model behind AppArmor and SELinux; access is denied unless a policy explicitly permits it)</dd></div>
         <div class="gterm"><dt>MCP</dt><dd>Model Context Protocol (lets AI assistants connect to external tools and data sources)</dd></div>
         <div class="gterm"><dt>MFA</dt><dd>Multi-Factor Authentication</dd></div>
         <div class="gterm"><dt>NIST</dt><dd>National Institute of Standards and Technology</dd></div>
@@ -1328,6 +1331,8 @@
         <div class="gterm"><dt>OWASP</dt><dd>Open Web Application Security Project (nonprofit behind most free security standards we use)</dd></div>
         <div class="gterm"><dt>PII</dt><dd>Personally Identifiable Information</dd></div>
         <div class="gterm"><dt>PR</dt><dd>Pull Request</dd></div>
+        <div class="gterm"><dt>PSA</dt><dd>Pod Security Admission (built-in Kubernetes API server check against fixed Pod Security Standards profiles)</dd></div>
+        <div class="gterm"><dt>PSS</dt><dd>Pod Security Standards (the three fixed profiles — privileged, baseline, restricted — that PSA enforces)</dd></div>
         <div class="gterm"><dt>RCA</dt><dd>Root Cause Analysis</dd></div>
         <div class="gterm"><dt>RPO</dt><dd>Recovery Point Objective</dd></div>
         <div class="gterm"><dt>RTO</dt><dd>Recovery Time Objective</dd></div>
