@@ -143,6 +143,8 @@
   .callout--info .tag{color:var(--p3);}
   .callout--rule{background:var(--panel);border-left:3px solid var(--accent);}
   .callout--rule .tag{color:var(--accent);}
+  .callout--pilot{background:linear-gradient(180deg, rgba(139,92,246,0.08), rgba(139,92,246,0.02));border-color:rgba(139,92,246,0.35);}
+  .callout--pilot .tag{color:#A78BFA;}
 
   /* tables */
   .table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);margin:20px 0;}
@@ -165,6 +167,8 @@
   .badge--high::before{background:#F97316;}
   .badge--med{color:#FFE28A;}
   .badge--med::before{background:#F0B429;}
+  .badge--pilot{color:#C4B5FD;}
+  .badge--pilot::before{background:#8B5CF6;}
 
   /* implementation roadmap */
   .roadmap{position:relative;margin:28px 0 6px;}
@@ -197,6 +201,15 @@
   .hub-card.sec .hname{color:#9297FF;}
   .hub-card.open .hname{color:var(--p11);}
   .hub-card p{font-size:14px;color:var(--text-muted);margin:0;}
+
+  /* pilot tool cards */
+  .pilot-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin:14px 0;position:relative;overflow:hidden;}
+  .pilot-card::before{content:"";position:absolute;top:0;left:0;width:4px;height:100%;background:#8B5CF6;}
+  .pilot-card .pname{font-family:var(--display);font-weight:700;font-size:15px;color:#C4B5FD;margin-bottom:4px;display:flex;align-items:center;gap:9px;}
+  .pilot-card .pmeta{font-family:var(--mono);font-size:11.5px;color:var(--text-faint);margin-bottom:10px;}
+  .pilot-card p{font-size:14.5px;color:var(--text-muted);margin:0 0 8px;}
+  .pilot-card p:last-child{margin-bottom:0;}
+  .pilot-card .plabel{font-family:var(--sans);font-weight:700;font-size:11px;color:var(--text);letter-spacing:.04em;text-transform:uppercase;margin-right:6px;}
 
   /* glossary */
   .glossary{columns:2;column-gap:56px;margin:22px 0 4px;}
@@ -870,6 +883,17 @@
         <li><b>Every policy decision is logged</b> — a rejected deployment or a killed process is queryable in OpenObserve, never just something that happened and vanished.</li>
         <li><b>Policies are reviewed annually</b> against current CIS/ASVS baselines, so the rules enforcing zones like Edge and Live Kubernetes don't quietly drift out of date.</li>
       </ul>
+
+      <h3>Emerging Tools Worth Piloting <span class="sub-inline">— not yet load-bearing</span></h3>
+      <p class="sub">One more tool surfaced recently that's worth watching for the Live Kubernetes Zone above. It's a real, actively-maintained project — not a required addition, and not a replacement for anything already in this chapter — but worth a pilot on a low-risk namespace before deciding whether it earns a permanent spot.</p>
+
+      <div class="pilot-card">
+        <div class="pname">KubeArmor <span class="badge badge--pilot">Pilot</span></div>
+        <div class="pmeta">CNCF Sandbox project · github.com/kubearmor/KubeArmor</div>
+        <p><span class="plabel">What it does:</span> enforces <b>container-to-host</b> access boundaries — what paths, capabilities, and network interfaces a container may touch — by translating simple, Kubernetes-native policy into AppArmor, SELinux, or BPF-LSM under the hood. Where hand-writing a native AppArmor or SELinux profile is genuinely difficult and easy to get wrong, KubeArmor gives you the same enforcement through a Kubernetes CRD.</p>
+        <p><span class="plabel">How it differs from what we already run:</span> Falco watches broadly for anomalous behavior; Tetragon enforces at the kernel syscall/process level via eBPF. KubeArmor's angle is narrower and more specific — the boundary between a container and its host — and it overlaps with Tetragon's enforcement role more than it complements Falco's alerting role. Running all three from day one is more tool sprawl than most teams need.</p>
+        <p><span class="plabel">When to reach for it:</span> if you want Kubernetes-native LSM policy without hand-authoring AppArmor/SELinux profiles per app, or your nodes support AppArmor/SELinux more cleanly than BPF-LSM. If Tetragon's TracingPolicies already cover your enforcement needs, there's no urgency to add it.</p>
+      </div>
     </section>
 
     <hr class="div">
@@ -1131,6 +1155,24 @@
         <span class="tag">Use RCI Here Too</span>
         <p>Same technique as the Autonomous Loop earlier in this chapter: ask <i>"Review your previous answer and find problems with it,"</i> then <i>"Based on the problems you found, improve your answer."</i> Costs nothing, takes 30 seconds, and applies to any code your assistant just wrote for you.</p>
       </div>
+
+      <h3>Emerging Tools Worth Piloting <span class="sub-inline">— new attack surface, new tooling</span></h3>
+      <p class="sub">The Package Hallucination callout above covers one new risk from AI-assisted development. Two more have shown up recently, tied to two different layers of that same risk: what your AI assistant's <b>MCP connections</b> can quietly reach, and what your AI assistant's <b>generated agent code</b> might get wrong. Both tools below are real and functional, but young — single-maintainer or small-org projects with limited track records. Pilot before treating either as load-bearing, the same way we'd treat any new scanner before adding it to an unskippable gate.</p>
+
+      <div class="pilot-card">
+        <div class="pname">mcp-audit <span class="badge badge--pilot">Pilot</span></div>
+        <div class="pmeta">Apache 2.0 · github.com/apisec-inc/mcp-audit · runs fully offline</div>
+        <p><span class="plabel">What it does:</span> scans MCP (Model Context Protocol) configurations across roughly eight client scopes — Claude Desktop, Cursor, VS Code, Windsurf, Zed, and others — for exposed secrets, builds an inventory of every database/API/SaaS endpoint your MCP servers can reach, flags risky combinations where one connected server can read files and another can make network calls, and emits SARIF plus a CycloneDX SBOM for CI integration.</p>
+        <p><span class="plabel">One correction worth noting:</span> it maps findings to the <b>OWASP LLM Top 10</b>, not an "OWASP MCP Top 10" — there isn't yet a published standard under that exact name, so don't cite it as one in any audit paperwork.</p>
+        <p><span class="plabel">Where it fits:</span> alongside the Package Hallucination callout above — this is visibility into what your IDE's AI assistant can actually touch, not a replacement for anything in the pipeline. Good for developer machine hygiene; not yet proven enough to gate merges on.</p>
+      </div>
+
+      <div class="pilot-card">
+        <div class="pname">owasp-agentic-scanner <span class="badge badge--pilot">Pilot</span></div>
+        <div class="pmeta">github.com/NP-compete/owasp-agentic-scanner · static analysis, SARIF output</div>
+        <p><span class="plabel">What it does:</span> a static analysis scanner purpose-built for the <b>OWASP Top 10 for Agentic AI</b> risk categories referenced earlier in this chapter — excessive agency, unsafe tool invocation, and similar agent-specific code patterns that general-purpose scanners like SonarLint or Bandit (Chapter 4) aren't looking for.</p>
+        <p><span class="plabel">Where it fits:</span> as a ninth local scanner alongside the ones in Chapter 4, but scoped specifically to any repo that defines or orchestrates agent behavior — not something every service needs. Small org, limited history; treat findings as a useful second opinion for now rather than an authoritative gate.</p>
+      </div>
     </section>
 
     <hr class="div">
@@ -1210,6 +1252,7 @@
               <li><span class="step-check"></span><span><b>Kernel Security Engine</b> — deploy Tetragon across all nodes.</span></li>
               <li><span class="step-check"></span><span><b>Tetragon Profiling Baseline</b> — 7+ days in Audit Mode before enforcing.</span></li>
               <li><span class="step-check"></span><span><b>Active Containment</b> — targeted TracingPolicies, switch to Enforcement Mode with <code>SIGKILL</code>.</span></li>
+              <li><span class="step-check"></span><span><b>Optional Pilot</b> — evaluate KubeArmor on a low-risk namespace if you want Kubernetes-native LSM policy alongside Tetragon (see Chapter 5).</span></li>
             </ul>
           </div>
         </div>
@@ -1239,6 +1282,7 @@
               <li><span class="step-check"></span><span><b>Immutable Storage Controls</b> — WORM object locking on backup storage.</span></li>
               <li><span class="step-check"></span><span><b>Disaster Drill Verification</b> — automated quarterly test-restores, logged to SecObserve.</span></li>
               <li><span class="step-check"></span><span><b>Agentic AI Assistance</b> — approved LLM interfaces for reachability triage, policy drafts, alert correlation.</span></li>
+              <li><span class="step-check"></span><span><b>Optional Pilot</b> — trial mcp-audit and owasp-agentic-scanner on a single team before adopting broadly (see Chapter 8).</span></li>
             </ul>
           </div>
         </div>
@@ -1253,6 +1297,7 @@
       <div class="chapter-head"><div class="chapter-num">10</div><h2>Acronyms</h2></div>
       <dl class="glossary">
         <div class="gterm"><dt>AI</dt><dd>Artificial Intelligence</dd></div>
+        <div class="gterm"><dt>AI-BOM</dt><dd>AI Bill of Materials (an inventory of AI models and MCP connections in use)</dd></div>
         <div class="gterm"><dt>API</dt><dd>Application Programming Interface</dd></div>
         <div class="gterm"><dt>ASI</dt><dd>Agentic Security Initiative (OWASP's agentic-AI security project)</dd></div>
         <div class="gterm"><dt>ASVS</dt><dd>Application Security Verification Standard</dd></div>
@@ -1274,6 +1319,8 @@
         <div class="gterm"><dt>IaC</dt><dd>Infrastructure as Code</dd></div>
         <div class="gterm"><dt>IDE</dt><dd>Integrated Development Environment (your code editor)</dd></div>
         <div class="gterm"><dt>LLM</dt><dd>Large Language Model</dd></div>
+        <div class="gterm"><dt>LSM</dt><dd>Linux Security Module (the kernel framework AppArmor, SELinux, and BPF-LSM plug into; see KubeArmor, Ch.5)</dd></div>
+        <div class="gterm"><dt>MCP</dt><dd>Model Context Protocol (lets AI assistants connect to external tools and data sources)</dd></div>
         <div class="gterm"><dt>MFA</dt><dd>Multi-Factor Authentication</dd></div>
         <div class="gterm"><dt>NIST</dt><dd>National Institute of Standards and Technology</dd></div>
         <div class="gterm"><dt>OS</dt><dd>Operating System</dd></div>
@@ -1284,6 +1331,7 @@
         <div class="gterm"><dt>RCA</dt><dd>Root Cause Analysis</dd></div>
         <div class="gterm"><dt>RPO</dt><dd>Recovery Point Objective</dd></div>
         <div class="gterm"><dt>RTO</dt><dd>Recovery Time Objective</dd></div>
+        <div class="gterm"><dt>SARIF</dt><dd>Static Analysis Results Interchange Format (a standard scan-result format most scanners in this guide can export)</dd></div>
         <div class="gterm"><dt>SAST</dt><dd>Static Application Security Testing</dd></div>
         <div class="gterm"><dt>SBOM</dt><dd>Software Bill of Materials</dd></div>
         <div class="gterm"><dt>SCM</dt><dd>Source Control Management (e.g., GitHub, GitLab)</dd></div>
