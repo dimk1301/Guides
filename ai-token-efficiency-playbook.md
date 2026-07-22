@@ -44,6 +44,38 @@ LLMs are effectively stateless across turns, so each new request is evaluated ag
 * **Output length:** Long answers, full rewrites, and unnecessary commentary consume tokens and increase review time.
 * **Session length:** Long sessions accumulate stale context and are more likely to repeat mistakes or ignore buried instructions.
 
+### Why Token Count ≠ Word Count
+
+Billing and context limits are based on tokens, not words, and the split isn't intuitive:
+
+* **Punctuation and symbols usually cost their own token.** A comma, brace, or colon typically isn't free just because it's short.
+* **Code and structured formats (JSON, YAML) tokenize less efficiently than plain prose.** All the braces, quotes, and colons around a handful of meaningful words add real overhead — the same information expressed as prose is usually cheaper.
+* **Rough estimate for sanity-checking:** plain English runs about ~4 characters per token; code runs closer to ~3 characters per token (more symbols, less compression). Exact ratios vary by model and tokenizer, so treat this as a quick gut-check, not a billing calculation — run an actual tokenizer on representative samples before projecting costs for a new feature.
+
+This is the mechanism behind several of the Golden Rules above: pasting minimal snippets (Rule 3), asking for diffs instead of full rewrites (Rule 4), and summarizing logs before debugging all work specifically because code, structured data, and verbose output are the most token-expensive things you can put in context — cutting them helps more than cutting an equivalent amount of plain prose would.
+
+---
+
+## Progressive Knowledge Indexing
+
+Most token waste from documentation comes from an all-or-nothing choice: either load every doc/skill/instruction file into context "just in case," or don't give the model access at all. **Progressive knowledge indexing** is the middle path, and it works the same way across tools even though the names differ:
+
+1. **Metadata-only at startup.** Only a name and short description of each doc/skill loads at session start — essentially a table of contents. This costs next to nothing.
+2. **Full content loaded on demand.** The agent pulls in the full text of a doc only when your current prompt actually matches its description.
+3. **Searched, not loaded, for large corpora.** For big doc sets or whole codebases, nothing sits in context at all — it's indexed and queried like search, only when needed.
+
+The result: context cost scales with what's *relevant* to the task in front of you, not with the total size of your documentation.
+
+**Where to apply it:** treat it as the deciding line between two buckets —
+
+* **Always-needed, small rules** → put these in your always-on instruction file (`CLAUDE.md`, `AGENTS.md`/steering, `copilot-instructions.md`). These load every turn by design, so keep them short.
+* **Large or situational reference material** → structure it for progressive loading instead of always-on. See the tool-specific mechanics in each Playbook section below:
+  - **Kiro CLI** — Skills (metadata-only until relevant) + `/knowledge` for indexed, searchable doc sets. See *Selective Indexing via Skills + Knowledge Bases*.
+  - **Claude Code** — Skills, loaded only when the task matches the skill's description.
+  - **GitHub Copilot** — Path-scoped `*.instructions.md`, which loads by file-type match rather than semantic relevance — a coarser proxy for the same idea, not a full equivalent.
+
+The common failure mode is a vague skill/doc description: too vague and the agent either never triggers it or triggers it for everything, which cancels out the savings. Write descriptions as specific as the task they should match.
+
 ---
 
 ## 10 Golden Rules
