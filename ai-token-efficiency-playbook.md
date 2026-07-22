@@ -154,6 +154,23 @@ For teams, standardize three things:
 
 ---
 
+## Cross-Tool Equivalents
+
+The three tools converge on the same four levers, just with different names. Use this as a quick lookup before diving into the tool-specific sections below.
+
+| Lever | Claude Code | Kiro CLI | GitHub Copilot CLI |
+| --- | --- | --- | --- |
+| **Reasoning depth control** | `/effort` (toggles reasoning depth; keyed per session, invalidates cache) | `--effort` at launch or `/effort` mid-session — `low / medium / high / xhigh / max`, remembered per model in `chat.modelDefaults` | Configurable reasoning effort for models that support it (e.g. GPT reasoning models); set via `/model`, `--reasoning-effort`, or `COPILOT_MODEL_EFFORT` |
+| **Manual compaction** | `/compact` (summarizes and rebuilds context, resets cache) | `/compact` — summarizes older turns while preserving recent messages; tunable via `compaction.excludeMessages` and `compaction.excludeContextWindowPercent` | `/compact` — manual compression anytime; `/context` shows a token-usage breakdown |
+| **Automatic compaction** | Not automatic — must be triggered manually via `/compact` or `/clear` | Triggers automatically on context-window overflow, in addition to manual `/compact` | Auto-compacts in the background at ~80–95% of the token limit; creates a recovery checkpoint each time |
+| **Scoped file reading (vs. dumping whole files)** | `@file` references pull in only the referenced file/section | Built-in read/grep-style tools pull only the specific lines or matches needed, rather than ingesting whole files or directory trees | `#file`, `#selection`, `#editor` context variables scope references explicitly |
+| **Lazy-loaded documentation** | Skills load only when the task matches (progressive loading) | **Skills**: only a short YAML frontmatter description loads at startup; full skill content loads on demand when relevant | Path-scoped `*.instructions.md` files load only for matching file types |
+| **Session recovery after compaction** | Original history is gone once compacted | Compaction spins up a *new* session; the untouched original is always reachable via `/chat resume` | Compaction creates a numbered checkpoint file; original detail may not be fully recoverable once summarized |
+
+The practical takeaway: whichever tool you're on, the same rule applies — **tune reasoning depth to the task, compact proactively rather than waiting for a wall, read only what's needed, and let large docs load lazily instead of upfront.**
+
+---
+
 ## Tool-Specific Workflows
 
 ### Claude Code Playbook
@@ -197,7 +214,8 @@ Kiro organizes context into three distinct tiers: **Always-on steering**, **On-d
 ┌─────────────────────────────────────────────────────────────┐
 │ ALWAYS-ON: AGENTS.md / .kiro/steering/*.md                   │
 ├─────────────────────────────────────────────────────────────┤
-│ ON-DEMAND: Skills.md (Loaded when invoked)                  │
+│ ON-DEMAND: Skills (metadata loads at startup, full content   │
+│            loads only when the agent needs it)               │
 ├─────────────────────────────────────────────────────────────┤
 │ SEARCHED: /knowledge (RAG index — 0 passive context cost)   │
 └─────────────────────────────────────────────────────────────┘
@@ -211,7 +229,35 @@ Kiro organizes context into three distinct tiers: **Always-on steering**, **On-d
 | **Core Standards** | `AGENTS.md` / Steering Files | Loaded at startup for persistent guidance. |
 | **Large Doc Sets** | `/knowledge` Knowledge Base | Indexed on-demand search; consumes no context until queried. |
 | **Task Files** | `/context add <file>` | Temporary, session-only context that can be cleared with `/context clear`. |
-| **Specialized Guides** | Skills | Loaded into active context only when specifically invoked. |
+| **Specialized Guides** | Skills | Only name + description load at startup; full content loads only when the agent decides the skill is relevant. |
+| **File Lookups** | Built-in read/grep tools | Pull specific lines or matches instead of loading whole files or directory trees. |
+
+#### Reasoning Depth: `--effort` / `/effort`
+
+Effort controls how much reasoning the model spends per prompt — lower effort means faster, cheaper, shorter responses; higher effort spends more tokens on deep multi-step reasoning.
+
+| Level | Best for |
+| --- | --- |
+| `low` | Quick lookups, simple questions |
+| `medium` | Standard day-to-day dev tasks |
+| `high` | Complex refactoring, architecture decisions |
+| `xhigh` | Multi-file changes, nuanced problems |
+| `max` | Security reviews, hard debugging, intricate logic |
+
+Set it at launch (`kiro-cli chat --effort high`) or mid-session (`/effort high`). Kiro remembers your choice automatically for future sessions via `~/.kiro/settings/cli.json`, and you can set different default effort levels per model under `chat.modelDefaults` (e.g., keep Sonnet at `high` but Opus at `max`). Practical rule: bump down for quick lookups, bump up only when the agent is missing edge cases or the task is genuinely hard.
+
+#### Context Compaction: `/compact`
+
+Kiro's direct answer to Claude Code's `/compact`. It summarizes older messages while preserving key information and recent turns, freeing up context window space. It also triggers **automatically** if your context window overflows, so you're not forced to babysit it. Two settings tune retention precisely:
+
+* `compaction.excludeMessages` — minimum number of message pairs to always keep uncompacted.
+* `compaction.excludeContextWindowPercent` — minimum percentage of the window to retain.
+
+Compaction spins up a *new* session — jump back to the original untouched history anytime with `/chat resume`.
+
+#### Selective Indexing via Skills + Knowledge Bases
+
+This is where Kiro pulls ahead of most competitors on documentation cost. Skills use progressive context loading: instead of loading full documentation upfront, the agent reads only a short YAML frontmatter description of each skill file, and loads the full content only when it determines that skill is actually relevant to the current task. Combined with `/knowledge` for persistent, searchable storage, this gives a two-layer system: broad project facts live as lightweight, lazily-loaded skill descriptions, and deep documentation only gets pulled in on-demand rather than repeated every prompt.
 
 #### Key Kiro Commands
 
@@ -222,13 +268,30 @@ kiro-cli settings chat.enableKnowledge true
 # Add codebase for lexical search (zero passive token cost)
 /knowledge add --name "src-code" --path ./src --include "**/*.ts" --index-type Fast
 
+# Set an initial effort level at launch
+kiro-cli chat --effort high
+
+# Adjust reasoning effort mid-session
+/effort medium
+
 # Inspect active token usage by source
 /context show
 
-# Compact when session context becomes large
+# Compact proactively before a big context-heavy task
 /compact
 
+# Return to the untouched pre-compaction session
+/chat resume
+
 ```
+
+#### Practical Rules for Kiro CLI
+
+* Set `--effort medium` as your default at launch; reserve `high`/`max` for genuinely hard problems.
+* Let automatic compaction handle overflow, but run `/compact` proactively before a big context-heavy task rather than waiting for the automatic trigger.
+* Rely on built-in read/grep-style tools for file lookups instead of asking the agent to "explore the codebase."
+* Structure large documentation as Skills with clear YAML descriptions so Kiro only pulls full content in when relevant.
+* Remember compaction creates a new session — if you're mid-debug and need the full original context back, `/chat resume` is your safety net, not trying to undo a compaction.
 
 ---
 
@@ -244,6 +307,14 @@ Copilot works best when constrained using concise instruction files and explicit
 | **Custom Instructions** | Project rules defined in `.github/copilot-instructions.md`. | Persistent guidance across sessions. |
 | **Context Scoping** | Direct reference variables like `#file`, `#selection`, or `#editor`. | Prevents unnecessary codebase context loading. |
 | **Path-Scoped Rules** | Files like `*.instructions.md` matching specific file patterns. | Loads rules only when matching file types are edited. |
+| **Reasoning Effort (Copilot CLI)** | Configurable reasoning effort for supported reasoning models, set via `/model`, a reasoning-effort flag, or an environment variable. | Balances response speed against reasoning depth per task. |
+| **Auto-Compaction (Copilot CLI)** | Automatically compresses history in the background at roughly 80–95% of the token limit; `/compact` also available manually. | Enables long sessions without manual cleanup; `/context` shows the token-usage breakdown. |
+
+#### Practical Rules for GitHub Copilot CLI
+
+* Avoid switching models or reasoning-effort levels mid-session — it can break cache reuse and force a rebuild.
+* Use `/context` to check usage before deciding whether to compact manually.
+* Prefer `#file` / `#selection` references over asking Copilot to explore the whole repo.
 
 #### Starter `.github/copilot-instructions.md`
 
@@ -300,6 +371,8 @@ Output: 3 bullets max + minimal patch.
 * [ ] Establish a policy: require patch/diff outputs for routine code edits.
 * [ ] Train developers to reset or summarize sessions when context drifts.
 * [ ] Utilize searchable knowledge bases or RAG indexes for large repos rather than dumping raw directories into context.
+* [ ] Set a default reasoning-effort level per tool (Claude Code `/effort`, Kiro `--effort`, Copilot reasoning effort) and reserve the top tier for genuinely hard tasks.
+* [ ] Prefer proactive manual compaction over waiting for automatic triggers when a big context-heavy task is coming up.
 
 ---
 
@@ -308,5 +381,5 @@ Output: 3 bullets max + minimal patch.
 1. **Minute 1:** Add a 10-line instruction file to your repository.
 2. **Minute 2:** Save the universal task brief prompt snippet.
 3. **Minute 3:** Practice requesting `diff only` on your next task.
-4. **Minute 4:** Check your active context status (`/context show` in Kiro or `/recap` in Claude Code).
+4. **Minute 4:** Check your active context status (`/context show` in Kiro, `/recap` in Claude Code, or `/context` in Copilot CLI).
 5. **Minute 5:** Start clearing or resetting chats between tasks instead of running multi-issue sessions.
