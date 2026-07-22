@@ -1,12 +1,6 @@
 # AI Token Efficiency Playbook for Developers
 
-A practical, copy-paste-friendly guide for reducing token usage and improving output quality in **Claude Code**, **Kiro CLI**, and **GitHub Copilot**. Token efficiency comes down to keeping context small and relevant, choosing the right model for the task, and constraining both prompts and outputs so the model processes only what is needed.
-
----
-
-## Who This Is For
-
-This playbook is designed for developers with little or no AI coding experience, as well as teams that want a shared operating model for AI-assisted development. It uses developer-friendly mental models, short checklists, and reusable snippets instead of abstract prompt-engineering advice.
+A practical, guide for reducing token usage and improving output quality in **Claude Code**, **Kiro CLI**, and **GitHub Copilot**. Token efficiency comes down to keeping context small and relevant, choosing the right model for the task, and constraining both prompts and outputs so the model processes only what is needed.
 
 ---
 
