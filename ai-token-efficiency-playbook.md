@@ -1,6 +1,10 @@
 # AI Token Efficiency Playbook for Developers
 
-A practical, guide for reducing token usage and improving output quality in **Claude Code**, **Kiro CLI**, and **GitHub Copilot**. Token efficiency comes down to keeping context small and relevant, choosing the right model for the task, and constraining both prompts and outputs so the model processes only what is needed.
+A practical, guide for reducing token usage and improving output quality in **Claude Code**, **Kiro CLI**, and **GitHub Copilot CLI**. Token efficiency comes down to keeping context small and relevant, choosing the right model for the task, and constraining both prompts and outputs so the model processes only what is needed.
+
+> **Commands verified as of July 2026.** All three tools ship updates frequently — exact flags, thresholds, and slash commands can change between releases. Run `--help` or check official docs before relying on an exact flag name in this guide.
+
+**Jump to:** [Core Mental Model](#core-mental-model) · [Progressive Knowledge Indexing](#progressive-knowledge-indexing) · [10 Golden Rules](#10-golden-rules) · [Prompt Templates](#copy-paste-prompt-templates) · [Developer Workflow](#developer-workflow) · [Cross-Tool Equivalents](#cross-tool-equivalents) · [Claude Code](#claude-code-playbook) · [Kiro CLI](#kiro-cli-playbook) · [GitHub Copilot CLI](#github-copilot-cli-playbook) · [Config Files](#configuration-files-summary) · [Checklist](#team-rollout-checklist) · [5-Minute Plan](#5-minute-adoption-plan)
 
 ---
 
@@ -72,7 +76,7 @@ The result: context cost scales with what's *relevant* to the task in front of y
 * **Large or situational reference material** → structure it for progressive loading instead of always-on. See the tool-specific mechanics in each Playbook section below:
   - **Kiro CLI** — Skills (metadata-only until relevant) + `/knowledge` for indexed, searchable doc sets. See *Selective Indexing via Skills + Knowledge Bases*.
   - **Claude Code** — Skills, loaded only when the task matches the skill's description.
-  - **GitHub Copilot** — Path-scoped `*.instructions.md`, which loads by file-type match rather than semantic relevance — a coarser proxy for the same idea, not a full equivalent.
+  - **GitHub Copilot CLI** — Path-scoped `*.instructions.md`, which loads by file-type match rather than semantic relevance — a coarser proxy for the same idea, not a full equivalent.
 
 The common failure mode is a vague skill/doc description: too vague and the agent either never triggers it or triggers it for everything, which cancels out the savings. Write descriptions as specific as the task they should match.
 
@@ -188,18 +192,18 @@ For teams, standardize three things:
 
 ## Cross-Tool Equivalents
 
-The three tools converge on the same four levers, just with different names. Use this as a quick lookup before diving into the tool-specific sections below.
+The three tools converge on the same five levers, just with different commands. This table is a scannable index only — full mechanics, config keys, and caveats live in each tool's own Playbook section below, so look here first, then jump to your tool.
 
 | Lever | Claude Code | Kiro CLI | GitHub Copilot CLI |
 | --- | --- | --- | --- |
-| **Reasoning depth control** | `/effort` (toggles reasoning depth; keyed per session, invalidates cache) | `--effort` at launch or `/effort` mid-session — `low / medium / high / xhigh / max`, remembered per model in `chat.modelDefaults` | Configurable reasoning effort for models that support it (e.g. GPT reasoning models); set via `/model`, `--reasoning-effort`, or `COPILOT_MODEL_EFFORT` |
-| **Manual compaction** | `/compact` (summarizes and rebuilds context, resets cache) | `/compact` — summarizes older turns while preserving recent messages; tunable via `compaction.excludeMessages` and `compaction.excludeContextWindowPercent` | `/compact` — manual compression anytime; `/context` shows a token-usage breakdown |
-| **Automatic compaction** | Not automatic — must be triggered manually via `/compact` or `/clear` | Triggers automatically on context-window overflow, in addition to manual `/compact` | Auto-compacts in the background at ~80–95% of the token limit; creates a recovery checkpoint each time |
-| **Scoped file reading (vs. dumping whole files)** | `@file` references pull in only the referenced file/section | Built-in read/grep-style tools pull only the specific lines or matches needed, rather than ingesting whole files or directory trees | `#file`, `#selection`, `#editor` context variables scope references explicitly |
-| **Lazy-loaded documentation** | Skills load only when the task matches (progressive loading) | **Skills**: only a short YAML frontmatter description loads at startup; full skill content loads on demand when relevant | Path-scoped `*.instructions.md` files load only for matching file types |
-| **Session recovery after compaction** | Original history is gone once compacted | Compaction spins up a *new* session; the untouched original is always reachable via `/chat resume` | Compaction creates a numbered checkpoint file; original detail may not be fully recoverable once summarized |
+| **Reasoning depth control** | `/effort` | `--effort` (launch) / `/effort` (mid-session) | Reasoning effort via `/model` picker |
+| **Manual compaction** | `/compact` | `/compact` | `/compact` |
+| **Automatic compaction** | None — manual only | On context overflow | On approaching context limit |
+| **Scoped file reading** | `@file` references | Built-in read/grep tools | `#file`, `#selection`, `#editor` |
+| **Lazy-loaded documentation** | Skills | Skills + `/knowledge` | Path-scoped `*.instructions.md` (coarser — file-type match, not relevance) |
+| **Non-destructive usage check** | `/context` | `/context show` | `/context` |
 
-The practical takeaway: whichever tool you're on, the same rule applies — **tune reasoning depth to the task, compact proactively rather than waiting for a wall, read only what's needed, and let large docs load lazily instead of upfront.**
+The practical takeaway: whichever tool you're on, the same rule applies — **tune reasoning depth to the task, compact proactively rather than waiting for a wall, read only what's needed, and let large docs load lazily instead of upfront.** Details and exact syntax: see each tool's Playbook section.
 
 ---
 
@@ -213,17 +217,18 @@ Claude Code relies on **Prompt Caching** to reuse unchanged context prefixes. Ce
 
 | Tool / Command | What It Does | Cache Impact |
 | --- | --- | --- |
-| **Prompt Caching** | Reuses previously processed prompt prefixes automatically. | Saves ~90% input costs on cached tokens. |
-| `/recap` | Produces a session summary in terminal output without modifying context. | **Preserves cache prefix** (Preferred). |
+| **Prompt Caching** | Reuses previously processed prompt prefixes automatically. | Saves ~90% on input costs, but only for tokens that hit the cache. |
+| `/context` | Shows a visual breakdown of current context usage without modifying it. | **Preserves cache prefix** (Preferred for checking progress). |
 | `/compact` | Summarizes history and rebuilds the active session context. | Resets the cached prefix. |
 | `/clear` | Wipes conversation history completely. | Rebuilds cache from scratch. |
-| `/effort` | Toggles reasoning depth. | **Invalidates cache** (Keyed by effort level). |
+| `/effort` | Sets reasoning depth (`low` through `xhigh`/`max`). | Likely affects cache reuse, since effort level is part of the request configuration — avoid changing it mid-task. |
 
 #### Practical Rules for Claude Code
 
-* Keep `CLAUDE.md` short (under 100 lines) and placed at the project root.
-* Avoid changing `CLAUDE.md`, tool permissions, or effort level mid-session.
-* Prefer `/recap` over `/compact` when checking progress to keep your cache warm.
+* Keep `CLAUDE.md` short (under ~200 lines) and placed at the project root; move details into separate files and pull them in with `@filename`.
+* Avoid changing `CLAUDE.md`, tool permissions, or effort level mid-session — each can force a cache rebuild.
+* Prefer `/context` over `/compact` when you just want to check usage, to keep your cache warm.
+* Use `/clear` between unrelated tasks; use `/compact` when continuing the same task with less context pressure.
 
 #### Starter `CLAUDE.md`
 
@@ -293,6 +298,8 @@ This is where Kiro pulls ahead of most competitors on documentation cost. Skills
 
 #### Key Kiro Commands
 
+> Flag and config-key names below match current docs as of this writing — Kiro ships frequently, so confirm with `kiro-cli --help` or `/help` before scripting against them.
+
 ```bash
 # Enable searchable knowledge bases
 kiro-cli settings chat.enableKnowledge true
@@ -327,9 +334,9 @@ kiro-cli chat --effort high
 
 ---
 
-### GitHub Copilot Playbook
+### GitHub Copilot CLI Playbook
 
-Copilot works best when constrained using concise instruction files and explicit context scoping.
+Copilot CLI works best when constrained using concise instruction files and explicit context scoping. Note: the reasoning-effort and auto-compaction features below are specific to Copilot **CLI** — behavior may differ in the IDE/editor extension.
 
 #### Official Features & Best Practices
 
@@ -339,8 +346,8 @@ Copilot works best when constrained using concise instruction files and explicit
 | **Custom Instructions** | Project rules defined in `.github/copilot-instructions.md`. | Persistent guidance across sessions. |
 | **Context Scoping** | Direct reference variables like `#file`, `#selection`, or `#editor`. | Prevents unnecessary codebase context loading. |
 | **Path-Scoped Rules** | Files like `*.instructions.md` matching specific file patterns. | Loads rules only when matching file types are edited. |
-| **Reasoning Effort (Copilot CLI)** | Configurable reasoning effort for supported reasoning models, set via `/model`, a reasoning-effort flag, or an environment variable. | Balances response speed against reasoning depth per task. |
-| **Auto-Compaction (Copilot CLI)** | Automatically compresses history in the background at roughly 80–95% of the token limit; `/compact` also available manually. | Enables long sessions without manual cleanup; `/context` shows the token-usage breakdown. |
+| **Reasoning Effort (Copilot CLI)** | For reasoning models that support it, open the `/model` picker, select the model, then pick a level from the "Thinking Effort" submenu. | Balances response speed against reasoning depth per task. |
+| **Auto-Compaction (Copilot CLI)** | Automatically compresses history in the background as the session approaches the context limit (current docs cite ~80%, with earlier releases at ~95% — this threshold has moved between versions); `/compact` also available manually. | Enables long sessions without manual cleanup; `/context` shows the token-usage breakdown. |
 
 #### Practical Rules for GitHub Copilot CLI
 
@@ -367,7 +374,7 @@ Copilot works best when constrained using concise instruction files and explicit
 | --- | --- | --- | --- |
 | **Claude Code** | `CLAUDE.md` | Root or `.claude/` | Project guidelines and cached system rules. |
 | **Kiro CLI** | `AGENTS.md` / `.kiro/steering/*.md` | Root / `.kiro/steering/` | Domain-specific steering directives. |
-| **GitHub Copilot** | `copilot-instructions.md` | `.github/` | Global workspace coding standards. |
+| **GitHub Copilot CLI** | `copilot-instructions.md` | `.github/` | Global workspace coding standards. |
 
 ---
 
@@ -413,5 +420,5 @@ Output: 3 bullets max + minimal patch.
 1. **Minute 1:** Add a 10-line instruction file to your repository.
 2. **Minute 2:** Save the universal task brief prompt snippet.
 3. **Minute 3:** Practice requesting `diff only` on your next task.
-4. **Minute 4:** Check your active context status (`/context show` in Kiro, `/recap` in Claude Code, or `/context` in Copilot CLI).
+4. **Minute 4:** Check your active context status (`/context show` in Kiro, `/context` in Claude Code, or `/context` in Copilot CLI).
 5. **Minute 5:** Start clearing or resetting chats between tasks instead of running multi-issue sessions.
