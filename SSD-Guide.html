@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+…<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -304,7 +304,7 @@
     <ul class="toc-list">
       <li><a href="#sec-01"><span class="n">01</span> What is SDD</a></li>
       <li><a href="#sec-02"><span class="n">02</span> Maturity Levels</a></li>
-      <li><a href="#sec-03"><span class="n">03</span> The 4-Phase Loop</a></li>
+      <li><a href="#sec-03"><span class="n">03</span> The 4-Phase Loop + Scorecard</a></li>
       <li><a href="#sec-04"><span class="n">04</span> Writing Specs with EARS</a></li>
       <li><a href="#sec-05"><span class="n">05</span> Spec in Scrum &amp; Kanban</a></li>
       <li><a href="#sec-06"><span class="n">06</span> SDD vs TDD vs BDD</a></li>
@@ -627,6 +627,58 @@
           <span class="tag">HOW THIS PLAYS OUT IN PRACTICE</span>
           <p><strong>Kiro CLI</strong>: The built‑in <code>/spec</code> agent automates this entire loop. You run <code>/spec new</code>, the agent produces <code>requirements.md</code>. You review and type "proceed" — agent moves to <code>design.md</code>. You review and type "proceed" — agent moves to <code>tasks.md</code>. You review and type "proceed" — agent runs <code>/spec run</code> and executes the tasks, showing you each diff as it goes.</p>
           <p><strong>Claude Code</strong>: You bring your own workflow. Plugins like <strong>Specifico</strong> give you <code>/specifico:spec</code>, <code>/specifico:plan</code>, <code>/specifico:tasks</code>, <code>/specifico:implement</code> — each phase requires your explicit approval before moving to the next. You can also build custom slash commands with the same human‑first approval gates.</p>
+        </div>
+        <hr class="div" style="margin:20px 0;">
+
+        <h3>Grading the Output: The 5-Point Scorecard</h3>
+        <p class="lede">The 4-phase loop above tells you <em>how</em> to run agentic work. It doesn't tell you whether what came out the other end was actually good. That's a separate question — and it's the one Andrej Karpathy's "agentic engineering" framework is really about: the discipline of judging agent output, not just producing it. Score every spec-driven task against these five dimensions before you approve the merge.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Dimension</th><th>What you're checking</th><th>Kiro CLI</th><th>Claude Code</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>Spec design</strong></td>
+                <td>Were invariants and security boundaries written down <em>before</em> prompting — not just a loose description?</td>
+                <td>EARS-formatted <code>requirements.md</code>, reviewed and approved before "proceed"</td>
+                <td>Feature spec via Specifico's <code>/specifico:spec</code> or custom <code>/kiro:spec-requirements</code>, approved before Plan</td>
+              </tr>
+              <tr>
+                <td><strong>Diff review</strong></td>
+                <td>Was the diff checked against architecture and the approved plan — not just "tests pass"?</td>
+                <td>Review each diff as <code>/spec run</code> executes tasks sequentially against <code>design.md</code></td>
+                <td>Review targeted diffs per task against <code>PLAN.md</code>; use a separate reviewer sub-agent for pattern violations</td>
+              </tr>
+              <tr>
+                <td><strong>Eval design</strong></td>
+                <td>Is there an objective, repeatable score — not a vibe check — proving the output is good?</td>
+                <td>Task-level "definition of done" + inline verification instructions per <code>tasks.md</code> entry</td>
+                <td>Custom eval scripts / CI gates tied to acceptance criteria in <code>TASKS.md</code></td>
+              </tr>
+              <tr>
+                <td><strong>Security oversight</strong></td>
+                <td>Was every identity-, auth-, or cross-system decision reviewed for plausible-but-wrong assumptions?</td>
+                <td>Enforced via always-loaded <code>.kiro/steering/tech.md</code> rules (the Constitution)</td>
+                <td>Enforced via <code>CLAUDE.md</code> Constitution rules, reviewed on a separate security pass</td>
+              </tr>
+              <tr>
+                <td><strong>Taste</strong></td>
+                <td>Does the code reuse existing patterns and stay lean, or default to a generic, bloated solution?</td>
+                <td>Verifier agent pattern — a distinct agent checks output after <code>/spec run</code>, not the implementer itself</td>
+                <td>Dedicated reviewer sub-agent with its own context, separate from the implementing agent</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout warn">
+          <span class="tag">WHY THIS MATTERS</span>
+          <p>Every one of these five failure modes looks identical on the surface: code that compiles, passes tests, and "works." That's exactly why a scorecard beats a gut check — the risk in agentic engineering isn't broken code, it's code that quietly ships debt, security gaps, or architectural drift that only surfaces months later. A 5/5 on eval with a 1/5 on taste is still a liability, not a pass.</p>
+        </div>
+
+        <div class="callout tip">
+          <span class="tag">HOW TO USE IT</span>
+          <p>Score each merged task 1–5 on all five dimensions, not just "did it work." Flag anything scoring low on security oversight for mandatory senior re-review regardless of how clean the rest of the diff looks. Track scores over time per repo — a consistent low score on spec design usually means your steering files or <code>CLAUDE.md</code> are underspecified, not that the agent is unreliable.</p>
         </div>
       </section>
 
