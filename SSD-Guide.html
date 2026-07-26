@@ -663,6 +663,86 @@
           </table>
         </div>
 
+        <h3>Scorecard in Action: One Feature, Five Checks</h3>
+        <p>The table above tells you <em>what</em> to check. What actually makes it click is seeing a real red flag next to the fix that catches it. Take the token-bucket rate limiter from Sheet 03's Phase 1 example and run it through all five dimensions — this is the level of concreteness you're aiming for in your own reviews, not a vague "looks fine."</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Dimension</th><th>🚩 Red flag (what actually goes wrong)</th><th>✅ Green flag (what good looks like)</th><th>How you catch it</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>Spec design</strong></td>
+                <td><code>requirements.md</code> just says "add rate limiting to the API" — no trigger, no boundary, no error format.</td>
+                <td><em>"When a client exceeds 100 requests in a 1-second window, the system shall respond with 429 and a Retry-After header. If the request has no valid API key, then the system shall return 401 before evaluating the rate limit."</em> Both the happy path and the auth-ordering edge case are explicit.</td>
+                <td><strong>Kiro:</strong> before typing "proceed," try restating each requirement as a When/If clause — if you can't, it isn't ready. <strong>Claude Code:</strong> same test, applied before approving Plan.</td>
+              </tr>
+              <tr>
+                <td><strong>Diff review</strong></td>
+                <td><code>plan.md</code> specifies a token bucket that refills continuously, but the diff implements a fixed window counter that resets every second — a quietly different, weaker algorithm that still passes the same tests.</td>
+                <td>The diff contains a bucket struct with a token count and a last-refill timestamp — matching <code>plan.md</code>'s stated approach line for line, not just its outcome.</td>
+                <td><strong>Kiro:</strong> as <code>/spec run</code> shows each diff, hold it next to <code>design.md</code>'s algorithm section — not just "tests green." <strong>Claude Code:</strong> ask a reviewer sub-agent "does this diff implement what plan.md Section 3 describes, or a different approach that happens to pass the same tests?"</td>
+              </tr>
+              <tr>
+                <td><strong>Eval design</strong></td>
+                <td><code>tasks.md</code> says "add tests for rate limiter" — vague, so the agent writes one happy-path test and stops.</td>
+                <td>The task's definition of done reads: <em>"test: 101st request in a 1s window returns 429 with Retry-After ≥ 1; test: request with an invalid key returns 401 without consuming a token."</em> Each line maps 1:1 to an EARS requirement.</td>
+                <td><strong>Kiro:</strong> check that every <code>tasks.md</code> verification line names a specific input/output pair, not "add tests." <strong>Claude Code:</strong> a CI gate that fails the merge if a task's test file doesn't reference its acceptance-criterion ID.</td>
+              </tr>
+              <tr>
+                <td><strong>Security oversight</strong></td>
+                <td>The agent keys the rate-limit counter on client IP alone — reasonable-looking, but it breaks the moment two users share a corporate NAT or mobile carrier proxy, and it's trivially spoofed via <code>X-Forwarded-For</code>.</td>
+                <td>The counter is keyed on the authenticated client/API-key ID, with IP used only as a secondary abuse signal.</td>
+                <td><strong>Kiro:</strong> a rule in <code>.kiro/steering/tech.md</code> — "never key security or quota logic on IP address alone" — is loaded every session, so Plan should propose the key-ID approach unprompted; if it doesn't, that's the flag. <strong>Claude Code:</strong> the same rule in <code>CLAUDE.md</code>, plus a dedicated pass: "review this diff only for identity and trust-boundary assumptions, ignore style."</td>
+              </tr>
+              <tr>
+                <td><strong>Taste</strong></td>
+                <td>The project already has <code>lib/rate-limiter.ts</code>, used by two other endpoints — the agent writes a second, subtly different implementation inline in the new middleware instead of importing it.</td>
+                <td>The diff imports and extends the existing shared utility, or explicitly proposes replacing it with a stated reason.</td>
+                <td><strong>Kiro:</strong> the verifier agent (Sheet 03) is prompted specifically to grep for existing rate-limiting code before approving — duplication is an automatic flag. <strong>Claude Code:</strong> the reviewer sub-agent's prompt includes "search the codebase for existing implementations of this pattern before judging the diff done."</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>A Reusable Reviewer Prompt</h4>
+        <p>The fastest way to apply this scorecard consistently — instead of re-explaining it in every review — is to save it once as a real command and run it on every task, not just the ones that feel risky.</p>
+
+        <div class="code-card">
+          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">.claude/commands/scorecard.md — Claude Code custom command</span><button class="copy-btn" data-copy>Copy</button></div>
+          <pre><code><span class="tok-c"># /scorecard</span>
+<span class="tok-c"># Review the diff for this task against spec.md, plan.md, and tasks.md.</span>
+<span class="tok-c"># Score 1-5 on each, with one line of justification:</span>
+
+1. Spec design — does every branch in the diff trace back to an EARS requirement?
+2. Diff review — does the implementation match plan.md's stated approach,
+   not just pass the same tests a different approach would also pass?
+3. Eval design — does each test map to a specific acceptance criterion,
+   not just "happy path passes"?
+4. Security oversight — search for identity, auth, or trust-boundary logic;
+   check it against CLAUDE.md's security rules for plausible-but-wrong assumptions.
+5. Taste — grep the codebase for existing patterns this diff could have
+   reused instead of reinventing.
+
+<span class="tok-c"># Report scores only. Do not approve the merge — that stays a human decision.</span></code></pre>
+        </div>
+
+        <div class="code-card">
+          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">Kiro CLI — running the verifier as a separate session</span><button class="copy-btn" data-copy>Copy</button></div>
+          <pre><code><span class="tok-c"># Open a second terminal / separate Kiro context —</span>
+<span class="tok-c"># the reviewer must not be the same session that implemented the diff.</span>
+
+<span class="tok-k">kiro</span>
+<span class="tok-k">&gt; Load .kiro/specs/rate-limiter/ and the diff from the last /spec run.</span>
+<span class="tok-k">&gt; Score 1-5: spec fidelity, plan fidelity, eval coverage, security</span>
+<span class="tok-k">&gt; assumptions (cross-check .kiro/steering/tech.md), and pattern reuse.</span>
+<span class="tok-k">&gt; Report scores and file:line references only — do not merge.</span></code></pre>
+        </div>
+
+        <div class="callout tip">
+          <span class="tag">SAVE IT ONCE, RUN IT EVERY MERGE</span>
+          <p>Treating the scorecard as a saved command instead of something you re-type from memory is what makes it stick as a habit rather than a one-off exercise. It also means every reviewer on the team — human or agent — is checking against the exact same five questions.</p>
+        </div>
+
         <div class="callout warn">
           <span class="tag">WHY THIS MATTERS</span>
           <p>Every one of these five failure modes looks identical on the surface: code that compiles, passes tests, and "works." That's exactly why a scorecard beats a gut check — the risk in agentic engineering isn't broken code, it's code that quietly ships debt, security gaps, or architectural drift that only surfaces months later. A 5/5 on eval with a 1/5 on taste is still a liability, not a pass.</p>
@@ -671,203 +751,6 @@
         <div class="callout tip">
           <span class="tag">HOW TO USE IT</span>
           <p>Score each merged task 1–5 on all five dimensions, not just "did it work." Flag anything scoring low on security oversight for mandatory senior re-review regardless of how clean the rest of the diff looks. Track scores over time per repo — a consistent low score on spec design usually means your steering files or <code>CLAUDE.md</code> are underspecified, not that the agent is unreliable.</p>
-        </div>
-      </section>
-
-      <hr class="div">
-
-      <!-- 04 -->
-      <section class="sheet" id="sec-04">
-        <div class="sheet-label"><span class="num">04</span><span class="of">Sheet 04 of 13</span><span class="rule"></span></div>
-        <h2>Writing Requirements with EARS Notation</h2>
-        <p>The weakest link in any spec is still the sentence a human wrote. <strong>EARS (Easy Approach to Requirements Syntax)</strong> is the notation most SDD tools now lean on to keep those sentences testable — it originated in 2009 at Rolls-Royce, where engineers analyzing jet-engine control regulations noticed that good requirements all shared the same clause order. It has since been adopted by Airbus, Bosch, NASA, and Siemens, and since 2025 it's been baked directly into AI-native tools, most visibly Kiro's requirements phase.</p>
-        <p>EARS gives you five patterns. Each one forces you to be explicit about the thing vague requirements always hide: <strong>what triggers this, and under what conditions.</strong></p>
-
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Pattern</th><th>Keyword</th><th>Template</th><th>Example</th></tr></thead>
-            <tbody>
-              <tr><td><strong>Ubiquitous</strong></td><td>— (none)</td><td>The &lt;system&gt; shall &lt;response&gt;</td><td>The system shall hash all passwords using bcrypt.</td></tr>
-              <tr><td><strong>Event-Driven</strong></td><td>When</td><td>When &lt;trigger&gt;, the &lt;system&gt; shall &lt;response&gt;</td><td>When a file upload exceeds 10MB, the system shall reject it with an error.</td></tr>
-              <tr><td><strong>State-Driven</strong></td><td>While</td><td>While &lt;state&gt;, the &lt;system&gt; shall &lt;response&gt;</td><td>While a password-reset link is valid, the system shall allow setting a new password.</td></tr>
-              <tr><td><strong>Unwanted Behavior</strong></td><td>If</td><td>If &lt;condition&gt;, then the &lt;system&gt; shall &lt;response&gt;</td><td>If an invalid card number is entered, then the system shall display a re-entry prompt.</td></tr>
-              <tr><td><strong>Optional Feature</strong></td><td>Where</td><td>Where &lt;feature present&gt;, the &lt;system&gt; shall &lt;response&gt;</td><td>Where two-factor auth is enabled, the system shall send a code via SMS.</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <p>These combine into <strong>complex requirements</strong> when a behavior genuinely depends on more than one condition:</p>
-        <div class="code-card">
-          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">requirements.md</span><button class="copy-btn" data-copy>Copy</button></div>
-          <pre><code><span class="tok-c"># Complex requirement — state + event combined</span>
-<span class="tok-k">While</span> a user session is active, <span class="tok-k">when</span> the session token expires,
-the system <span class="tok-s">shall</span> redirect the user to the login page and preserve their draft input.</code></pre>
-        </div>
-
-        <div class="callout info">
-          <span class="tag">WHY IT MATTERS FOR AI AGENTS</span>
-          <p>EARS' real payoff in an SDD pipeline isn't grammar — it's that each requirement becomes directly testable, with an unambiguous trigger and expected response an agent can decompose straight into a task and a test. It also front-loads the exact questions your clarification step needs to ask.</p>
-        </div>
-        <p>EARS works best for one trigger → one response. Stack more than two <code>While</code>/<code>When</code> clauses in a sentence and it turns into a puzzle instead of a requirement — switch to a decision table at that point. And some things aren't trigger-and-response at all: if it's about how components relate or fit together — architecture, service ownership, system layout — draw a diagram; if it's a standing rule with no trigger at all, one that's just always true, that's Constitution material (see Sheet 03), not a spec requirement.</p>
-      </section>
-
-      <hr class="div">
-
-      <!-- 05 — REVISED FOR CLARITY -->
-      <section class="sheet" id="sec-05">
-        <div class="sheet-label"><span class="num">05</span><span class="of">Sheet 05 of 13</span><span class="rule"></span></div>
-        <h2>Where the Spec Lives in Scrum &amp; Kanban</h2>
-
-        <h3>The Big Misconception: "Waterfall in Markdown"</h3>
-        <p>The loudest criticism of SDD is that it's just <strong>"waterfall in Markdown."</strong> That criticism is fair <em>if</em> you write a spec and then refuse to change it. But SDD becomes fully Agile when the spec is <strong>living</strong> — meaning it evolves as you learn.</p>
-        <p><strong>The real test of agility is not whether you have a spec, it's whether the spec is allowed to change after development starts.</strong></p>
-
-        <ul>
-          <li><strong>❌ Frozen Spec</strong> – Locked down before coding, resistant to change. This is Big Design Up Front (BDUF) and <em>is not</em> Agile.</li>
-          <li><strong>✅ Living Spec</strong> – Updated during the sprint as new insights emerge. The AI regenerates code from the updated spec. <em>This is Agile.</em></li>
-        </ul>
-
-        <div class="callout tip">
-          <span class="tag">FOR MANAGERS</span>
-          <p>The Agile Manifesto prioritises <strong>"working software over comprehensive documentation"</strong> — it doesn't say documentation is useless. A living spec is <em>working documentation</em> because it directly drives AI to produce working software. It supports Agile's core value of <strong>"responding to change"</strong> better than a fixed plan ever could.</p>
-        </div>
-
-        <hr class="div">
-
-        <h3>The Three Maturity Levels — and the One Antipattern</h3>
-        <p>From Sheet 02, remember the three rungs. They map directly to how you use them in Agile:</p>
-
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Level</th><th>When to use it</th><th>Cost / Overhead</th></tr></thead>
-            <tbody>
-              <tr><td><strong>Spec-First</strong></td><td>Most day‑to‑day work inside a single sprint.</td><td><span style="color:var(--cyan);">Low</span> — good for most features.</td></tr>
-              <tr><td><strong>Spec-Anchored</strong></td><td>When multiple teams or agents share the same contract (e.g., a public API).</td><td><span style="color:var(--amber);">Medium</span> — requires more coordination.</td></tr>
-              <tr><td><strong>Spec-As-Source</strong></td><td>Experiments, safety‑critical systems, or formal certification projects.</td><td><span style="color:var(--coral);">High</span> — full regeneration, heavy overhead.</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="callout warn">
-          <span class="tag">THE ONE ANTIPATTERN TO AVOID</span>
-          <p><strong>Paying the cost of a higher rung for a problem that sits at a lower one.</strong> If you turn a simple one‑line bug fix into a dozen acceptance criteria and multiple stories, you're over‑engineering the process. Keep the maturity level matched to the problem.</p>
-        </div>
-
-        <hr class="div">
-
-        <h3>Where the Spec Belongs: In the Sprint, Not the Backlog</h3>
-        <p>The most common integration mistake is writing the complete, finished spec in the Product Backlog. That's wrong.</p>
-        <ul>
-          <li><strong>In the Backlog:</strong> Keep only the <em>intent</em> — enough to understand the goal. Refinement is for shaping, not for writing full details.</li>
-          <li><strong>In the Sprint:</strong> Develop the detailed spec (user stories, EARS requirements, acceptance criteria) as part of the implementation work.</li>
-        </ul>
-        <p>Teams report that discussing goals and context in the backlog, and developing the actual contract <em>during</em> the sprint as part of doing the work, keeps flow healthy. Scrum provides the container; it doesn't micromanage the spec cycle inside it.</p>
-
-        <div class="diagram-frame">
-          <svg viewBox="0 0 900 340" role="img" aria-label="Where the spec matures: Scrum flow from Product Backlog through Refinement, Sprint, to Definition of Ready; Kanban flow from Upstream Kanban through Commitment Point to In Progress">
-            <defs>
-              <marker id="arrowS" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#7fae95"/></marker>
-              <marker id="arrowK" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 Z" fill="#7fae95"/></marker>
-            </defs>
-
-            <text x="20" y="30" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">SCRUM</text>
-            <path d="M205,70 H235" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrowS)"/>
-            <path d="M460,70 H490" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrowS)"/>
-            <path d="M685,70 H715" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrowS)"/>
-
-            <rect x="20" y="40" width="185" height="62" rx="10" fill="#221f1b" stroke="#7fae95" stroke-width="1.6"/>
-            <text x="112" y="66" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="700">PRODUCT BACKLOG</text>
-            <text x="112" y="86" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">goal + intent only</text>
-
-            <rect x="235" y="40" width="225" height="62" rx="10" fill="#221f1b" stroke="#7fae95" stroke-width="1.6"/>
-            <text x="347" y="66" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="700">REFINEMENT</text>
-            <text x="347" y="86" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">shape, not full detail</text>
-
-            <rect x="490" y="40" width="195" height="62" rx="10" fill="#221f1b" stroke="#d9a153" stroke-width="1.8"/>
-            <text x="587" y="66" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="700">SPRINT</text>
-            <text x="587" y="86" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="11.5">spec matures here</text>
-
-            <rect x="715" y="40" width="165" height="62" rx="10" fill="#221f1b" stroke="#d98a6e" stroke-width="1.8"/>
-            <text x="797" y="60" text-anchor="middle" fill="#d98a6e" font-family="IBM Plex Mono, monospace" font-size="11.5" font-weight="700">DEFINITION</text>
-            <text x="797" y="75" text-anchor="middle" fill="#d98a6e" font-family="IBM Plex Mono, monospace" font-size="11.5" font-weight="700">OF READY</text>
-            <text x="797" y="93" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="10.5">quality agreement</text>
-
-            <line x1="20" y1="150" x2="880" y2="150" stroke="rgba(214,201,181,0.15)" stroke-dasharray="4 4"/>
-
-            <text x="20" y="190" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="700">KANBAN</text>
-            <path d="M255,230 H285" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrowK)"/>
-            <path d="M510,230 H540" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrowK)"/>
-
-            <rect x="20" y="200" width="235" height="62" rx="10" fill="#221f1b" stroke="#7fae95" stroke-width="1.6"/>
-            <text x="137" y="226" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="700">UPSTREAM KANBAN</text>
-            <text x="137" y="246" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">analysis, WIP-limited</text>
-
-            <rect x="285" y="200" width="225" height="62" rx="10" fill="#221f1b" stroke="#d9a153" stroke-width="1.8"/>
-            <text x="397" y="222" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="11.5" font-weight="700">COMMITMENT POINT</text>
-            <text x="397" y="242" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="11">"ready to pull"</text>
-
-            <rect x="540" y="200" width="200" height="62" rx="10" fill="#221f1b" stroke="#d98a6e" stroke-width="1.8"/>
-            <text x="640" y="226" text-anchor="middle" fill="#d98a6e" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="700">IN PROGRESS</text>
-            <text x="640" y="246" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="11">spec matures here</text>
-
-            <text x="450" y="300" text-anchor="middle" fill="#8a8172" font-family="IBM Plex Mono, monospace" font-size="11.5" letter-spacing="0.03em">THE CONTRACT DEVELOPS DURING EXECUTION — NOT DURING BACKLOG OR REFINEMENT</text>
-          </svg>
-          <p class="diagram-cap">In Scrum, the spec matures inside the Sprint, anchored by the Definition of Ready. In Kanban, the commitment point plays the same role.</p>
-        </div>
-
-        <hr class="div">
-
-        <h3>The Definition of Ready (DoR): Agreement, Not Gate</h3>
-        <p>In Scrum, the natural home for the spec is the <strong>Definition of Ready (DoR)</strong>. The DoR is the team's shared understanding of when a story is ready to be pulled into a sprint. SDD's acceptance criteria naturally fill that need.</p>
-        <p><strong>But:</strong> practitioners warn that the DoR can become <strong>"a large and perilous step backward toward a waterfall approach"</strong> if it blocks work rather than enabling collaboration. Keep it a quality agreement, not a weapon.</p>
-        <p><strong>For Kanban:</strong> use the <strong>commitment point</strong> — the moment a task becomes a commitment to deliver. Before that, the task sits in <strong>Upstream Kanban</strong> for analysis and spec design, with WIP limits to avoid over‑producing specs that go stale.</p>
-
-        <hr class="div">
-
-        <h3>Three Proven Integration Patterns</h3>
-        <ul>
-          <li><strong>Just Enough Spec</strong> – Specify wide, not deep. Only enough to understand the shape of the solution.</li>
-          <li><strong>Spec as Definition of Ready</strong> – Make the acceptance criteria the DoR itself.</li>
-          <li><strong>Constitution + Spec</strong> – Keep a fixed rulebook (the Constitution) and a separate feature spec.</li>
-        </ul>
-
-        <hr class="div">
-
-        <h3>The Upside and the Downside</h3>
-        <p>Teams that pair SDD with short feedback loops generally report real benefits — but mainly when the problem is complex and involves multiple people. For small changes, SDD can be overkill.</p>
-
-        <div class="callout warn">
-          <span class="tag">BUT THERE'S A DOWNSIDE</span>
-          <p>Some practitioners report significant friction on small CRUD features under rigid SDD workflows if tools over-produce planning artifacts for trivial changes.</p>
-          <p>Another warning: heavy top‑down mandates to adopt rigid processes have reportedly faced pushback from engineering teams. <strong>The lesson:</strong> fit the level to the context, and introduce SDD as an experiment, not a decree.</p>
-        </div>
-
-        <hr class="div">
-
-        <h3>Choosing the Right Level &amp; Measuring Success</h3>
-        <p><strong>The selection rule in three sentences:</strong></p>
-        <ul>
-          <li>Use <strong>Spec-First</strong> for most everyday work.</li>
-          <li>Use <strong>Spec-Anchored</strong> with contract tests in CI when multiple teams share API contracts.</li>
-          <li>Use <strong>Spec-As-Source</strong> only experimentally or in safety‑critical systems.</li>
-        </ul>
-        <p>Keep the backlog and refinement at the level of <em>goal</em>, develop the contract <em>inside</em> the sprint, and treat the DoR as a quality agreement, not a gate.</p>
-
-        <div class="callout warn">
-          <span class="tag">MEASURE — DON'T TRUST PERCEPTION</span>
-          <p>The biggest risk is psychological, not technical. Studies on general AI-assisted coding (such as METR benchmarks evaluated around mid-2026, estimating efficiency shifts near ~18-20% alongside measured execution realities) highlight that developers often perceive larger productivity boosts than raw data supports. The gap between perception and reality is the real enemy.</p>
-          <p><strong>Track these metrics:</strong></p>
-          <ul>
-            <li><strong>Cycle Time</strong> – How long from start to finish.</li>
-            <li><strong>Rework Rate</strong> – How often code needs to be changed due to misunderstandings.</li>
-            <li><strong>Spec‑to‑Code Ratio</strong> – If your Markdown files grow faster than your code, you're over‑specifying.</li>
-          </ul>
-          <p>If rework grows or specs bloat, reduce the batch size. And keep <strong>one owner</strong> for each spec to avoid drift.</p>
-        </div>
-
-        <div class="callout tip">
-          <span class="tag">THIS WEEK'S MOVE</span>
-          <p>Move spec‑writing from refinement into the sprint. Turn the DoR into a working agreement, not a checkpoint. Start measuring cycle time and rework rate — they'll tell you if AI is actually helping or just feeling like it.</p>
         </div>
       </section>
 
