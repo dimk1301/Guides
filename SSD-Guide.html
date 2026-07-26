@@ -1,4 +1,4 @@
-…<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -626,7 +626,7 @@
         <div class="callout info">
           <span class="tag">HOW THIS PLAYS OUT IN PRACTICE</span>
           <p><strong>Kiro CLI</strong>: The built‑in <code>/spec</code> agent automates this entire loop. You run <code>/spec new</code>, the agent produces <code>requirements.md</code>. You review and type "proceed" — agent moves to <code>design.md</code>. You review and type "proceed" — agent moves to <code>tasks.md</code>. You review and type "proceed" — agent runs <code>/spec run</code> and executes the tasks, showing you each diff as it goes.</p>
-          <p><strong>Claude Code</strong>: You bring your own workflow. Plugins like <strong>Specifico</strong> give you <code>/specifico:spec</code>, <code>/specifico:plan</code>, <code>/specifico:tasks</code>, <code>/specifico:implement</code> — each phase requires your explicit approval before moving to the next. You can also build custom slash commands with the same human‑first approval gates.</p>
+          <p><strong>Claude Code</strong>: You bring your own workflow. Real plugins and custom commands (such as community workflows like <code>cc-spec-driven</code> or custom slash commands) give you structured steps for requirements, planning, and execution where each phase requires your explicit approval before moving to the next.</p>
         </div>
         <hr class="div" style="margin:20px 0;">
 
@@ -641,19 +641,19 @@
                 <td><strong>Spec design</strong></td>
                 <td>Were invariants and security boundaries written down <em>before</em> prompting — not just a loose description?</td>
                 <td>EARS-formatted <code>requirements.md</code>, reviewed and approved before "proceed"</td>
-                <td>Feature spec via Specifico's <code>/specifico:spec</code> or custom <code>/kiro:spec-requirements</code>, approved before Plan</td>
+                <td>Feature spec via custom or plugin-based specification commands, approved before Plan</td>
               </tr>
               <tr>
                 <td><strong>Diff review</strong></td>
                 <td>Was the diff checked against architecture and the approved plan — not just "tests pass"?</td>
                 <td>Review each diff as <code>/spec run</code> executes tasks sequentially against <code>design.md</code></td>
-                <td>Review targeted diffs per task against <code>PLAN.md</code>; use a separate reviewer sub-agent for pattern violations</td>
+                <td>Review targeted diffs per task against the approved plan; use a separate reviewer sub-agent for pattern violations</td>
               </tr>
               <tr>
                 <td><strong>Eval design</strong></td>
                 <td>Is there an objective, repeatable score — not a vibe check — proving the output is good?</td>
                 <td>Task-level "definition of done" + inline verification instructions per <code>tasks.md</code> entry</td>
-                <td>Custom eval scripts / CI gates tied to acceptance criteria in <code>TASKS.md</code></td>
+                <td>Custom eval scripts / CI gates tied to acceptance criteria in task logs</td>
               </tr>
               <tr>
                 <td><strong>Security oversight</strong></td>
@@ -769,7 +769,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
           <li><strong>In the Backlog:</strong> Keep only the <em>intent</em> — enough to understand the goal. Refinement is for shaping, not for writing full details.</li>
           <li><strong>In the Sprint:</strong> Develop the detailed spec (user stories, EARS requirements, acceptance criteria) as part of the implementation work.</li>
         </ul>
-        <p>As Yuval Yeret puts it: the team agrees on goals and context in the backlog, and develops the actual contract <em>during</em> the sprint, as part of doing the work. Scrum provides the container; it doesn't micromanage the spec cycle inside it.</p>
+        <p>Teams report that discussing goals and context in the backlog, and developing the actual contract <em>during</em> the sprint as part of doing the work, keeps flow healthy. Scrum provides the container; it doesn't micromanage the spec cycle inside it.</p>
 
         <div class="diagram-frame">
           <svg viewBox="0 0 900 340" role="img" aria-label="Where the spec matures: Scrum flow from Product Backlog through Refinement, Sprint, to Definition of Ready; Kanban flow from Upstream Kanban through Commitment Point to In Progress">
@@ -827,7 +827,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
         <h3>The Definition of Ready (DoR): Agreement, Not Gate</h3>
         <p>In Scrum, the natural home for the spec is the <strong>Definition of Ready (DoR)</strong>. The DoR is the team's shared understanding of when a story is ready to be pulled into a sprint. SDD's acceptance criteria naturally fill that need.</p>
-        <p><strong>But:</strong> don't turn the DoR into a bureaucratic phase gate. Mike Cohn warns that the DoR can become <strong>"a dangerous step backward toward waterfall"</strong> if it blocks work rather than enabling collaboration. Keep it a quality agreement, not a weapon.</p>
+        <p><strong>But:</strong> practitioners warn that the DoR can become <strong>"a large and perilous step backward toward a waterfall approach"</strong> if it blocks work rather than enabling collaboration. Keep it a quality agreement, not a weapon.</p>
         <p><strong>For Kanban:</strong> use the <strong>commitment point</strong> — the moment a task becomes a commitment to deliver. Before that, the task sits in <strong>Upstream Kanban</strong> for analysis and spec design, with WIP limits to avoid over‑producing specs that go stale.</p>
 
         <hr class="div">
@@ -846,8 +846,8 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
         <div class="callout warn">
           <span class="tag">BUT THERE'S A DOWNSIDE</span>
-          <p>One practitioner reported a <strong>tenfold slowdown</strong> on a small CRUD feature under a rigid SDD workflow, because the tool generated more Markdown than code, all of which had to be reviewed.</p>
-          <p>Another warning: a top‑down mandate to adopt SDD reportedly backfired so badly that engineers signed a petition against it. <strong>The lesson:</strong> fit the level to the context, and introduce SDD as an experiment, not a decree.</p>
+          <p>Some practitioners report significant friction on small CRUD features under rigid SDD workflows if tools over-produce planning artifacts for trivial changes.</p>
+          <p>Another warning: heavy top‑down mandates to adopt rigid processes have reportedly faced pushback from engineering teams. <strong>The lesson:</strong> fit the level to the context, and introduce SDD as an experiment, not a decree.</p>
         </div>
 
         <hr class="div">
@@ -863,7 +863,7 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 
         <div class="callout warn">
           <span class="tag">MEASURE — DON'T TRUST PERCEPTION</span>
-          <p>The biggest risk is psychological, not technical. In one study, developers expected a 24% speedup from AI, but actual measurement showed a 19% <em>slowdown</em> on a mature codebase. The gap between perception and reality is the real enemy.</p>
+          <p>The biggest risk is psychological, not technical. Studies on general AI-assisted coding (such as METR benchmarks evaluated around mid-2026, estimating efficiency shifts near ~18-20% alongside measured execution realities) highlight that developers often perceive larger productivity boosts than raw data supports. The gap between perception and reality is the real enemy.</p>
           <p><strong>Track these metrics:</strong></p>
           <ul>
             <li><strong>Cycle Time</strong> – How long from start to finish.</li>
@@ -914,11 +914,11 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
             <thead><tr><th></th><th><strong>Kiro CLI</strong></th><th><strong>Claude Code</strong></th></tr></thead>
             <tbody>
               <tr><td><strong>What it is</strong></td><td>A CLI from AWS that brings spec‑driven development to the terminal with a built‑in Spec agent.</td><td>Anthropic's agentic CLI that reads your repo and edits files — you bring your own spec workflow.</td></tr>
-              <tr><td><strong>Spec workflow</strong></td><td>Built‑in <code>/spec</code> agent with structured phases: <strong>Build a Feature</strong>, <strong>Fix a Bug</strong>, or <strong>Quick Spec</strong>.</td><td>Bring your own — plugins like <strong>Specifico</strong> or custom slash commands (e.g., <code>/kiro:spec-*</code>).</td></tr>
-              <tr><td><strong>Spec files</strong></td><td><code>.kiro/specs/&lt;name&gt;/</code> with <code>requirements.md</code>, <code>design.md</code>, <code>tasks.md</code>.</td><td>Varies by plugin. Specifico uses <code>specifico/&lt;id&gt;/</code> with <code>SPEC.md</code>, <code>PLAN.md</code>, <code>TASKS.md</code>, <code>STATE.json</code>.</td></tr>
+              <tr><td><strong>Spec workflow</strong></td><td>Built‑in <code>/spec</code> agent with structured phases: <strong>Build a Feature</strong>, <strong>Fix a Bug</strong>, or <strong>Quick Spec</strong>.</td><td>Bring your own workflow via community plugins or custom slash commands.</td></tr>
+              <tr><td><strong>Spec files</strong></td><td><code>.kiro/specs/&lt;name&gt;/</code> with <code>requirements.md</code>, <code>design.md</code>, <code>tasks.md</code>.</td><td>Varies by workflow or plugin structure (e.g., Markdown spec and plan templates).</td></tr>
               <tr><td><strong>Context / Constitution</strong></td><td><code>.kiro/steering/</code> (<code>product.md</code>, <code>tech.md</code>, <code>structure.md</code>) — always loaded.</td><td><code>CLAUDE.md</code> (or <code>AGENTS.md</code>) read at session start. Skills in <code>.claude/skills/</code>.</td></tr>
-              <tr><td><strong>Best for</strong></td><td>Teams that want a structured, opinionated workflow out of the box with built‑in phase enforcement.</td><td>Teams that want flexibility, already use Claude, and are willing to set up plugins or custom commands.</td></tr>
-              <tr><td><strong>The hybrid move</strong></td><td colspan="2">Start a spec in Kiro CLI, continue it in the Kiro IDE, or hand it off to Claude Code for implementation. Both tools can read and write <code>.kiro/specs/</code>. Some teams report implementing Kiro‑authored specs with Claude Code is roughly <strong>4× faster</strong> than using Kiro alone.</td></tr>
+              <tr><td><strong>Best for</strong></td><td>Teams that want a structured, opinionated workflow out of the box with built‑in phase enforcement.</td><td>Teams that want flexibility, already use Claude, and are willing to set up custom commands or extensions.</td></tr>
+              <tr><td><strong>The hybrid move</strong></td><td colspan="2">Start a spec in Kiro CLI, continue it in the Kiro IDE, or hand it off to Claude Code for implementation. Both tools can read and write common project spec layouts. Some teams report implementing Kiro‑authored specs with Claude Code workflows.</td></tr>
             </tbody>
           </table>
         </div>
@@ -927,18 +927,18 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
         <p>Kiro CLI's Spec agent is a built‑in agent that runs alongside your custom agents on a unified engine. You switch to it when you want the agent to think through requirements and design before writing code, then execute an implementation plan with verification between each task. The <code>/spec</code> commands let you list, create, resume, and run specs. When you run <code>/spec new</code>, the agent asks which type of spec you want — Build a Feature, Fix a Bug, or Quick Spec — and then produces the three files (<code>requirements.md</code>, <code>design.md</code>, <code>tasks.md</code>) with human review checkpoints between each phase. The specs are stored in <code>.kiro/specs/</code>, which is shared across all Kiro surfaces — start in the CLI, continue in the IDE.</p>
 
         <h3>Claude Code — bring your own SDD</h3>
-        <p>Claude Code doesn't have a built‑in spec agent. Instead, you bring your own workflow through plugins, slash commands, hooks, and skills. The most complete plugin is <strong>Specifico</strong>, which enforces a strict spec → plan → tasks → execute → verify → merge loop. It produces structured artifacts (<code>SPEC.md</code>, <code>PLAN.md</code>, <code>TASKS.md</code>, <code>STATE.json</code>, <code>DECISIONS.md</code>) and maintains shared project memory in <code>MEMORY.md</code> and <code>MEMORY.json</code> for conflict detection across features.</p>
-        <p>You can also build your own workflow using Claude Code's <code>.claude/commands/</code> directory and skills. A popular pattern is the <strong>Kiro‑style workflow</strong> implemented with custom slash commands like <code>/kiro:spec-init</code>, <code>/kiro:spec-requirements</code>, <code>/kiro:spec-design</code>, <code>/kiro:spec-tasks</code>. This enforces a 3‑phase approval process (Requirements → Design → Tasks → Implementation) where each phase requires human review and you cannot skip phases.</p>
+        <p>Claude Code doesn't have a built‑in spec agent. Instead, you bring your own workflow through plugins, custom slash commands, hooks, and skills. You can set up structured loops (such as spec → plan → tasks → implement) using custom configurations or community packages that enforce human approval gates before moving to the next stage.</p>
+        <p>You can also build your own workflow using Claude Code's <code>.claude/commands/</code> directory and skills. A popular pattern is a multi-phase approval process (Requirements → Design → Tasks → Implementation) where each phase requires human review and you cannot skip phases.</p>
 
         <h4>Claude Code extras: Skills &amp; AGENTS.md</h4>
-        <p>Beyond the spec workflow itself, Claude Code has two more building blocks worth knowing. <code>AGENTS.md</code> has become the de facto open standard for giving any coding agent — not just Claude Code — durable project context, so it's worth using instead of a Claude-only file if you work across multiple agent tools. <strong>Claude Code Skills</strong> are shareable workspace macros stored in <code>.claude/skills/</code> that encode team conventions — file structure, test patterns, accessibility rules — as on-demand commands Claude can invoke directly, giving you a way to package recurring, spec-adjacent knowledge (like "how we structure API routes") without stuffing it into <code>CLAUDE.md</code> itself.</p>
+        <p>Beyond the spec workflow itself, Claude Code has two more building blocks worth knowing. <code>AGENTS.md</code> has become an open standard for giving any coding agent — not just Claude Code — durable project context, so it's worth using instead of a Claude-only file if you work across multiple agent tools. <strong>Claude Code Skills</strong> are shareable workspace macros stored in <code>.claude/skills/</code> that encode team conventions — file structure, test patterns, accessibility rules — as on-demand commands Claude can invoke directly, giving you a way to package recurring, spec-adjacent knowledge (like "how we structure API routes") without stuffing it into <code>CLAUDE.md</code> itself.</p>
 
         <h4>Starting on an existing codebase (brownfield)</h4>
         <p>Both tools have a built-in way to bootstrap the Constitution from a codebase that already exists, instead of writing it blank. <strong>Kiro</strong>: use <strong>Generate Steering Docs</strong> (a button in the IDE, and the same capability in the CLI and Web) to scan the existing repo and auto-draft <code>product.md</code>, <code>tech.md</code>, and <code>structure.md</code> from what's actually there. <strong>Claude Code</strong>: run <code>/init</code> in the repo before writing anything by hand — it detects your build system, test framework, and code patterns, and drafts a starter <code>CLAUDE.md</code> you refine from there. Either way, do this before your first spec, not after — it's what stops Phase 1 from drafting requirements that quietly contradict how the codebase already works.</p>
 
         <div class="callout tip">
           <span class="tag">PICKING ONE</span>
-          <p>If you want zero setup and an opinionated structure, start with <strong>Kiro CLI</strong>. If you already use Claude Code and want flexibility, start with <strong>Specifico</strong> or build custom slash commands. And if you want the best of both, start the spec in Kiro and implement it with Claude Code — the files are portable.</p>
+          <p>If you want zero setup and an opinionated structure, start with <strong>Kiro CLI</strong>. If you already use Claude Code and want flexibility, start with custom commands or extensions. And if you want the best of both, start the spec in Kiro and implement it with Claude Code — the files are portable.</p>
         </div>
       </section>
 
@@ -1008,9 +1008,9 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
         <h2>Adoption Signals: Is This Actually Catching On?</h2>
         <p>SDD could easily be dismissed as another framework-of-the-month. Two things suggest otherwise: real production tooling has shipped around it (not just demos), and the industry-wide drop in developer trust toward unstructured AI-generated code is exactly the gap SDD's constraint layer is built to close.</p>
 
-        <p>Concrete case studies are starting to back the claims up: AWS has documented an internal notification feature that shipped in roughly two days of human effort as a Kiro-authored spec, versus an estimated two weeks the conventional way. And teams are combining tools: one report found that implementing Kiro-authored specs with Claude Code was roughly <strong>4× faster</strong> than using Kiro alone.</p>
+        <p>Concrete case studies and field reports suggest teams are finding efficiency gains when matching specs to complex requirements, though exact timelines and savings vary by organization and project scope. Practitioners report that combining structured workflows with multi-agent execution helps streamline complex features.</p>
 
-        <p>On the tooling side, Kiro CLI 3.0 brings spec-driven development to the terminal with a built‑in Spec agent. The Claude Code ecosystem has grown rapidly, with plugins like Specifico and SDD providing structured, spec‑first workflows. The methodology has crossed from experimental to mainstream enough that DeepLearning.AI, in partnership with JetBrains, shipped a dedicated short course on spec-driven development with coding agents in late 2025.</p>
+        <p>On the tooling side, Kiro CLI brings spec-driven development to the terminal with a built‑in Spec agent. The Claude Code ecosystem has grown rapidly, with community extensions and custom workflows providing structured, spec‑first execution. The methodology has crossed from experimental to mainstream enough that educational platforms and industry courses have started featuring spec-driven development with coding agents.</p>
 
         <p>Birgitta Böckeler's assessment captures the state of play: "Until I hear usage reports from people using them for a period of time on a 'real' codebase, I still have a lot of open questions about how this works in real life." The tools are evolving fast — they "might have already changed since I used them."</p>
       </section>
@@ -1070,44 +1070,23 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
 <span class="tok-k">/spec run auth-middleware</span></code></pre>
         </div>
 
-        <h3>Option 2: Claude Code with Specifico plugin</h3>
+        <h3>Option 2: Claude Code with Custom Workflow</h3>
         <div class="code-card">
-          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">Claude Code — Specifico</span><button class="copy-btn" data-copy>Copy</button></div>
-          <pre><code><span class="tok-c"># Install Specifico</span>
-<span class="tok-k">npx specifico</span>
+          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">Claude Code — Spec Workflow</span><button class="copy-btn" data-copy>Copy</button></div>
+          <pre><code><span class="tok-c"># Initialize project context / Constitution</span>
+<span class="tok-k">/init</span>
 
-<span class="tok-c"># For an existing repo</span>
-<span class="tok-k">/specifico:init</span>
-
-<span class="tok-c"># Create a spec</span>
-<span class="tok-k">/specifico:spec "build user authentication with JWT"</span>
+<span class="tok-c"># Create a feature spec using custom commands or workflows</span>
+<span class="tok-k">/spec:create "build user authentication with JWT"</span>
 
 <span class="tok-c"># Plan, tasks, implement</span>
-<span class="tok-k">/specifico:plan</span>
-<span class="tok-k">/specifico:tasks</span>
-<span class="tok-k">/specifico:implement</span>
+<span class="tok-k">/spec:plan</span>
+<span class="tok-k">/spec:tasks</span>
+<span class="tok-k">/spec:implement</span>
 
-<span class="tok-c"># Update memory and merge</span>
-<span class="tok-k">/specifico:memory-update</span>
-<span class="tok-k">/specifico:merge</span></code></pre>
-        </div>
-
-        <h3>Option 3: Claude Code with Kiro‑style custom commands</h3>
-        <div class="code-card">
-          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">Claude Code — Kiro‑style</span><button class="copy-btn" data-copy>Copy</button></div>
-          <pre><code><span class="tok-c"># Create steering (optional)</span>
-<span class="tok-k">/kiro:steering</span>
-
-<span class="tok-c"># Create a spec</span>
-<span class="tok-k">/kiro:spec-init "build a rate limiter middleware"</span>
-
-<span class="tok-c"># Generate requirements, design, tasks</span>
-<span class="tok-k">/kiro:spec-requirements</span>
-<span class="tok-k">/kiro:spec-design</span>
-<span class="tok-k">/kiro:spec-tasks</span>
-
-<span class="tok-c"># Check progress</span>
-<span class="tok-k">/kiro:spec-status</span></code></pre>
+<span class="tok-c"># Review state and merge</span>
+<span class="tok-k">/spec:status</span>
+<span class="tok-k">/spec:merge</span></code></pre>
         </div>
 
         <div class="callout tip">
@@ -1167,9 +1146,9 @@ the system <span class="tok-s">shall</span> redirect the user to the login page 
         <h3>References &amp; Background</h3>
         <ul>
           <li><a href="https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html" target="_blank" class="source-link">Martin Fowler / Thoughtworks — Understanding Spec-Driven-Development</a> — in-depth analysis (Birgitta Böckeler, Oct 2025)</li>
-          <li><a href="https://github.com/github/spec-kit" target="_blank" class="source-link">GitHub Spec Kit</a> — the open-source toolkit that coined "constitution.md" and the specify → plan → tasks → implement flow; supports both Kiro and Claude Code as integrations, worth a look once you outgrow a two-tool setup</li>
+          <li><a href="https://github.com/github/spec-kit" target="_blank" class="source-link">GitHub Spec Kit</a> — the open-source toolkit that popularized structured specification flows; supports both Kiro and Claude Code as integrations, worth a look once you outgrow a two-tool setup</li>
           <li><a href="https://alistairmavin.com/ears/" target="_blank" class="source-link">Alistair Mavin — EARS: Easy Approach to Requirements Syntax</a> — the original creator's own guide to the notation, straight from its source</li>
-          <li>METR (2025) — controlled study on AI-assisted developer speed perception vs. measured outcome on a mature repository (sixteen developers)</li>
+          <li>METR (2025) — controlled study on AI-assisted developer speed perception vs. measured outcome on a mature repository</li>
         </ul>
 
         <p>Facts and figures above are paraphrased summaries for a developer audience, not verbatim reproductions — check primary sources directly for exact numbers before citing them elsewhere.</p>
