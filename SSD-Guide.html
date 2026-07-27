@@ -220,7 +220,11 @@
 
         <h3>The problem it actually solves</h3>
         <p>Improvising via chat is great for a prototype and dangerous for anything that has to survive contact with production. Models are extraordinary pattern-completers and unreliable mind-readers. Left unconstrained, ambiguity in your intent does not stay small — it compounds into architectures nobody chose on purpose, missing security controls, unhandled edge cases, and thin-to-nonexistent test coverage. Teams have taken to calling this failure mode <strong>"automating the creation of legacy mess."</strong> A written spec turns fuzzy intent into a deterministic contract the agent cannot quietly drift away from. The lever for output quality shifts from prompt cleverness to spec quality.</p>
-      </section>
+      
+        <h3>Loop Engineering vs. Harness Engineering</h3>
+        <p>SDD sits at the intersection of two disciplines that teams constantly confuse. <strong>Loop engineering</strong> is the design of the iterative cycle that drives the agent toward a goal — your Specify → Plan → Tasks → Implement cycle. It governs what the agent does on each pass, how it evaluates progress, and when it stops. <strong>Harness engineering</strong> is the environment built around the agent — your Constitution, steering files, tool permissions, review gates, and recovery patterns. It governs what the agent is allowed to touch, how it recovers from failure, and how you observe what it did.</p>
+        <p>Confusing the two causes predictable failures. A weak harness lets an agent edit production configs because nobody said it could not. A weak loop makes agents brittle — they stall, retry forever, or stop too early because the exit condition is vague. SDD fixes both: the 4-phase loop is your loop, and the Constitution + scorecard is your harness. Naming the distinction gives you vocabulary to explain why SDD works to skeptical teammates.</p>
+</section>
 
       <hr class="div">
 
@@ -286,6 +290,8 @@
         <h2>Core Workflow: The 4-Phase Loop</h2>
 
         <p class="lede">The SDD loop is a <strong>collaboration</strong> between you (the human) and the AI agent. Each phase has a clear division of labour: the agent drafts, you review and approve. Here is exactly who does what.</p>
+        <p>Structurally, this is an instance of the <strong>Plan-Execute-Verify (PEV)</strong> pattern — a three-phase harness architecture that separates planning from execution and enforces verification at every transition. Each phase in your loop is a PEV cycle: the agent plans (drafts), executes (produces), and you verify (review and approve) before the next cycle begins.</p>
+
 
         <div class="table-wrap">
           <table>
@@ -901,7 +907,16 @@ The system should process payments and handle errors.</code></pre>
           <span class="tag">The Golden Rule of Recovery</span>
           <p><strong>When in doubt, fix the spec first.</strong> Patching the code and leaving the spec stale creates the exact drift SDD was designed to prevent. A 5-minute spec edit now saves a 5-hour debugging session later when the next agent reads the stale spec and builds the wrong thing again.</p>
         </div>
-      </section>
+      
+        <h3>The Three Loop Exit Failures</h3>
+        <p>Most loop failures are not crashes — they are <strong>mis-exits</strong>. The agent stops, but at the wrong time, for the wrong reason, or not at all. Every SDD phase gate is an exit condition; if it is vague, the loop breaks in one of three ways:</p>
+        <ul>
+          <li><strong>Stops too early</strong> — The agent hits a surface-level signal (one test passes) and declares success before the task is actually done. Common when the Definition of Done in <code>tasks.md</code> says "add tests" instead of naming specific input/output pairs.</li>
+          <li><strong>Loops indefinitely</strong> — No convergence detection. The agent burns tokens retrying the same failed approach because the failure criterion is not distinct from the retry trigger. Fix: cap retries at 3, then escalate to human.</li>
+          <li><strong>Declares success prematurely</strong> — The completion criterion is subjective. <em>"The report is written"</em> vs. <em>"The report contains an executive summary, three supporting sections each with at least two data citations, and passes a relevance check."</em> EARS requirements exist precisely to prevent this.</li>
+        </ul>
+        <p>The fix for all three is the same: write the exit condition before the loop starts. In SDD, that means every <code>tasks.md</code> entry needs a concrete, observable Definition of Done — not a vibe check.</p>
+</section>
 
       <hr class="div">
 
@@ -921,8 +936,44 @@ The system should process payments and handle errors.</code></pre>
             </tbody>
           </table>
         </div>
-        <p>In practice, SDD subsumes a lot of what BDD was reaching for: EARS-style acceptance criteria are essentially Gherkin's stricter cousin, written so an LLM can parse them as cleanly as a person can. A healthy SDD workflow still produces real unit and integration tests — they just fall out of the spec rather than preceding it by convention.</p>
-        <p>Not everyone agrees SDD should go all the way to "code as byproduct," though. Some engineers hold a more conservative position: specs are a superior <em>prompt</em>, the way they were always meant to drive TDD, but the executable code — not the Markdown — remains the artifact you actually maintain long-term. That disagreement traces back to how far you are willing to travel down the maturity continuum in <strong>Sheet 02</strong>.</p>
+
+        <h3>How They Work Together</h3>
+        <p>SDD does not replace your existing practice — it changes <em>who owns which part of the test pyramid</em>. The spec generates the acceptance layer (integration / end-to-end). You still own the unit layer. Here is exactly what changes and what stays the same.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Your Current Practice</th><th>What SDD Changes</th><th>What Stays the Same</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>TDD</strong></td>
+                <td>The spec provides the acceptance criteria your unit tests must satisfy. You know exactly what "passing" looks like before you write the first red test.</td>
+                <td>Red-green-refactor cycle. You still write unit tests by hand. The spec does not replace your test file — it replaces the vague Jira ticket you used to guess the requirements from.</td>
+              </tr>
+              <tr>
+                <td><strong>BDD</strong></td>
+                <td>The agent writes EARS requirements instead of you writing Gherkin by hand. The scenarios are stricter and machine-parseable, but the stakeholder-collaboration goal is identical.</td>
+                <td>Given-When-Then thinking. Stakeholder review of behavior. The spec <em>is</em> the scenario — just written in a syntax an agent can execute, not just a human can read.</td>
+              </tr>
+              <tr>
+                <td><strong>Neither</strong></td>
+                <td>Start with SDD. The spec's acceptance criteria will naturally generate integration tests. Add unit tests where the spec is too coarse-grained.</td>
+                <td>Nothing — you are building from a clean slate. Use the <strong>Build-Test-Harden</strong> sequence in <strong>Sheet 14</strong>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>The Hard Rule: Who Owns What</h3>
+        <ul>
+          <li><strong>Integration tests</strong> — generated by the agent from the spec's acceptance criteria. They prove the feature works end-to-end. You review them, you do not write them.</li>
+          <li><strong>Unit tests</strong> — written by you. The spec is too coarse-grained to dictate every branch condition, mock, and edge case inside a single function. Your TDD discipline still applies here.</li>
+          <li><strong>EARS requirements</strong> — written collaboratively (you + agent). They are the contract both sides agree to before code is written.</li>
+        </ul>
+
+        <div class="callout tip">
+          <span class="tag">Practical Test</span>
+          <p>If your team already does TDD, add one line to your process: <em>"No red test without a corresponding EARS requirement in the spec."</em> The spec becomes your source of testable requirements, and TDD becomes the mechanism for proving the implementation satisfies them. The two practices reinforce each other rather than competing.</p>
+        </div>
       </section>
 
       <hr class="div">
@@ -1095,7 +1146,16 @@ The system should process payments and handle errors.</code></pre>
           <span class="tag">First Project Tip</span>
           <p>Run your first pass on something small and real — a rate limiter, a webhook validator, a single CRUD endpoint. Learn the rhythm of the workflow before you trust it on anything with production stakes.</p>
         </div>
-      </section>
+      
+        <h3>The Build-Test-Harden Sequence</h3>
+        <p>Adopt SDD in three deliberate stages, not all at once:</p>
+        <ol>
+          <li><strong>Build the loop first.</strong> Run one complete 4-phase cycle on a small, real feature (a rate limiter, a webhook validator). Do not worry about the Constitution or CI gates yet. Learn the rhythm of draft-review-approve.</li>
+          <li><strong>Build the harness next.</strong> Once the loop feels natural, add your Constitution, steering files, and the 5-point scorecard. This is where you prevent the agent from doing damage, not where you teach it what to do.</li>
+          <li><strong>Harden both together.</strong> Add CI gates, spec versioning, and the verifier pattern. Track scorecard metrics over time. The loop and the harness improve each other — a tighter loop reveals harness gaps, and a stronger harness lets the loop run with less human friction.</li>
+        </ol>
+        <p>Teams that try to implement the full harness before they understand the loop usually over-engineer the constraints and under-engineer the workflow. Build, then test, then harden.</p>
+</section>
 
       <hr class="div">
 
