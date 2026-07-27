@@ -153,6 +153,21 @@
     .titleblock{ margin:64px 16px 0; padding:28px 22px 24px; }
     .content-inner{ padding:0 18px; }
   }
+
+  .scorecard-dim{ border:1px solid var(--rule); border-radius:12px; background:var(--card); margin:18px 0; overflow:hidden; }
+  .scorecard-dim .dim-header{ display:flex; align-items:center; gap:12px; padding:14px 18px; background:var(--panel-2); border-bottom:1px solid var(--rule); }
+  .scorecard-dim .dim-num{ font-family:var(--mono); font-size:13px; color:var(--bg-deep); background:var(--cyan); padding:3px 8px; border-radius:4px; font-weight:600; }
+  .scorecard-dim .dim-title{ font-family:var(--serif-display); font-size:1.1rem; font-weight:600; color:var(--ink); margin:0; }
+  .scorecard-dim .dim-body{ padding:16px 18px; }
+  .scorecard-dim .dim-row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:14px; }
+  .scorecard-dim .dim-row:last-child{ margin-bottom:0; }
+  .scorecard-dim .dim-label{ font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px; display:block; }
+  .scorecard-dim .dim-red .dim-label{ color:var(--coral); }
+  .scorecard-dim .dim-green .dim-label{ color:var(--cyan); }
+  .scorecard-dim .dim-catch{ grid-column:1 / -1; border-top:1px dashed var(--rule); padding-top:12px; margin-top:2px; }
+  .scorecard-dim .dim-catch .dim-label{ color:var(--amber); }
+  .scorecard-dim p{ font-size:.92rem; color:var(--ink-dim); margin:0; line-height:1.6; }
+  @media (max-width:640px){ .scorecard-dim .dim-row{ grid-template-columns:1fr; } }
 </style>
 <base target="_blank">
 </head>
@@ -750,42 +765,69 @@ The system should process payments and handle errors.</code></pre>
         <h3>Scorecard in Action: One Feature, Five Checks</h3>
         <p>The table above tells you <em>what</em> to check. What actually makes it click is seeing a real red flag next to the fix that catches it. Take the token-bucket rate limiter from <strong>Sheet 03</strong> and run it through all five dimensions — this is the level of concreteness you are aiming for in your own reviews, not a vague "looks fine."</p>
 
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Dimension</th><th>Red flag (what actually goes wrong)</th><th>Green flag (what good looks like)</th><th>How you catch it</th></tr></thead>
-            <tbody>
-              <tr>
-                <td><strong>Spec design</strong></td>
-                <td><code>requirements.md</code> just says "add rate limiting to the API" — no trigger, no boundary, no error format.</td>
-                <td><em>"When a client exceeds 100 requests in a 1-second window, the system shall respond with 429 and a Retry-After header. If the request has no valid API key, then the system shall return 401 before evaluating the rate limit."</em> Both the happy path and the auth-ordering edge case are explicit.</td>
-                <td><strong>Kiro:</strong> before typing "proceed," try restating each requirement as a When/If clause — if you cannot, it is not ready. <strong>Claude Code:</strong> same test, applied before approving Plan.</td>
-              </tr>
-              <tr>
-                <td><strong>Diff review</strong></td>
-                <td><code>plan.md</code> specifies a token bucket that refills continuously, but the diff implements a fixed window counter that resets every second — a quietly different, weaker algorithm that still passes the same tests.</td>
-                <td>The diff contains a bucket struct with a token count and a last-refill timestamp — matching <code>plan.md</code>'s stated approach line for line, not just its outcome.</td>
-                <td><strong>Kiro:</strong> as <code>/spec run</code> shows each diff, hold it next to <code>design.md</code>'s algorithm section — not just "tests green." <strong>Claude Code:</strong> ask a reviewer sub-agent "does this diff implement what plan.md Section 3 describes, or a different approach that happens to pass the same tests?"</td>
-              </tr>
-              <tr>
-                <td><strong>Eval design</strong></td>
-                <td><code>tasks.md</code> says "add tests for rate limiter" — vague, so the agent writes one happy-path test and stops.</td>
-                <td>The task's definition of done reads: <em>"test: 101st request in a 1s window returns 429 with Retry-After ≥ 1; test: request with an invalid key returns 401 without consuming a token."</em> Each line maps 1:1 to an EARS requirement.</td>
-                <td><strong>Kiro:</strong> check that every <code>tasks.md</code> verification line names a specific input/output pair, not "add tests." <strong>Claude Code:</strong> a CI gate that fails the merge if a task's test file does not reference its acceptance-criterion ID.</td>
-              </tr>
-              <tr>
-                <td><strong>Security oversight</strong></td>
-                <td>The agent keys the rate-limit counter on client IP alone — reasonable-looking, but it breaks the moment two users share a corporate NAT or mobile carrier proxy, and it is trivially spoofed via <code>X-Forwarded-For</code>.</td>
-                <td>The counter is keyed on the authenticated client/API-key ID, with IP used only as a secondary abuse signal.</td>
-                <td><strong>Kiro:</strong> a rule in <code>.kiro/steering/tech.md</code> — "never key security or quota logic on IP address alone" — is loaded every session, so Plan should propose the key-ID approach unprompted; if it does not, that is the flag. <strong>Claude Code:</strong> the same rule in <code>CLAUDE.md</code>, plus a dedicated pass: "review this diff only for identity and trust-boundary assumptions, ignore style."</td>
-              </tr>
-              <tr>
-                <td><strong>Taste</strong></td>
-                <td>The project already has <code>lib/rate-limiter.ts</code>, used by two other endpoints — the agent writes a second, subtly different implementation inline in the new middleware instead of importing it.</td>
-                <td>The diff imports and extends the existing shared utility, or explicitly proposes replacing it with a stated reason.</td>
-                <td><strong>Kiro:</strong> the verifier agent is prompted specifically to grep for existing rate-limiting code before approving — duplication is an automatic flag. <strong>Claude Code:</strong> the reviewer sub-agent's prompt includes "search the codebase for existing implementations of this pattern before judging the diff done."</td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="scorecard-dim">
+          <div class="dim-header"><span class="dim-num">01</span><h4 class="dim-title">Spec Design</h4></div>
+          <div class="dim-body">
+            <div class="dim-row">
+              <div class="dim-red"><span class="dim-label">🚩 Red Flag</span><p><code>requirements.md</code> just says "add rate limiting to the API" — no trigger, no boundary, no error format.</p></div>
+              <div class="dim-green"><span class="dim-label">✅ Green Flag</span><p><em>"When a client exceeds 100 requests in a 1-second window, the system shall respond with 429 and a Retry-After header. If the request has no valid API key, then the system shall return 401 before evaluating the rate limit."</em> Both the happy path and the auth-ordering edge case are explicit.</p></div>
+            </div>
+            <div class="dim-row">
+              <div class="dim-catch"><span class="dim-label">🔍 How You Catch It</span><p><strong>Kiro:</strong> before typing "proceed," try restating each requirement as a When/If clause — if you cannot, it is not ready. <strong>Claude Code:</strong> same test, applied before approving Plan.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="scorecard-dim">
+          <div class="dim-header"><span class="dim-num">02</span><h4 class="dim-title">Diff Review</h4></div>
+          <div class="dim-body">
+            <div class="dim-row">
+              <div class="dim-red"><span class="dim-label">🚩 Red Flag</span><p><code>plan.md</code> specifies a token bucket that refills continuously, but the diff implements a fixed window counter that resets every second — a quietly different, weaker algorithm that still passes the same tests.</p></div>
+              <div class="dim-green"><span class="dim-label">✅ Green Flag</span><p>The diff contains a bucket struct with a token count and a last-refill timestamp — matching <code>plan.md</code>'s stated approach line for line, not just its outcome.</p></div>
+            </div>
+            <div class="dim-row">
+              <div class="dim-catch"><span class="dim-label">🔍 How You Catch It</span><p><strong>Kiro:</strong> as <code>/spec run</code> shows each diff, hold it next to <code>design.md</code>'s algorithm section — not just "tests green." <strong>Claude Code:</strong> ask a reviewer sub-agent "does this diff implement what plan.md Section 3 describes, or a different approach that happens to pass the same tests?"</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="scorecard-dim">
+          <div class="dim-header"><span class="dim-num">03</span><h4 class="dim-title">Eval Design</h4></div>
+          <div class="dim-body">
+            <div class="dim-row">
+              <div class="dim-red"><span class="dim-label">🚩 Red Flag</span><p><code>tasks.md</code> says "add tests for rate limiter" — vague, so the agent writes one happy-path test and stops.</p></div>
+              <div class="dim-green"><span class="dim-label">✅ Green Flag</span><p>The task's definition of done reads: <em>"test: 101st request in a 1s window returns 429 with Retry-After ≥ 1; test: request with an invalid key returns 401 without consuming a token."</em> Each line maps 1:1 to an EARS requirement.</p></div>
+            </div>
+            <div class="dim-row">
+              <div class="dim-catch"><span class="dim-label">🔍 How You Catch It</span><p><strong>Kiro:</strong> check that every <code>tasks.md</code> verification line names a specific input/output pair, not "add tests." <strong>Claude Code:</strong> a CI gate that fails the merge if a task's test file does not reference its acceptance-criterion ID.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="scorecard-dim">
+          <div class="dim-header"><span class="dim-num">04</span><h4 class="dim-title">Security Oversight</h4></div>
+          <div class="dim-body">
+            <div class="dim-row">
+              <div class="dim-red"><span class="dim-label">🚩 Red Flag</span><p>The agent keys the rate-limit counter on client IP alone — reasonable-looking, but it breaks the moment two users share a corporate NAT or mobile carrier proxy, and it is trivially spoofed via <code>X-Forwarded-For</code>.</p></div>
+              <div class="dim-green"><span class="dim-label">✅ Green Flag</span><p>The counter is keyed on the authenticated client/API-key ID, with IP used only as a secondary abuse signal.</p></div>
+            </div>
+            <div class="dim-row">
+              <div class="dim-catch"><span class="dim-label">🔍 How You Catch It</span><p><strong>Kiro:</strong> a rule in <code>.kiro/steering/tech.md</code> — "never key security or quota logic on IP address alone" — is loaded every session, so Plan should propose the key-ID approach unprompted; if it does not, that is the flag. <strong>Claude Code:</strong> the same rule in <code>CLAUDE.md</code>, plus a dedicated pass: "review this diff only for identity and trust-boundary assumptions, ignore style."</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="scorecard-dim">
+          <div class="dim-header"><span class="dim-num">05</span><h4 class="dim-title">Taste</h4></div>
+          <div class="dim-body">
+            <div class="dim-row">
+              <div class="dim-red"><span class="dim-label">🚩 Red Flag</span><p>The project already has <code>lib/rate-limiter.ts</code>, used by two other endpoints — the agent writes a second, subtly different implementation inline in the new middleware instead of importing it.</p></div>
+              <div class="dim-green"><span class="dim-label">✅ Green Flag</span><p>The diff imports and extends the existing shared utility, or explicitly proposes replacing it with a stated reason.</p></div>
+            </div>
+            <div class="dim-row">
+              <div class="dim-catch"><span class="dim-label">🔍 How You Catch It</span><p><strong>Kiro:</strong> the verifier agent is prompted specifically to grep for existing rate-limiting code before approving — duplication is an automatic flag. <strong>Claude Code:</strong> the reviewer sub-agent's prompt includes "search the codebase for existing implementations of this pattern before judging the diff done."</p></div>
+            </div>
+          </div>
         </div>
 
         <h3>A Reusable Reviewer Prompt</h3>
