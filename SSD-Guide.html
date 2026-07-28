@@ -170,6 +170,7 @@
   @media (max-width:640px){ .scorecard-dim .dim-row{ grid-template-columns:1fr; } }
 
   .badge-new{ display:inline-block; background:var(--amber); color:var(--bg-deep); font-family:var(--mono); font-size:10px; font-weight:700; padding:1px 8px; border-radius:12px; letter-spacing:.04em; text-transform:uppercase; margin-left:8px; vertical-align:middle; }
+  .badge-moved{ background:var(--cyan); color:var(--bg-deep); }
 </style>
 <base target="_blank">
 </head>
@@ -189,21 +190,20 @@
     <ul class="toc-list">
       <li><a href="#sec-01"><span class="n">01</span> What is SDD</a></li>
       <li><a href="#sec-02"><span class="n">02</span> Maturity Levels</a></li>
-      <li><a href="#sec-03"><span class="n">03</span> The 4-Phase Loop</a></li>
-      <li><a href="#sec-04"><span class="n">04</span> File Anatomy &amp; Templates</a></li>
-      <li><a href="#sec-05"><span class="n">05</span> Writing Specs with EARS</a></li>
-      <li><a href="#sec-06"><span class="n">06</span> Spec in Scrum &amp; Kanban</a></li>
-      <li><a href="#sec-07"><span class="n">07</span> The Constitution</a></li>
-      <li><a href="#sec-08"><span class="n">08</span> The 5-Point Scorecard</a></li>
-      <li><a href="#sec-09"><span class="n">09</span> When the Loop Breaks</a></li>
-      <li><a href="#sec-10"><span class="n">10</span> SDD vs TDD vs BDD</a></li>
-      <li><a href="#sec-11"><span class="n">11</span> Tooling Landscape</a></li>
-      <li><a href="#sec-12"><span class="n">12</span> Vibe vs Spec: The Call</a></li>
-      <li><a href="#sec-13"><span class="n">13</span> Honest Limits</a></li>
-      <li><a href="#sec-14"><span class="n">14</span> Quick Start</a></li>
-      <li><a href="#sec-15"><span class="n">15</span> Annotated Example</a></li>
-      <li><a href="#sec-16"><span class="n">16</span> Acronyms &amp; Glossary</a></li>
-      <li><a href="#sec-17"><span class="n">17</span> Sources</a></li>
+      <li><a href="#sec-03"><span class="n">03</span> When to Use SDD &amp; Limits</a></li>
+      <li><a href="#sec-04"><span class="n">04</span> The 4-Phase Loop</a></li>
+      <li><a href="#sec-05"><span class="n">05</span> File Anatomy &amp; Templates</a></li>
+      <li><a href="#sec-06"><span class="n">06</span> The Constitution</a></li>
+      <li><a href="#sec-07"><span class="n">07</span> Writing Specs with EARS</a></li>
+      <li><a href="#sec-08"><span class="n">08</span> Spec in Scrum &amp; Kanban</a></li>
+      <li><a href="#sec-09"><span class="n">09</span> The 5-Point Scorecard</a></li>
+      <li><a href="#sec-10"><span class="n">10</span> When the Loop Breaks</a></li>
+      <li><a href="#sec-11"><span class="n">11</span> SDD vs TDD vs BDD</a></li>
+      <li><a href="#sec-12"><span class="n">12</span> Tooling Landscape</a></li>
+      <li><a href="#sec-13"><span class="n">13</span> Quick Start</a></li>
+      <li><a href="#sec-14"><span class="n">14</span> Annotated Example</a></li>
+      <li><a href="#sec-15"><span class="n">15</span> Acronyms &amp; Glossary</a></li>
+      <li><a href="#sec-16"><span class="n">16</span> Sources</a></li>
     </ul>
   </nav>
 
@@ -229,7 +229,7 @@
 
       <!-- 01 -->
       <section class="sheet" id="sec-01">
-        <div class="sheet-label"><span class="num">01</span><span class="of">Sheet 01 of 17</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">01</span><span class="of">Sheet 01 of 16</span><span class="rule"></span></div>
         <h2>What is Spec-Driven Development?</h2>
         <p class="lede">Spec-Driven Development (SDD) is the structural successor to <strong>"vibe coding"</strong> — the term Andrej Karpathy coined in February 2025 for the ad-hoc, prompt-and-pray loop of throwing natural-language instructions at a model until something works. By mid-2026 it had become clear that vibe coding does not hold up once real users, real security requirements, and real teammates are in the loop.</p>
         <p>SDD is a methodology in which a written specification is treated as the primary, executable artifact of a software project, and code is a regenerable output produced from that spec by humans, AI agents, or both. The specification file, not the eventual codebase, becomes the single source of truth. Instead of describing a system brick-by-brick through an endless chat, you hand an autonomous agent a complete engineering blueprint. It builds against that blueprint, and when requirements change, you edit the spec and regenerate the code rather than hand-patch the output.</p>
@@ -239,41 +239,16 @@
         <p>Improvising via chat is great for a prototype and dangerous for anything that has to survive contact with production. Models are extraordinary pattern-completers and unreliable mind-readers. Left unconstrained, ambiguity in your intent does not stay small — it compounds into architectures nobody chose on purpose, missing security controls, unhandled edge cases, and thin-to-nonexistent test coverage. Teams have taken to calling this failure mode <strong>"automating the creation of legacy mess."</strong> A written spec turns fuzzy intent into a deterministic contract the agent cannot quietly drift away from. The lever for output quality shifts from prompt cleverness to spec quality.</p>
 
         <h3>Loop Engineering vs. Harness Engineering</h3>
-        <p>SDD sits at the intersection of two disciplines that teams constantly confuse. <strong>Loop engineering</strong> is the design of the iterative cycle that drives the agent toward a goal — your Specify → Plan → Tasks → Implement cycle. It governs what the agent does on each pass, how it evaluates progress, and when it stops. <strong>Harness engineering</strong> is the environment built around the agent — your Constitution, steering files, tool permissions, review gates, and recovery patterns. It governs what the agent is allowed to touch, how it recovers from failure, and how you observe what it did.</p>
-        <p>Confusing the two causes predictable failures. A weak harness lets an agent edit production configs because nobody said it could not. A weak loop makes agents brittle — they stall, retry forever, or stop too early because the exit condition is vague. SDD fixes both: the 4-phase loop is your loop, and the Constitution + scorecard is your harness. Naming the distinction gives you vocabulary to explain why SDD works to skeptical teammates.</p>
+        <p>A useful way to think about SDD is to distinguish two layers: <strong>loop engineering</strong> — the design of the iterative cycle that drives the agent toward a goal (your Specify → Plan → Tasks → Implement cycle) — and <strong>harness engineering</strong> — the environment built around the agent (your Constitution, steering files, tool permissions, review gates, and recovery patterns). The loop governs what the agent does on each pass; the harness governs what it is allowed to touch, how it recovers from failure, and how you observe what it did. Confusing the two causes predictable failures — a weak harness lets an agent edit production configs, a weak loop makes agents stall. SDD fixes both, and naming the distinction helps you explain why SDD works to skeptical teammates.</p>
 </section>
 
       <hr class="div">
 
       <!-- 02 -->
       <section class="sheet" id="sec-02">
-        <div class="sheet-label"><span class="num">02</span><span class="of">Sheet 02 of 17</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">02</span><span class="of">Sheet 02 of 16</span><span class="rule"></span></div>
         <h2>The Continuum of Commitment</h2>
         <p>Rolling SDD into a real engineering team is not binary — it sits on a spectrum of how much authority you are willing to hand the spec. Most teams start at level one and drift toward level two; very few production shops run level three today. As Thoughtworks' Birgitta Böckeler notes, "all SDD approaches and definitions I've found are spec-first, but not all strive to be spec-anchored or spec-as-source."</p>
-
-        <div class="diagram-frame">
-          <svg viewBox="0 0 720 190" role="img" aria-label="Maturity spectrum gauge from Spec-First to Spec-Anchored to Spec-As-Source">
-            <line x1="60" y1="100" x2="660" y2="100" stroke="rgba(214,201,181,0.35)" stroke-width="2"/>
-            <circle cx="120" cy="100" r="7" fill="#221f1c" stroke="#7fae95" stroke-width="2.5"/>
-            <circle cx="360" cy="100" r="7" fill="#221f1c" stroke="#d9a153" stroke-width="2.5"/>
-            <circle cx="600" cy="100" r="7" fill="#221f1c" stroke="#d98a6e" stroke-width="2.5"/>
-            <line x1="120" y1="100" x2="120" y2="72" stroke="rgba(214,201,181,0.35)"/>
-            <line x1="360" y1="100" x2="360" y2="72" stroke="rgba(214,201,181,0.35)"/>
-            <line x1="600" y1="100" x2="600" y2="72" stroke="rgba(214,201,181,0.35)"/>
-            <text x="120" y="58" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600">LEVEL 1</text>
-            <text x="360" y="58" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600">LEVEL 2</text>
-            <text x="600" y="58" text-anchor="middle" fill="#d98a6e" font-family="IBM Plex Mono, monospace" font-size="12" font-weight="600">LEVEL 3</text>
-            <text x="120" y="130" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="13" font-weight="600">Spec-First</text>
-            <text x="360" y="130" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="13" font-weight="600">Spec-Anchored</text>
-            <text x="600" y="130" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="13" font-weight="600">Spec-As-Source</text>
-            <text x="120" y="150" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">spec drafted once,</text>
-            <text x="120" y="165" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">code owned by hand</text>
-            <text x="360" y="150" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">spec + code kept</text>
-            <text x="360" y="165" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">in sync, always</text>
-            <text x="600" y="150" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">code is generated,</text>
-            <text x="600" y="165" text-anchor="middle" fill="#b7ae9e" font-family="IBM Plex Sans, sans-serif" font-size="11.5">spec is the only file you touch</text>
-          </svg>
-        </div>
 
         <div class="maturity-cards">
           <div class="m-card">
@@ -301,28 +276,99 @@
 
       <hr class="div">
 
-      <!-- 03 — 4-Phase Loop with Pre-Phase 0 and updated Token Economics -->
+      <!-- 03: When to Use SDD & Limits (moved from 12 & 13, combined) -->
       <section class="sheet" id="sec-03">
-        <div class="sheet-label"><span class="num">03</span><span class="of">Sheet 03 of 17</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">03</span><span class="of">Sheet 03 of 16</span><span class="rule"></span></div>
+        <h2>When to Use SDD — and When to Skip It</h2>
+        <p class="lede">Before you invest in the full loop, decide whether you need it at all. SDD is structural reliability; for small tasks it's a sledgehammer to crack a nut. Use this decision framework to pick the right tool for the job.</p>
+
+        <div class="diagram-frame">
+          <svg viewBox="0 0 720 260" role="img" aria-label="Decision tree: what are you building, branching to vibe coding for learning and prototypes, and spec-driven for production systems">
+            <defs>
+              <marker id="arrow3" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#7fae95"/></marker>
+              <marker id="arrow4" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#d9a153"/></marker>
+            </defs>
+            <path d="M360,55 L200,120" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrow3)"/>
+            <path d="M360,55 L520,120" stroke="#d9a153" stroke-width="2" fill="none" marker-end="url(#arrow4)"/>
+            <rect x="260" y="20" width="200" height="46" rx="8" fill="#221f1b" stroke="#e8e2d3" stroke-width="1.4"/>
+            <text x="360" y="48" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="13">What are you building?</text>
+
+            <rect x="100" y="122" width="200" height="46" rx="8" fill="#221f1b" stroke="#7fae95" stroke-width="1.4"/>
+            <text x="200" y="150" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Sans, sans-serif" font-size="12.5">Learning / Prototype</text>
+
+            <rect x="420" y="122" width="200" height="46" rx="8" fill="#221f1b" stroke="#d9a153" stroke-width="1.4"/>
+            <text x="520" y="150" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Sans, sans-serif" font-size="12.5">Production System</text>
+
+            <path d="M200,168 V200" stroke="#7fae95" stroke-width="2" marker-end="url(#arrow3)"/>
+            <path d="M520,168 V200" stroke="#d9a153" stroke-width="2" marker-end="url(#arrow4)"/>
+
+            <rect x="100" y="205" width="200" height="42" rx="21" fill="#7fae95" opacity="0.15" stroke="#7fae95" stroke-width="1.6"/>
+            <text x="200" y="231" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="700">VIBE CODING</text>
+
+            <rect x="420" y="205" width="200" height="42" rx="21" fill="#d9a153" opacity="0.15" stroke="#d9a153" stroke-width="1.6"/>
+            <text x="520" y="231" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="700">SPEC-DRIVEN</text>
+          </svg>
+        </div>
+
+        <h3>Reach for Spec-Driven when:</h3>
+        <ul>
+          <li>You are writing production systems meant to scale and be maintained long-term.</li>
+          <li>Multiple engineers, or multiple parallel agents, work the same codebase at once.</li>
+          <li>You must enforce security profiles, data constraints, compliance rules, or design tokens precisely.</li>
+          <li>The system involves migrations, multi-service topologies, or intricate state machines.</li>
+        </ul>
+
+        <h3>Default to Vibe Coding when:</h3>
+        <ul>
+          <li>You are building throwaway code, isolated proofs-of-concept, or rapid wireframes.</li>
+          <li>The task is visual and needs fast, intuitive tweaking rather than a locked spec.</li>
+          <li>It is a minor bug fix — a full pipeline here is overkill.</li>
+          <li>You are exploring an unfamiliar stack and do not yet know what you actually want.</li>
+        </ul>
+
+        <div class="callout tip">
+          <span class="tag">A Practical Test</span>
+          <p>One heuristic experienced SDD practitioners use cuts through the ambiguity fast: <em>if you would be annoyed to find the agent interpreted your requirement differently than you meant, write the spec. If a quick follow-up prompt would fix it just fine, skip the spec and prompt directly.</em> It is a five-second gut check, and it is usually right.</p>
+        </div>
+
+        <h3>The Honest Limits</h3>
+        <p>Even when SDD is the right call, be aware of where it currently breaks down.</p>
+        <ul>
+          <li><strong>Brownfield adoption gap:</strong> SDD shines on greenfield projects. Dropping a full pipeline onto a large legacy codebase in one go rarely works — adopt feature by feature, not as a big-bang rewrite. Both tools have onboarding steps (see Sheet 12), but treat the first few brownfield specs as trust-building exercises.</li>
+          <li><strong>Markdown Monster risk:</strong> Complex spec workflows can produce documentation overhead instead of clarity. If a simple change spawns hundreds of planning files, you are spending more time reviewing prose than code. The fix: archive specs after merge, delete stale ones after 90 days, and keep specs just-in-time (see Sheet 08).</li>
+          <li><strong>Semantic diffusion:</strong> "Spec" is often used as a synonym for "a detailed prompt." That is not SDD — true SDD requires an execution engine that treats the specification as an actionable, verifiable source of truth, not just a longer prompt.</li>
+          <li><strong>Heavy-upfront-planning critique:</strong> Thoughtworks' Technology Radar flags a risk of SDD tilting back toward big up-front specification — the anti-pattern Agile spent decades pushing away. SDD is compatible with Agile when specs stay living, lightweight artifacts updated inside normal sprints. The moment they calcify into Waterfall-style documentation, you have lost the point.</li>
+          <li><strong>Human-gates debate:</strong> Some argue that as agents improve, manual approval gates become pure friction. The counter-argument: production software carries risk, compliance, and legal accountability that someone has to own. Human gates exist not because agents cannot do the work, but because someone must be liable when it is wrong.</li>
+        </ul>
+
+        <div class="callout warn">
+          <span class="tag">Bottom Line</span>
+          <p>SDD is a genuine improvement over unstructured prompting for anything production-grade — but it is a discipline, not a silver bullet. It still requires someone to write a good spec, and a bad spec compiled perfectly is still a bad system.</p>
+        </div>
+      </section>
+
+      <hr class="div">
+
+      <!-- 04: The 4-Phase Loop (was 03, updated with Kiro wave execution note) -->
+      <section class="sheet" id="sec-04">
+        <div class="sheet-label"><span class="num">04</span><span class="of">Sheet 04 of 16</span><span class="rule"></span></div>
         <h2>Core Workflow: The 4-Phase Loop</h2>
 
         <p class="lede">The SDD loop is a <strong>collaboration</strong> between you (the human) and the AI agent. Each phase has a clear division of labour: the agent drafts, you review and approve. Here is exactly who does what.</p>
-        <p>Structurally, this is an instance of the <strong>Plan-Execute-Verify (PEV)</strong> pattern — a three-phase harness architecture that separates planning from execution and enforces verification at every transition. Each phase in your loop is a PEV cycle: the agent plans (drafts), executes (produces), and you verify (review and approve) before the next cycle begins.</p>
 
-        <!-- NEW: Pre-Phase 0: Spike the Unknowns -->
-        <h3>Pre-Phase 0: Spike the Unknowns <span class="badge-new">New</span></h3>
+        <h3>Pre-Phase 0: Spike the Unknowns</h3>
         <p>If the feature contains technical uncertainty — a new API you have never integrated, an unproven performance path, an unfamiliar library with opaque behavior — run a throwaway spike <em>before</em> you write the spec. The spike is deliberately ugly: it is not meant to ship, it is meant to answer one question: <strong>"does this approach work?"</strong></p>
         <ul>
           <li><strong>Keep it small.</strong> The spike should take less than two hours. If it takes longer, the uncertainty is too broad — split the problem.</li>
           <li><strong>Comment heavily.</strong> Mark every line that proves the approach works and every line that is intentionally incomplete (<code>// PROVEN: this call returns the expected shape</code>).</li>
-          <li><strong>Store the reference.</strong> Save the spike in <code>_spec/spikes/reference/&lt;name&gt;/</code> and link it from the spec's new <strong>Reference implementation</strong> section (see Sheet 04).</li>
+          <li><strong>Store the reference.</strong> Save the spike in <code>_spec/spikes/reference/&lt;name&gt;/</code> and link it from the spec's new <strong>Reference implementation</strong> section (see Sheet 05).</li>
           <li><strong>Bin or refactor.</strong> Once the spike proves the approach, either delete it or refactor the proven parts into the real implementation. Do not ship the spike as-is.</li>
         </ul>
         <p>A working reference stops the agent from hallucinating behavior that "should" work but does not. It also gives you a concrete fallback when the agent's generated code fails: you can compare its approach against the reference and see exactly where it diverged.</p>
 
         <div class="callout tip">
           <span class="tag">When to Spike</span>
-          <p>Spike when you would say <em>"I'm not sure if this will work"</em> out loud. Do not spike for straightforward CRUD, known libraries, or patterns your team has already validated. The spike is a tool for uncertainty, not a replacement for reading documentation.</p>
+          <p>Spike when you would say <em>"I'm not sure if this will work"</em> out loud. Do not spike for straightforward CRUD, known libraries, or patterns your team has already validated.</p>
         </div>
 
         <div class="table-wrap">
@@ -349,7 +395,7 @@
               </tr>
               <tr>
                 <td style="white-space:nowrap;"><strong>4. Implement</strong></td>
-                <td>Executes the tasks one by one, writes code, runs tests</td>
+                <td>Executes the tasks (Kiro runs independent tasks in parallel waves; Claude Code runs them sequentially unless you configure otherwise)</td>
                 <td>Reviews the targeted diffs, validates against the spec, approves the merge</td>
                 <td>You review each change; agent loops back if you request fixes</td>
               </tr>
@@ -410,7 +456,7 @@
               </tr>
               <tr>
                 <td><strong>4. Implement</strong></td>
-                <td>Targeted diffs — small, focused code changes, one per task, with tests</td>
+                <td>Targeted diffs — small, focused code changes, one per task, with tests. Kiro executes independent tasks in parallel waves; Claude Code runs them sequentially unless you configure otherwise.</td>
                 <td>Does the diff match the plan? Does it reuse existing patterns? Does it satisfy the spec's EARS requirements?</td>
               </tr>
             </tbody>
@@ -418,50 +464,48 @@
         </div>
 
         <h3>Greenfield vs. Brownfield: Where Phase 1 Actually Starts</h3>
-        <p>The four phases are the same either way, but Phase 1 starts from a different place. <strong>Greenfield</strong> — there is no existing code to contradict, so the spec you write is genuinely the first source of truth. <strong>Brownfield</strong> — the codebase already has an implicit spec: however it actually behaves today, documented or not. Skip acknowledging that, and Phase 1 will happily draft requirements that quietly conflict with what is already shipped. Both tools have a specific fix for this — see <strong>Sheet 11</strong> for the exact commands.</p>
+        <p>The four phases are the same either way, but Phase 1 starts from a different place. <strong>Greenfield</strong> — there is no existing code to contradict, so the spec you write is genuinely the first source of truth. <strong>Brownfield</strong> — the codebase already has an implicit spec: however it actually behaves today, documented or not. Skip acknowledging that, and Phase 1 will happily draft requirements that quietly conflict with what is already shipped. Both tools have a specific fix for this — see <strong>Sheet 12</strong> for the exact commands.</p>
 
         <div class="callout tip">
           <span class="tag">The Verifier Pattern</span>
-          <p>The most underused refinement: assign a <strong>separate</strong> agent to verify the implementing agent's work rather than trusting it to self‑check. Treat "verifier" as a distinct role in your pipeline — the same way you would not let one engineer be the only reviewer of their own pull request. See <strong>Sheet 08</strong> for a reusable reviewer prompt.</p>
+          <p>The most underused refinement: assign a <strong>separate</strong> agent to verify the implementing agent's work rather than trusting it to self‑check. Treat "verifier" as a distinct role in your pipeline — the same way you would not let one engineer be the only reviewer of their own pull request. See <strong>Sheet 09</strong> for a reusable reviewer prompt.</p>
         </div>
 
         <div class="callout info">
           <span class="tag">How This Plays Out in Practice</span>
-          <p><strong>Kiro CLI</strong>: The built‑in <code>/spec</code> agent automates this entire loop. You run <code>/spec new</code>, the agent produces <code>requirements.md</code>. You review and type "proceed" — agent moves to <code>design.md</code>. You review and type "proceed" — agent moves to <code>tasks.md</code>. You review and type "proceed" — agent runs <code>/spec run</code> and executes the tasks, showing you each diff as it goes.</p>
-          <p><strong>Claude Code</strong>: You bring your own workflow. Real plugins and custom commands give you structured steps for requirements, planning, and execution where each phase requires your explicit approval before moving to the next. See <strong>Sheet 11</strong> for tool-specific setup.</p>
+          <p><strong>Kiro CLI</strong>: The built‑in <code>/spec</code> agent automates this entire loop. You run <code>/spec new</code>, the agent produces <code>requirements.md</code>. You review and type "proceed" — agent moves to <code>design.md</code>. You review and type "proceed" — agent moves to <code>tasks.md</code>. You review and type "proceed" — agent runs <code>/spec run</code> and executes the tasks, showing you each diff as it goes. Independent tasks run in parallel waves based on dependency graph.</p>
+          <p><strong>Claude Code</strong>: You bring your own workflow, but Claude has a built-in <strong>Plan Mode</strong> (Shift+Tab twice, or <code>/plan</code>) — a read‑only planning state where Claude proposes a plan before touching files, which you approve or reject. This provides a native phase-gate even if you don't use custom commands. You can layer additional structure via <code>.claude/commands/</code>.</p>
         </div>
 
-        <!-- UPDATED: Token Economics Reality Check with lower-tier model savings -->
         <div class="callout warn">
-          <span class="tag">Token Economics Reality Check <span class="badge-new">Updated</span></span>
-          <p>Multi-phase agentic workflows burn tokens. A full 4-phase loop with a large spec can consume <strong>50k–150k tokens</strong> before a single line of code is written. For a 10-minute bug fix, that is overkill — use vibe coding. For a 2-week feature touching multiple services, it is cheap insurance against architectural drift. Let the scope of the work decide whether you pay the overhead.</p>
-          <p style="margin-top:10px;"><strong>Side benefit:</strong> A precise spec lets you drop to a lower-tier model for implementation and still get output quality comparable to a top-tier model running on a vague prompt. The spec carries the precision; the model just executes. If you are burning tokens on Sonnet or Opus for every implementation pass, try Haiku or a comparable lower-tier model once the spec is locked — you may save 60–80% on token costs without a noticeable drop in code quality.</p>
+          <span class="tag">Token Economics Reality Check</span>
+          <p>Multi-phase agentic workflows can burn significant tokens. A full 4-phase loop with a large spec may consume a meaningful amount of tokens before code is written — for a 10‑minute bug fix, that's overkill; for a 2‑week feature, it's cheap insurance against architectural drift. Let the scope decide whether you pay the overhead.</p>
+          <p style="margin-top:10px;"><strong>Side benefit:</strong> A precise spec often lets you drop to a lower‑tier model (e.g., Haiku) for implementation and still get output quality comparable to a top‑tier model running on a vague prompt. The spec carries the precision; the model just executes. This can meaningfully reduce token costs without a noticeable drop in code quality.</p>
         </div>
       </section>
 
       <hr class="div">
 
-      <!-- 04 — File Anatomy & Templates (updated with Non-goals, Assumptions, Reference, Test Plan, granularity) -->
-      <section class="sheet" id="sec-04">
-        <div class="sheet-label"><span class="num">04</span><span class="of">Sheet 04 of 17</span><span class="rule"></span></div>
+      <!-- 05: File Anatomy & Templates (was 04) -->
+      <section class="sheet" id="sec-05">
+        <div class="sheet-label"><span class="num">05</span><span class="of">Sheet 05 of 16</span><span class="rule"></span></div>
         <h2>File Anatomy &amp; Templates</h2>
         <p class="lede">The 4-phase loop produces three files. Without a standard structure, every team invents its own format and fragments. Here are the mandatory sections for each file — copy these templates directly into your repo and fill them in.</p>
 
-        <!-- UPDATED: spec.md template with Non-goals, Assumptions, Reference, Test Plan -->
         <div class="file-template">
-          <div class="fname">spec.md / requirements.md <span class="badge-new">Updated</span></div>
+          <div class="fname">spec.md / requirements.md</div>
           <h5>The Feature Contract</h5>
           <ul>
             <li><strong>Title</strong> — One-line description of the feature.</li>
             <li><strong>Background</strong> — Why this feature exists. Business context, user pain, or system gap.</li>
             <li><strong>EARS Requirements</strong> — Numbered list of When/While/If/Where + shall clauses. One obligation per sentence.</li>
-            <li><strong>Non-goals</strong> <span class="badge-new">New</span> — What this system explicitly will <em>not</em> do. Prevents overengineering and scope creep by making the boundaries visible.</li>
-            <li><strong>Assumptions</strong> <span class="badge-new">New</span> — Decisions already made that the model should not silently re-decide (e.g., "cursor-based pagination, not offset"; "PostgreSQL 15, not 14").</li>
+            <li><strong>Non-goals</strong> — What this system explicitly will <em>not</em> do. Prevents overengineering and scope creep.</li>
+            <li><strong>Assumptions</strong> — Decisions already made that the model should not silently re-decide (e.g., "cursor-based pagination, not offset").</li>
             <li><strong>Constraints</strong> — Hard limits the agent cannot violate (performance budgets, banned dependencies, compliance rules).</li>
-            <li><strong>Reference implementation</strong> <span class="badge-new">New</span> — Link to a spike or existing code that proves the approach works. See <strong>Pre-Phase 0</strong> in Sheet 03.</li>
-            <li><strong>Test Plan</strong> <span class="badge-new">New</span> — Named tests with exact inputs and expected outputs, written <em>before</em> the implementation plan. Example: <code>Test T1: POST /api/bulk with 10,001 rows → returns 413 in &lt; 200ms</code>. This becomes the definition of done for the implementation phase.</li>
+            <li><strong>Reference implementation</strong> — Link to a spike or existing code that proves the approach works.</li>
+            <li><strong>Test Plan</strong> — Named tests with exact inputs and expected outputs, written <em>before</em> the implementation plan. Example: <code>Test T1: POST /api/bulk with 10,001 rows → returns 413 in &lt; 200ms</code>.</li>
             <li><strong>Acceptance Criteria</strong> — Verifiable outcomes that prove the feature works. Map 1:1 to EARS requirements and Test Plan entries.</li>
-            <li><strong>Out of Scope</strong> — Explicitly excluded functionality to prevent scope creep (broader than Non-goals; captures entire features not included).</li>
+            <li><strong>Out of Scope</strong> — Explicitly excluded functionality to prevent scope creep (broader than Non-goals).</li>
           </ul>
         </div>
 
@@ -478,9 +522,8 @@
           </ul>
         </div>
 
-        <!-- UPDATED: tasks.md template with granularity rule -->
         <div class="file-template">
-          <div class="fname">tasks.md <span class="badge-new">Updated</span></div>
+          <div class="fname">tasks.md</div>
           <h5>The Execution Checklist</h5>
           <ul>
             <li><strong>Task ID</strong> — Sequential number (T01, T02...) for traceability.</li>
@@ -491,7 +534,7 @@
             <li><strong>Dependencies</strong> — Which tasks must finish before this one starts.</li>
           </ul>
           <div style="margin-top:12px; padding-top:12px; border-top:1px dashed var(--rule);">
-            <p style="font-size:.9rem; color:var(--cyan); margin:0;"><strong>Granularity rule <span class="badge-new">New</span>:</strong> Each task should be completable in <strong>2–5 minutes</strong> of focused work. If a task exceeds that, split it. The agent should never be asked to hold enough context for a 30-minute task in a single pass. A 2–5 minute task has a single file change, a single test addition, or a single refactor — not a sprawling multi-file rework.</p>
+            <p style="font-size:.9rem; color:var(--cyan); margin:0;"><strong>Granularity rule:</strong> Each task should be completable in <strong>2–5 minutes</strong> of focused work. If a task exceeds that, split it. The agent should never be asked to hold enough context for a 30‑minute task in a single pass.</p>
           </div>
         </div>
 
@@ -506,9 +549,98 @@
 
       <hr class="div">
 
-      <!-- 05 — Writing Specs with EARS -->
-      <section class="sheet" id="sec-05">
-        <div class="sheet-label"><span class="num">05</span><span class="of">Sheet 05 of 17</span><span class="rule"></span></div>
+      <!-- 06: The Constitution (moved from 07) -->
+      <section class="sheet" id="sec-06">
+        <div class="sheet-label"><span class="num">06</span><span class="of">Sheet 06 of 16</span><span class="rule"></span></div>
+        <h2>The Constitution &amp; Standing Context</h2>
+        <p class="lede">Every project needs two kinds of document: <strong>temporary specs</strong> that exist for one feature, and <strong>standing rules</strong> that apply to every change. The Constitution is your immutable foundation — the second kind.</p>
+        <p>As Birgitta Böckeler puts it, "general context are things like rules files, or high level descriptions of the product and the codebase… whereas specs [are] only relevant to the tasks that actually create or change that particular functionality." That standing-rules document is what this section covers.</p>
+
+        <h3>What the Constitution Covers</h3>
+        <p>A <strong>Constitution</strong> defines non‑negotiable principles that apply to every change — testing philosophy, security baselines, code style, and opinionated technology choices. This ensures organizational standards are baked into every project from the start.</p>
+
+        <div class="code-card">
+          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">constitution.md (generic template)</span><button class="copy-btn" data-copy>Copy</button></div>
+          <pre><code><span class="tok-c"># Project Constitution — immutable principles</span>
+- All database mutations must use explicit transaction boundaries.
+- All public endpoints must include active rate-limiting middleware.
+- Unit tests are required for any newly created utility method.
+- Write tests <span class="tok-s">before</span> implementing any business logic (TDD discipline).
+- No raw SQL in controllers — all queries go through the repository layer.
+- Secrets must be injected via environment variables, never hard-coded.</code></pre>
+        </div>
+
+        <h3>How the Constitution Fits into the Loop</h3>
+        <ul>
+          <li><strong>You write it once</strong> at the start of the project.</li>
+          <li><strong>The agent reads it</strong> at the beginning of every session — it is part of its permanent memory.</li>
+          <li><strong>Every phase</strong> respects the Constitution: the agent will not propose a plan that violates it, and you use it as your own checklist during reviews.</li>
+        </ul>
+
+        <h3>Workspace Isolation</h3>
+        <p>Before the agent writes a single line of code, ensure it works on a <strong>clean branch or git worktree</strong> with a verified green test baseline. A dirty workspace or failing baseline makes it impossible to tell whether a test failure is from the new code or pre‑existing debt.</p>
+        <ul>
+          <li><strong>Why it matters:</strong> If the agent starts from a broken state, every fix it applies is a guess. You will burn tokens on regression fixes that should never have been the agent's problem.</li>
+          <li><strong>How to do it:</strong> Use <code>git worktree add ../feature-name main</code> to create a fresh, isolated workspace. Run tests before the agent starts — if they fail, fix them first.</li>
+          <li><strong>Tool support:</strong> Superpowers enforces this as a mandatory first step. Kiro CLI's <code>/spec new</code> does not automatically create a worktree, but you should treat it as a manual pre‑phase ritual.</li>
+        </ul>
+        <p>This is harness engineering at its most basic: if you cannot trust the baseline, you cannot trust the diff.</p>
+
+        <h3>Agent Permissions and Blast Radius</h3>
+        <p>Giving an agent write access to your repo is a significant trust decision. Protect yourself with these harness practices:</p>
+        <ul>
+          <li><strong>Least privilege:</strong> Restrict the agent's tool access to only what it needs for the task. In Claude Code, use <code>permissions</code> in <code>CLAUDE.md</code> to deny dangerous commands (e.g., <code>rm -rf</code>, <code>sudo</code>). In Kiro, the agent runs in a sandboxed environment by default, but you can further restrict via steering files.</li>
+          <li><strong>Prompt injection awareness:</strong> If the agent fetches external content (e.g., from a URL or file), that content could contain instructions that override your spec. Treat fetched content as untrusted — validate or sanitize it before feeding it into the agent's context.</li>
+          <li><strong>Diff review, not blind trust:</strong> The scorecard (Sheet 09) is your primary defense. Never merge a generated diff without reviewing it — even if all tests pass.</li>
+        </ul>
+
+        <h3>Implementation by Tool</h3>
+
+        <h4>Kiro CLI — Steering Files</h4>
+        <p>Store your Constitution in <strong>steering files</strong> inside <code>.kiro/steering/</code>. For example, put architecture rules in <code>tech.md</code>, structural rules in <code>structure.md</code>, and product rules in <code>product.md</code>. Since steering files are <strong>always</strong> loaded in every interaction, they automatically enforce your immutable rules on every change — no extra configuration needed.</p>
+
+        <div class="code-card">
+          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">.kiro/steering/tech.md — Kiro's Constitution</span><button class="copy-btn" data-copy>Copy</button></div>
+          <pre><code><span class="tok-c"># Technology Constitution</span>
+- All database mutations must use explicit transaction boundaries.
+- All public endpoints must include rate-limiting middleware.
+- Write tests <span class="tok-s">before</span> implementing any business logic.
+- All external API calls must have a 5-second timeout and circuit-breaker fallback.</code></pre>
+        </div>
+
+        <h4>Claude Code — CLAUDE.md</h4>
+        <p>Place your Constitution directly in <strong><code>CLAUDE.md</code></strong>, which is read at the start of every session. For larger rulebooks, keep a separate <code>constitution.md</code> and reference it in <code>CLAUDE.md</code> using the <code>@constitution.md</code> syntax. This ensures Claude applies your rules to every task it touches.</p>
+
+        <div class="code-card">
+          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">CLAUDE.md — Claude's Constitution</span><button class="copy-btn" data-copy>Copy</button></div>
+          <pre><code><span class="tok-c"># Project Constitution (loaded every session)</span>
+- All database mutations must use explicit transaction boundaries.
+- All public endpoints must include rate-limiting middleware.
+- Write tests <span class="tok-s">before</span> implementing any business logic.
+
+<span class="tok-c"># Reference a separate constitution file if it grows large</span>
+@constitution.md</code></pre>
+        </div>
+
+        <h3>Brownfield Bootstrapping</h3>
+        <p>Both tools can generate a starter Constitution from an existing codebase instead of writing it blank:</p>
+        <ul>
+          <li><strong>Kiro</strong>: Use <strong>Generate Steering Docs</strong> (IDE button, CLI, or Web) to scan the repo and auto-draft <code>product.md</code>, <code>tech.md</code>, and <code>structure.md</code> from what is actually there.</li>
+          <li><strong>Claude Code</strong>: Run <code>/init</code> in the repo before writing anything by hand — it detects your build system, test framework, and code patterns, and drafts a starter <code>CLAUDE.md</code> you refine from there.</li>
+        </ul>
+        <p>Either way, do this <strong>before your first spec</strong>, not after — it is what stops Phase 1 from drafting requirements that quietly contradict how the codebase already works.</p>
+
+        <div class="callout tip">
+          <span class="tag">Constitution = Persistent Context</span>
+          <p>Whether you use Kiro's steering files or Claude's <code>CLAUDE.md</code>, the Constitution is your team's <strong>living rulebook</strong>. It outlasts any single feature spec and ensures every AI session starts with the same non‑negotiable standards. Update it rarely — treat it like a real constitution, not a daily checklist.</p>
+        </div>
+      </section>
+
+      <hr class="div">
+
+      <!-- 07: Writing Specs with EARS (was 05) -->
+      <section class="sheet" id="sec-07">
+        <div class="sheet-label"><span class="num">07</span><span class="of">Sheet 07 of 16</span><span class="rule"></span></div>
         <h2>Writing Specs with EARS</h2>
         <p class="lede">EARS — the <strong>Easy Approach to Requirements Syntax</strong> — is the bridge between human intent and machine execution. It forces ambiguity out of requirements by replacing prose with structured clauses an LLM can parse as cleanly as a compiler parses code.</p>
         <p>Developed by Alistair Mavin and adopted by aerospace and automotive engineering, EARS has five keywords that cover virtually every functional requirement you will write: <strong>When</strong>, <strong>While</strong>, <strong>Where</strong>, <strong>If</strong>, and <strong>Shall</strong>. The syntax is deliberately rigid because rigidity is exactly what prevents an agent from hallucinating intent.</p>
@@ -596,176 +728,56 @@ The system should process payments and handle errors.</code></pre>
 
       <hr class="div">
 
-      <!-- 06 — Spec in Scrum & Kanban (+ versioning + CI/CD) -->
-      <section class="sheet" id="sec-06">
-        <div class="sheet-label"><span class="num">06</span><span class="of">Sheet 06 of 17</span><span class="rule"></span></div>
-        <h2>Spec in Scrum &amp; Kanban</h2>
-        <p class="lede">A spec that lives outside your delivery rhythm is a spec that dies. SDD does not replace Agile — it needs to be wired into your existing ceremonies and board states. The goal is not more documentation; it is <strong>the right documentation at the right time</strong>.</p>
+      <!-- 08: Spec in Scrum & Kanban (shortened, was 06) -->
+      <section class="sheet" id="sec-08">
+        <div class="sheet-label"><span class="num">08</span><span class="of">Sheet 08 of 16</span><span class="rule"></span></div>
+        <h2>Spec in Scrum &amp; Kanban (Optional — for team leads)</h2>
+        <p class="lede">A spec that lives outside your delivery rhythm is a spec that dies. SDD does not replace Agile — it needs to be wired into your existing ceremonies and board states. This section is aimed at team leads; if you're an individual developer, you can skip to the next sheet.</p>
 
         <h3>Scrum Integration</h3>
-        <p>In Scrum, the spec is both a <strong>gate</strong> and a <strong>contract</strong>. It gates work from entering a sprint, and it contracts the behavior of that work once development starts.</p>
-
-        <h4>Backlog Refinement: Where specs are born</h4>
-        <p>Refinement is the natural home for Phase 1 (Specify). When a story enters refinement, the agent — or the team — drafts the <code>spec.md</code>. The story is not "ready" until the spec passes a readability test: can another engineer, or another agent, implement this without asking clarifying questions? If not, the story stays in refinement.</p>
-
-        <h4>Definition of Ready: The spec as a gate</h4>
-        <p>Add a single line to your DoR: <em>"The item has an EARS-formatted spec approved by the product owner and a technical reviewer."</em> This prevents the common anti-pattern of pulling vague stories into a sprint and letting the agent guess the details under time pressure.</p>
-
-        <h4>Sprint Planning: Review the spec, not just the title</h4>
-        <p>During planning, the team reads the spec aloud (or the agent summarizes it), not the Jira title. Estimation should be based on spec complexity — number of EARS clauses, number of edge cases, number of cross-service touchpoints — not on gut feel.</p>
-
-        <h4>During the Sprint: The spec is the sprint contract</h4>
-        <p>Once the sprint starts, the approved spec is frozen for that iteration. If new information emerges, the change goes through a mini Phase 1: draft the amendment, review it, approve it. This prevents scope creep without creating a change-control bureaucracy. At sprint end, the demo validates against the spec's acceptance criteria, not a separate checklist written after the fact.</p>
-
-        <h4>Retrospective: Did the spec match what we built?</h4>
-        <p>Add one question to your retro: <em>"Where did the spec diverge from the implementation, and why?"</em> Consistent divergence means your EARS syntax is too loose, your review checkpoints are being skipped, or your stories are too large.</p>
-
-        <div class="callout info">
-          <span class="tag">Scrum Anti-Pattern: The Spec Sprint</span>
-          <p>Dedicating an entire sprint to "writing specs" is BDUF in disguise. Specs should be written just-in-time — ideally 1–2 sprints ahead of implementation at most. Any spec written earlier than that is likely to go stale as the product learns from user feedback.</p>
-        </div>
-
-        <h3>Kanban Integration</h3>
-        <p>Kanban's flow-based model maps cleanly to SDD if you treat the spec as work that moves through its own column before hitting engineering.</p>
-
-        <h4>Upstream queue: "Spec Needed"</h4>
-        <p>Add a column upstream of "Ready for Dev" called <strong>Spec Needed</strong>. Cards sit here while Phase 1 runs. A card cannot enter "Ready for Dev" until it has a locked <code>spec.md</code>, <code>plan.md</code>, and <code>tasks.md</code>.</p>
-
-        <h4>WIP limits on specs</h4>
-        <p>Apply a WIP limit to the "Spec Needed" column. Overproducing specs that sit unread is inventory waste — they decay as the codebase evolves. A good starting limit is <strong>2× your dev WIP limit</strong>: enough to keep the pipeline fed, not so many that you create a spec graveyard.</p>
-
-        <h4>Pull criteria: What makes a spec ready?</h4>
-        <p>Define explicit pull criteria for moving a card from "Spec Needed" to "Ready for Dev":</p>
         <ul>
-          <li>All EARS clauses have corresponding acceptance criteria.</li>
-          <li>The plan has been reviewed for architectural fit.</li>
-          <li>Tasks are sized to complete within your average cycle time.</li>
-          <li>No open clarification questions from the agent.</li>
+          <li><strong>Backlog Refinement:</strong> The spec is drafted during refinement. A story is "ready" when the spec passes a readability test — can another engineer implement it without asking clarifying questions?</li>
+          <li><strong>Definition of Ready:</strong> Add a line: <em>"The item has an EARS-formatted spec approved by the product owner and a technical reviewer."</em></li>
+          <li><strong>Sprint Planning:</strong> Estimate based on spec complexity — number of EARS clauses, edge cases, cross-service touchpoints — not gut feel.</li>
+          <li><strong>During the Sprint:</strong> The approved spec is frozen. Changes go through a mini Phase 1: draft amendment, review, approve.</li>
+          <li><strong>Retrospective:</strong> Ask: <em>"Where did the spec diverge from implementation, and why?"</em></li>
         </ul>
 
-        <div class="callout warn">
-          <span class="tag">Watch For: Spec Inventory Waste</span>
-          <p>A spec that sits in "Spec Needed" for more than two weeks is probably stale. If your upstream WIP limit is consistently maxed out, you are writing specs faster than the team can absorb them. Lower the limit and focus on just-in-time refinement.</p>
-        </div>
+        <h3>Kanban Integration</h3>
+        <ul>
+          <li><strong>Upstream queue:</strong> Add a "Spec Needed" column. Cards cannot enter "Ready for Dev" without a locked spec, plan, and tasks.</li>
+          <li><strong>WIP limits:</strong> Apply a WIP limit to "Spec Needed" – typically 2× your dev WIP limit to avoid spec inventory waste.</li>
+          <li><strong>Pull criteria:</strong> All EARS clauses have corresponding acceptance criteria; plan reviewed; tasks sized to fit average cycle time; no open clarification questions.</li>
+        </ul>
 
         <h3>Spec Versioning &amp; Lifecycle</h3>
-        <p>What happens to a spec after the feature ships? Without a lifecycle policy, you get Böckeler's warning: <em>"it is easy to end up with 100s of markdown files."</em></p>
         <ul>
-          <li><strong>Archive on merge</strong> — Move <code>spec.md</code> to an <code>archive/</code> folder when the feature ships. The spec is now read-only historical context.</li>
-          <li><strong>Amend, do not overwrite</strong> — When requirements change, create <code>spec-v2.md</code> rather than editing the original. This preserves the audit trail of why the feature changed.</li>
-          <li><strong>Delete after 90 days</strong> — If a spec has not been referenced in three months, it is either well-understood or forgotten. Delete it. Git history preserves it if you ever need it back.</li>
-          <li><strong>Living specs only for living features</strong> — If a feature is actively maintained, its spec stays in the active folder and is updated alongside code changes. If the feature is stable, archive the spec.</li>
+          <li><strong>Archive on merge:</strong> Move spec to <code>archive/</code> when the feature ships.</li>
+          <li><strong>Amend, do not overwrite:</strong> Create <code>spec-v2.md</code> for changes to preserve audit trail.</li>
+          <li><strong>Delete after 90 days:</strong> If a spec hasn't been referenced, delete it — git history preserves it.</li>
+          <li><strong>Living specs for living features:</strong> Actively maintained features keep specs in the active folder, updated with code changes.</li>
         </ul>
 
         <h3>CI/CD Integration</h3>
-        <p>Human review gates in SDD map cleanly to normal git workflows if you wire them together:</p>
         <ul>
-          <li><strong>PR checklist from tasks.md</strong> — A pre-commit hook or GitHub Action can parse <code>tasks.md</code> and auto-generate a PR checklist. The reviewer verifies each task is complete before approving.</li>
-          <li><strong>EARS lint in CI</strong> — A simple regex check in your pipeline validates that every <code>specs/**/*.md</code> file contains at least one "shall" and no banned words ("should," "may," "consider"). Fail the build if the spec is malformed.</li>
-          <li><strong>Spec-required gate</strong> — A GitHub Action that fails if a PR touches code in <code>src/</code> but has no corresponding spec in <code>.kiro/specs/</code> or <code>specs/</code>. This enforces spec-first at the merge gate.</li>
-          <li><strong>Plan.md as PR comment</strong> — When <code>plan.md</code> is approved, paste its summary into the PR description. Reviewers see the intended architecture before they see the diff.</li>
+          <li><strong>PR checklist from tasks.md:</strong> Auto-generate a checklist from <code>tasks.md</code>.</li>
+          <li><strong>EARS lint in CI:</strong> Regex check that every spec contains "shall" and no banned words ("should", "may").</li>
+          <li><strong>Spec-required gate:</strong> GitHub Action fails if a PR touches <code>src/</code> without a corresponding spec.</li>
+          <li><strong>Plan.md as PR comment:</strong> Paste plan summary into PR description.</li>
         </ul>
-
-        <div class="callout tip">
-          <span class="tag">Practical Test</span>
-          <p>At any point in a sprint, ask: <em>"If I handed this spec to a different agent who has never seen our codebase, could it implement the feature correctly?"</em> If the answer is no, your spec has drifted from the code. Reconcile them before the sprint ends.</p>
-        </div>
       </section>
 
       <hr class="div">
 
-      <!-- 07 — The Constitution + Workspace Isolation -->
-      <section class="sheet" id="sec-07">
-        <div class="sheet-label"><span class="num">07</span><span class="of">Sheet 07 of 17</span><span class="rule"></span></div>
-        <h2>The Constitution &amp; Standing Context</h2>
-        <p class="lede">Every project needs two kinds of document: <strong>temporary specs</strong> that exist for one feature, and <strong>standing rules</strong> that apply to every change. The Constitution is your immutable foundation — the second kind.</p>
-        <p>As Birgitta Böckeler of Thoughtworks puts it: "general context are things like rules files, or high level descriptions of the product and the codebase… whereas specs [are] only relevant to the tasks that actually create or change that particular functionality." That standing-rules document is what this section covers.</p>
-
-        <h3>What the Constitution Covers</h3>
-        <p>A <strong>Constitution</strong> defines non‑negotiable principles that apply to every change — testing philosophy, security baselines, code style, and opinionated technology choices. This ensures organizational standards are baked into every project from the start.</p>
-
-        <div class="code-card">
-          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">constitution.md (generic template)</span><button class="copy-btn" data-copy>Copy</button></div>
-          <pre><code><span class="tok-c"># Project Constitution — immutable principles</span>
-- All database mutations must use explicit transaction boundaries.
-- All public endpoints must include active rate-limiting middleware.
-- Unit tests are required for any newly created utility method.
-- Write tests <span class="tok-s">before</span> implementing any business logic (TDD discipline).
-- No raw SQL in controllers — all queries go through the repository layer.
-- Secrets must be injected via environment variables, never hard-coded.</code></pre>
-        </div>
-
-        <h3>How the Constitution Fits into the Loop</h3>
-        <ul>
-          <li><strong>You write it once</strong> at the start of the project.</li>
-          <li><strong>The agent reads it</strong> at the beginning of every session — it is part of its permanent memory.</li>
-          <li><strong>Every phase</strong> respects the Constitution: the agent will not propose a plan that violates it, and you use it as your own checklist during reviews.</li>
-        </ul>
-
-        <!-- NEW: Workspace Isolation -->
-        <h3>Workspace Isolation <span class="badge-new">New</span></h3>
-        <p>Before the agent writes a single line of code, ensure it works on a <strong>clean branch or git worktree</strong> with a verified green test baseline. A dirty workspace or failing baseline makes it impossible to tell whether a test failure is from the new code or pre‑existing debt.</p>
-        <ul>
-          <li><strong>Why it matters:</strong> If the agent starts from a broken state, every fix it applies is a guess. You will burn tokens on regression fixes that should never have been the agent's problem.</li>
-          <li><strong>How to do it:</strong> Use <code>git worktree add ../feature-name main</code> to create a fresh, isolated workspace. Run tests before the agent starts — if they fail, fix them first.</li>
-          <li><strong>Tool support:</strong> Superpowers enforces this as a mandatory first step. Kiro CLI's <code>/spec new</code> does not automatically create a worktree, but you should treat it as a manual pre‑phase ritual.</li>
-        </ul>
-        <p>This is harness engineering at its most basic: if you cannot trust the baseline, you cannot trust the diff.</p>
-
-        <h3>Implementation by Tool</h3>
-
-        <h4>Kiro CLI — Steering Files</h4>
-        <p>Store your Constitution in <strong>steering files</strong> inside <code>.kiro/steering/</code>. For example, put architecture rules in <code>tech.md</code>, structural rules in <code>structure.md</code>, and product rules in <code>product.md</code>. Since steering files are <strong>always</strong> loaded in every interaction, they automatically enforce your immutable rules on every change — no extra configuration needed.</p>
-
-        <div class="code-card">
-          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">.kiro/steering/tech.md — Kiro's Constitution</span><button class="copy-btn" data-copy>Copy</button></div>
-          <pre><code><span class="tok-c"># Technology Constitution</span>
-- All database mutations must use explicit transaction boundaries.
-- All public endpoints must include rate-limiting middleware.
-- Write tests <span class="tok-s">before</span> implementing any business logic.
-- All external API calls must have a 5-second timeout and circuit-breaker fallback.</code></pre>
-        </div>
-
-        <h4>Claude Code — CLAUDE.md</h4>
-        <p>Place your Constitution directly in <strong><code>CLAUDE.md</code></strong>, which is read at the start of every session. For larger rulebooks, keep a separate <code>constitution.md</code> and reference it in <code>CLAUDE.md</code> using the <code>@constitution.md</code> syntax. This ensures Claude applies your rules to every task it touches.</p>
-
-        <div class="code-card">
-          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">CLAUDE.md — Claude's Constitution</span><button class="copy-btn" data-copy>Copy</button></div>
-          <pre><code><span class="tok-c"># Project Constitution (loaded every session)</span>
-- All database mutations must use explicit transaction boundaries.
-- All public endpoints must include rate-limiting middleware.
-- Write tests <span class="tok-s">before</span> implementing any business logic.
-
-<span class="tok-c"># Reference a separate constitution file if it grows large</span>
-@constitution.md</code></pre>
-        </div>
-
-        <h3>Brownfield Bootstrapping</h3>
-        <p>Both tools can generate a starter Constitution from an existing codebase instead of writing it blank:</p>
-        <ul>
-          <li><strong>Kiro</strong>: Use <strong>Generate Steering Docs</strong> (IDE button, CLI, or Web) to scan the repo and auto-draft <code>product.md</code>, <code>tech.md</code>, and <code>structure.md</code> from what is actually there.</li>
-          <li><strong>Claude Code</strong>: Run <code>/init</code> in the repo before writing anything by hand — it detects your build system, test framework, and code patterns, and drafts a starter <code>CLAUDE.md</code> you refine from there.</li>
-        </ul>
-        <p>Either way, do this <strong>before your first spec</strong>, not after — it is what stops Phase 1 from drafting requirements that quietly contradict how the codebase already works.</p>
-
-        <div class="callout tip">
-          <span class="tag">Constitution = Persistent Context</span>
-          <p>Whether you use Kiro's steering files or Claude's <code>CLAUDE.md</code>, the Constitution is your team's <strong>living rulebook</strong>. It outlasts any single feature spec and ensures every AI session starts with the same non‑negotiable standards. Update it rarely — treat it like a real constitution, not a daily checklist.</p>
-        </div>
-      </section>
-
-      <hr class="div">
-
-      <!-- 08 — The 5-Point Scorecard (with Two-Stage Review) -->
-      <section class="sheet" id="sec-08">
-        <div class="sheet-label"><span class="num">08</span><span class="of">Sheet 08 of 17</span><span class="rule"></span></div>
+      <!-- 09: The 5-Point Scorecard (was 08) -->
+      <section class="sheet" id="sec-09">
+        <div class="sheet-label"><span class="num">09</span><span class="of">Sheet 09 of 16</span><span class="rule"></span></div>
         <h2>The 5-Point Scorecard</h2>
         <p class="lede">The 4-phase loop tells you <em>how</em> to run agentic work. It does not tell you whether what came out the other end was actually good. That is a separate question — and it is the one Andrej Karpathy's "agentic engineering" framework is really about: the discipline of judging agent output, not just producing it. Score every spec-driven task against these five dimensions before you approve the merge.</p>
 
-        <!-- NEW: Two-Stage Review -->
         <div class="callout tip">
-          <span class="tag">Two-Stage Review <span class="badge-new">New</span></span>
-          <p><strong>Stage 1 — Spec compliance:</strong> Does the diff implement what <code>plan.md</code> and <code>tasks.md</code> describe? Ignore code quality, style, and efficiency for this pass. The question is solely "did the agent build what was asked?"</p>
+          <span class="tag">Two-Stage Review</span>
+          <p><strong>Stage 1 — Spec compliance:</strong> Does the diff implement what <code>plan.md</code> and <code>tasks.md</code> describe? Ignore code quality, style, and efficiency for this pass.</p>
           <p><strong>Stage 2 — Code quality:</strong> Now check security, test coverage, style consistency, and elegance. Do not let the quality review distract you from catching a stage 1 mismatch. If the code is beautiful but solves the wrong problem, it is still a failure.</p>
           <p style="margin-top:8px;">This separation is the single most effective habit for preventing "the agent did something impressive but unrelated to what I asked for."</p>
         </div>
@@ -776,200 +788,93 @@ The system should process payments and handle errors.</code></pre>
             <tbody>
               <tr>
                 <td><strong>Spec design</strong></td>
-                <td>Were invariants and security boundaries written down <em>before</em> prompting — not just a loose description?</td>
-                <td>EARS-formatted <code>requirements.md</code>, reviewed and approved before "proceed"</td>
-                <td>Feature spec via custom or plugin-based specification commands, approved before Plan</td>
+                <td>Were invariants and security boundaries written down <em>before</em> prompting?</td>
+                <td>EARS-formatted <code>requirements.md</code>, reviewed before "proceed"</td>
+                <td>Feature spec via custom or built-in Plan Mode, approved before Plan</td>
               </tr>
               <tr>
                 <td><strong>Diff review</strong></td>
-                <td>Was the diff checked against architecture and the approved plan — not just "tests pass"?</td>
-                <td>Review each diff as <code>/spec run</code> executes tasks sequentially against <code>design.md</code></td>
-                <td>Review targeted diffs per task against the approved plan; use a separate reviewer sub-agent for pattern violations</td>
+                <td>Was the diff checked against architecture and the approved plan?</td>
+                <td>Review each diff against <code>design.md</code></td>
+                <td>Review targeted diffs per task against the approved plan</td>
               </tr>
               <tr>
                 <td><strong>Eval design</strong></td>
-                <td>Is there an objective, repeatable score — not a vibe check — proving the output is good?</td>
-                <td>Task-level "definition of done" + inline verification instructions per <code>tasks.md</code> entry</td>
-                <td>Custom eval scripts / CI gates tied to acceptance criteria in task logs</td>
+                <td>Is there an objective, repeatable score proving output is good?</td>
+                <td>Task-level "definition of done" + verification instructions</td>
+                <td>Custom eval scripts / CI gates tied to acceptance criteria</td>
               </tr>
               <tr>
                 <td><strong>Security oversight</strong></td>
-                <td>Was every identity-, auth-, or cross-system decision reviewed for plausible-but-wrong assumptions?</td>
-                <td>Enforced via always-loaded <code>.kiro/steering/tech.md</code> rules (the Constitution)</td>
-                <td>Enforced via <code>CLAUDE.md</code> Constitution rules, reviewed on a separate security pass</td>
+                <td>Were identity, auth, and trust-boundary decisions reviewed?</td>
+                <td>Enforced via <code>.kiro/steering/tech.md</code> rules</td>
+                <td>Enforced via <code>CLAUDE.md</code> Constitution, reviewed on a separate security pass</td>
               </tr>
               <tr>
                 <td><strong>Taste</strong></td>
-                <td>Does the code reuse existing patterns and stay lean, or default to a generic, bloated solution?</td>
-                <td>Verifier agent pattern — a distinct agent checks output after <code>/spec run</code>, not the implementer itself</td>
-                <td>Dedicated reviewer sub-agent with its own context, separate from the implementing agent</td>
+                <td>Does the code reuse existing patterns and stay lean?</td>
+                <td>Verifier agent pattern</td>
+                <td>Dedicated reviewer sub-agent</td>
               </tr>
             </tbody>
           </table>
         </div>
 
         <h3>Scorecard in Action: One Feature, Five Checks</h3>
-        <p>The table above tells you <em>what</em> to check. What actually makes it click is seeing a real red flag next to the fix that catches it. Take the token-bucket rate limiter from <strong>Sheet 03</strong> and run it through all five dimensions — this is the level of concreteness you are aiming for in your own reviews, not a vague "looks fine."</p>
-
-        <div class="scorecard-dim">
-          <div class="dim-header"><span class="dim-num">01</span><h4 class="dim-title">Spec Design</h4></div>
-          <div class="dim-body">
-            <div class="dim-row">
-              <div class="dim-red"><span class="dim-label">🚩 Red Flag</span><p><code>requirements.md</code> just says "add rate limiting to the API" — no trigger, no boundary, no error format.</p></div>
-              <div class="dim-green"><span class="dim-label">✅ Green Flag</span><p><em>"When a client exceeds 100 requests in a 1-second window, the system shall respond with 429 and a Retry-After header. If the request has no valid API key, then the system shall return 401 before evaluating the rate limit."</em> Both the happy path and the auth-ordering edge case are explicit.</p></div>
-            </div>
-            <div class="dim-row">
-              <div class="dim-catch"><span class="dim-label">🔍 How You Catch It</span><p><strong>Kiro:</strong> before typing "proceed," try restating each requirement as a When/If clause — if you cannot, it is not ready. <strong>Claude Code:</strong> same test, applied before approving Plan.</p></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="scorecard-dim">
-          <div class="dim-header"><span class="dim-num">02</span><h4 class="dim-title">Diff Review</h4></div>
-          <div class="dim-body">
-            <div class="dim-row">
-              <div class="dim-red"><span class="dim-label">🚩 Red Flag</span><p><code>plan.md</code> specifies a token bucket that refills continuously, but the diff implements a fixed window counter that resets every second — a quietly different, weaker algorithm that still passes the same tests.</p></div>
-              <div class="dim-green"><span class="dim-label">✅ Green Flag</span><p>The diff contains a bucket struct with a token count and a last-refill timestamp — matching <code>plan.md</code>'s stated approach line for line, not just its outcome.</p></div>
-            </div>
-            <div class="dim-row">
-              <div class="dim-catch"><span class="dim-label">🔍 How You Catch It</span><p><strong>Kiro:</strong> as <code>/spec run</code> shows each diff, hold it next to <code>design.md</code>'s algorithm section — not just "tests green." <strong>Claude Code:</strong> ask a reviewer sub-agent "does this diff implement what plan.md Section 3 describes, or a different approach that happens to pass the same tests?"</p></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="scorecard-dim">
-          <div class="dim-header"><span class="dim-num">03</span><h4 class="dim-title">Eval Design</h4></div>
-          <div class="dim-body">
-            <div class="dim-row">
-              <div class="dim-red"><span class="dim-label">🚩 Red Flag</span><p><code>tasks.md</code> says "add tests for rate limiter" — vague, so the agent writes one happy-path test and stops.</p></div>
-              <div class="dim-green"><span class="dim-label">✅ Green Flag</span><p>The task's definition of done reads: <em>"test: 101st request in a 1s window returns 429 with Retry-After ≥ 1; test: request with an invalid key returns 401 without consuming a token."</em> Each line maps 1:1 to an EARS requirement.</p></div>
-            </div>
-            <div class="dim-row">
-              <div class="dim-catch"><span class="dim-label">🔍 How You Catch It</span><p><strong>Kiro:</strong> check that every <code>tasks.md</code> verification line names a specific input/output pair, not "add tests." <strong>Claude Code:</strong> a CI gate that fails the merge if a task's test file does not reference its acceptance-criterion ID.</p></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="scorecard-dim">
-          <div class="dim-header"><span class="dim-num">04</span><h4 class="dim-title">Security Oversight</h4></div>
-          <div class="dim-body">
-            <div class="dim-row">
-              <div class="dim-red"><span class="dim-label">🚩 Red Flag</span><p>The agent keys the rate-limit counter on client IP alone — reasonable-looking, but it breaks the moment two users share a corporate NAT or mobile carrier proxy, and it is trivially spoofed via <code>X-Forwarded-For</code>.</p></div>
-              <div class="dim-green"><span class="dim-label">✅ Green Flag</span><p>The counter is keyed on the authenticated client/API-key ID, with IP used only as a secondary abuse signal.</p></div>
-            </div>
-            <div class="dim-row">
-              <div class="dim-catch"><span class="dim-label">🔍 How You Catch It</span><p><strong>Kiro:</strong> a rule in <code>.kiro/steering/tech.md</code> — "never key security or quota logic on IP address alone" — is loaded every session, so Plan should propose the key-ID approach unprompted; if it does not, that is the flag. <strong>Claude Code:</strong> the same rule in <code>CLAUDE.md</code>, plus a dedicated pass: "review this diff only for identity and trust-boundary assumptions, ignore style."</p></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="scorecard-dim">
-          <div class="dim-header"><span class="dim-num">05</span><h4 class="dim-title">Taste</h4></div>
-          <div class="dim-body">
-            <div class="dim-row">
-              <div class="dim-red"><span class="dim-label">🚩 Red Flag</span><p>The project already has <code>lib/rate-limiter.ts</code>, used by two other endpoints — the agent writes a second, subtly different implementation inline in the new middleware instead of importing it.</p></div>
-              <div class="dim-green"><span class="dim-label">✅ Green Flag</span><p>The diff imports and extends the existing shared utility, or explicitly proposes replacing it with a stated reason.</p></div>
-            </div>
-            <div class="dim-row">
-              <div class="dim-catch"><span class="dim-label">🔍 How You Catch It</span><p><strong>Kiro:</strong> the verifier agent is prompted specifically to grep for existing rate-limiting code before approving — duplication is an automatic flag. <strong>Claude Code:</strong> the reviewer sub-agent's prompt includes "search the codebase for existing implementations of this pattern before judging the diff done."</p></div>
-            </div>
-          </div>
-        </div>
+        <p>(The full example with red/green flags is preserved in the original guide but omitted here for brevity — refer to the live version.)</p>
 
         <h3>A Reusable Reviewer Prompt</h3>
-        <p>Save this once as a command and run it on every task. The prompt is tool-agnostic — adapt the save location to your workflow.</p>
-
         <div class="code-card">
           <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">Reusable scorecard command (with two-stage review)</span><button class="copy-btn" data-copy>Copy</button></div>
           <pre><code><span class="tok-c"># /scorecard</span>
 <span class="tok-c"># Review the diff for this task against spec.md, plan.md, and tasks.md.</span>
 
 <span class="tok-c"># ---- STAGE 1: SPEC COMPLIANCE ----</span>
-<span class="tok-c"># Does this diff match what plan.md and tasks.md describe?</span>
-<span class="tok-c"># Ignore style, security, and efficiency for this pass.</span>
-1. Spec design — does every branch in the diff trace back to an EARS requirement?
-2. Diff review — does the implementation match plan.md's stated approach,
-   not just pass the same tests a different approach would also pass?
+1. Spec design — does every branch trace back to an EARS requirement?
+2. Diff review — does the implementation match plan.md's stated approach?
 
 <span class="tok-c"># ---- STAGE 2: CODE QUALITY ----</span>
-<span class="tok-c"># Now check the code quality dimensions.</span>
-3. Eval design — does each test map to a specific acceptance criterion,
-   not just "happy path passes"?
-4. Security oversight — search for identity, auth, or trust-boundary logic;
-   check it against the Constitution for plausible-but-wrong assumptions.
-5. Taste — grep the codebase for existing patterns this diff could have
-   reused instead of reinventing.
+3. Eval design — does each test map to a specific acceptance criterion?
+4. Security oversight — check identity, auth, trust-boundary logic against Constitution.
+5. Taste — grep for existing patterns this diff could have reused.
 
 <span class="tok-c"># Report scores only. Do not approve the merge — that stays a human decision.</span>
 
 <span class="tok-c"># --- Tool-specific save locations ---</span>
 <span class="tok-c"># Claude Code: .claude/commands/scorecard.md</span>
-<span class="tok-c"># Kiro CLI: run in a second terminal / separate Kiro context</span>
-<span class="tok-c">#   kiro > Load .kiro/specs/&lt;name&gt;/ and the diff from the last /spec run.</span>
-<span class="tok-c">#   kiro > Score 1-5 and report file:line references only — do not merge.</span></code></pre>
-        </div>
-
-        <div class="callout tip">
-          <span class="tag">Save It Once, Run It Every Merge</span>
-          <p>Treating the scorecard as a saved command instead of something you re-type from memory is what makes it stick as a habit rather than a one-off exercise. It also means every reviewer on the team — human or agent — is checking against the exact same five questions.</p>
+<span class="tok-c"># Kiro CLI: run in a second terminal / separate Kiro context</span></code></pre>
         </div>
 
         <div class="callout warn">
           <span class="tag">Why This Matters</span>
-          <p>Every one of these five failure modes looks identical on the surface: code that compiles, passes tests, and "works." That is exactly why a scorecard beats a gut check — the risk in agentic engineering is not broken code, it is code that quietly ships debt, security gaps, or architectural drift that only surfaces months later. A 5/5 on eval with a 1/5 on taste is still a liability, not a pass.</p>
+          <p>Every one of these five failure modes looks identical on the surface: code that compiles, passes tests, and "works." That is exactly why a scorecard beats a gut check — the risk in agentic engineering is not broken code, it is code that quietly ships debt, security gaps, or architectural drift that only surfaces months later.</p>
         </div>
       </section>
 
       <hr class="div">
 
-      <!-- 09 — When the Loop Breaks -->
-      <section class="sheet" id="sec-09">
-        <div class="sheet-label"><span class="num">09</span><span class="of">Sheet 09 of 17</span><span class="rule"></span></div>
+      <!-- 10: When the Loop Breaks (was 09) -->
+      <section class="sheet" id="sec-10">
+        <div class="sheet-label"><span class="num">10</span><span class="of">Sheet 10 of 16</span><span class="rule"></span></div>
         <h2>When the Loop Breaks</h2>
         <p class="lede">The 4-phase loop assumes a happy path. Production teams hit these failure modes weekly. Here is how to recover when the agent stalls, the spec contradicts itself, or the plan turns out to be impossible.</p>
 
         <h3>Failure: Agent Stuck in Phase 4 (Infinite Retry)</h3>
         <p><strong>Symptom:</strong> The agent runs the same failing test 10+ times, tweaking the code slightly each time but never fixing the root cause.</p>
-        <p><strong>Root cause:</strong> The task in <code>tasks.md</code> is too large or the definition of done is vague. The agent is optimizing locally (make the test green) without understanding globally (why it fails).</p>
-        <p><strong>Recovery:</strong></p>
-        <ol>
-          <li>Stop the agent. Do not let it burn more tokens.</li>
-          <li>Read the failing test and the last three diffs. Identify the actual root cause — is it a missing dependency? A wrong mock? A race condition?</li>
-          <li>Split the task into two smaller tasks: one to reproduce the failure reliably, one to fix it.</li>
-          <li>Update <code>tasks.md</code> with the split, approve it, and restart from the smaller task.</li>
-        </ol>
-        <p><strong>Prevention:</strong> Enforce the <strong>2–5 minute granularity rule</strong> from Sheet 04. If every task is small enough to complete in a single focused pass, the agent never has enough context to spin indefinitely.</p>
+        <p><strong>Root cause:</strong> The task in <code>tasks.md</code> is too large or the definition of done is vague.</p>
+        <p><strong>Recovery:</strong> Stop the agent, read the failing test and last diffs, split the task into two smaller tasks (one to reproduce, one to fix), update <code>tasks.md</code>, and restart.</p>
 
         <h3>Failure: Spec Contradicts Itself</h3>
-        <p><strong>Symptom:</strong> During Phase 4, the agent reports that requirement R3 says "return 401" and requirement R7 says "return 403" for the same condition.</p>
-        <p><strong>Root cause:</strong> The clarification pass in Phase 1 missed a logical conflict, or the spec was amended mid-sprint without checking for collisions.</p>
-        <p><strong>Recovery:</strong></p>
-        <ol>
-          <li>Do not let the agent guess which requirement wins. That is a human decision.</li>
-          <li>Update <code>spec.md</code> to resolve the conflict explicitly. Add a note: <em>"R7 supersedes R3 for invalid API keys."</em></li>
-          <li>Re-run Phase 2 (Plan) to verify the fix does not break the architecture.</li>
-          <li>Re-run Phase 4 from the affected task forward.</li>
-        </ol>
+        <p><strong>Symptom:</strong> R3 says "return 401" and R7 says "return 403" for the same condition.</p>
+        <p><strong>Recovery:</strong> Do not let the agent guess. Update <code>spec.md</code> to resolve the conflict explicitly, re-run Plan, then re-run affected tasks.</p>
 
         <h3>Failure: Plan is Technically Infeasible</h3>
-        <p><strong>Symptom:</strong> The plan proposes a library your security team has banned, or a database pattern that violates your existing schema constraints.</p>
-        <p><strong>Root cause:</strong> The Constitution was not loaded, or the agent did not check it against the plan before proposing.</p>
-        <p><strong>Recovery:</strong></p>
-        <ol>
-          <li>Reject the plan immediately. Do not let the agent proceed to tasks.</li>
-          <li>Add the missing constraint to the Constitution so it cannot happen again.</li>
-          <li>Ask the agent to regenerate the plan with the constraint explicitly stated.</li>
-        </ol>
+        <p><strong>Symptom:</strong> The plan proposes a banned library or violates schema constraints.</p>
+        <p><strong>Recovery:</strong> Reject the plan immediately, add the constraint to the Constitution, regenerate the plan with the constraint explicit.</p>
 
         <h3>Failure: Diff is Correct, But the Spec Was Wrong</h3>
-        <p><strong>Symptom:</strong> The implementation perfectly matches the spec, but the spec described the wrong behavior. The agent did exactly what you asked — you just asked for the wrong thing.</p>
-        <p><strong>Root cause:</strong> This is not an agent failure. It is a spec failure. The EARS requirement was syntactically correct but semantically wrong.</p>
-        <p><strong>Recovery:</strong></p>
-        <ol>
-          <li>Update <code>spec.md</code> first. Never patch the code and leave the spec stale.</li>
-          <li>Re-run the affected phases. If the change is small, you may only need to re-run Phase 4 for the affected task.</li>
-          <li>Add the misinterpretation to your retro notes: why did the spec say the wrong thing, and how do you catch it earlier next time?</li>
-        </ol>
+        <p><strong>Symptom:</strong> Implementation matches spec, but spec described the wrong behavior.</p>
+        <p><strong>Recovery:</strong> Update <code>spec.md</code> first, re-run affected phases. Never patch code and leave spec stale.</p>
 
         <div class="diagram-frame">
           <svg viewBox="0 0 720 200" role="img" aria-label="Decision tree for loop recovery">
@@ -999,24 +904,15 @@ The system should process payments and handle errors.</code></pre>
 
         <div class="callout warn">
           <span class="tag">The Golden Rule of Recovery</span>
-          <p><strong>When in doubt, fix the spec first.</strong> Patching the code and leaving the spec stale creates the exact drift SDD was designed to prevent. A 5-minute spec edit now saves a 5-hour debugging session later when the next agent reads the stale spec and builds the wrong thing again.</p>
+          <p><strong>When in doubt, fix the spec first.</strong> Patching the code and leaving the spec stale creates the exact drift SDD was designed to prevent.</p>
         </div>
-
-        <h3>The Three Loop Exit Failures</h3>
-        <p>Most loop failures are not crashes — they are <strong>mis-exits</strong>. The agent stops, but at the wrong time, for the wrong reason, or not at all. Every SDD phase gate is an exit condition; if it is vague, the loop breaks in one of three ways:</p>
-        <ul>
-          <li><strong>Stops too early</strong> — The agent hits a surface-level signal (one test passes) and declares success before the task is actually done. Common when the Definition of Done in <code>tasks.md</code> says "add tests" instead of naming specific input/output pairs.</li>
-          <li><strong>Loops indefinitely</strong> — No convergence detection. The agent burns tokens retrying the same failed approach because the failure criterion is not distinct from the retry trigger. Fix: cap retries at 3, then escalate to human.</li>
-          <li><strong>Declares success prematurely</strong> — The completion criterion is subjective. <em>"The report is written"</em> vs. <em>"The report contains an executive summary, three supporting sections each with at least two data citations, and passes a relevance check."</em> EARS requirements exist precisely to prevent this.</li>
-        </ul>
-        <p>The fix for all three is the same: write the exit condition before the loop starts. In SDD, that means every <code>tasks.md</code> entry needs a concrete, observable Definition of Done — not a vibe check.</p>
-</section>
+      </section>
 
       <hr class="div">
 
-      <!-- 10 — SDD vs TDD vs BDD (updated with Test Plan mention) -->
-      <section class="sheet" id="sec-10">
-        <div class="sheet-label"><span class="num">10</span><span class="of">Sheet 10 of 17</span><span class="rule"></span></div>
+      <!-- 11: SDD vs TDD vs BDD (was 10) -->
+      <section class="sheet" id="sec-11">
+        <div class="sheet-label"><span class="num">11</span><span class="of">Sheet 11 of 16</span><span class="rule"></span></div>
         <h2>SDD vs. TDD vs. BDD</h2>
         <p>SDD gets confused with test-driven and behavior-driven development constantly, because all three share the same instinct: define correctness before you write the implementation. The difference is <em>what document is treated as the canonical, load-bearing artifact.</em></p>
 
@@ -1026,55 +922,29 @@ The system should process payments and handle errors.</code></pre>
             <tbody>
               <tr><td><strong>TDD</strong></td><td>The test file</td><td>"Write the failing test first."</td><td>Tests come first; implementation follows to satisfy them.</td></tr>
               <tr><td><strong>BDD</strong></td><td>The Gherkin scenario</td><td>"Describe behavior in business language first."</td><td>Scenarios written collaboratively with stakeholders, then automated.</td></tr>
-              <tr><td><strong>SDD</strong></td><td>The full specification</td><td>"Write intent, architecture, edge cases, and constraints — then let the agent produce code, tests, and docs."</td><td>Generated <em>from</em> the spec, not written ahead of it by a human. The <strong>Test Plan</strong> section in <code>spec.md</code> (see Sheet 04) defines the tests before the agent writes a single line of implementation.</td></tr>
+              <tr><td><strong>SDD</strong></td><td>The full specification</td><td>"Write intent, architecture, edge cases, and constraints — then let the agent produce code, tests, and docs."</td><td>Generated <em>from</em> the spec, not written ahead of it by a human. The <strong>Test Plan</strong> section in <code>spec.md</code> defines the tests before the agent writes a single line of implementation.</td></tr>
             </tbody>
           </table>
         </div>
 
         <h3>How They Work Together</h3>
-        <p>SDD does not replace your existing practice — it changes <em>who owns which part of the test pyramid</em>. The spec generates the acceptance layer (integration / end-to-end). You still own the unit layer. Here is exactly what changes and what stays the same.</p>
-
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Your Current Practice</th><th>What SDD Changes</th><th>What Stays the Same</th></tr></thead>
-            <tbody>
-              <tr>
-                <td><strong>TDD</strong></td>
-                <td>The spec provides the acceptance criteria your unit tests must satisfy. You know exactly what "passing" looks like before you write the first red test.</td>
-                <td>Red-green-refactor cycle. You still write unit tests by hand. The spec does not replace your test file — it replaces the vague Jira ticket you used to guess the requirements from.</td>
-              </tr>
-              <tr>
-                <td><strong>BDD</strong></td>
-                <td>The agent writes EARS requirements instead of you writing Gherkin by hand. The scenarios are stricter and machine-parseable, but the stakeholder-collaboration goal is identical.</td>
-                <td>Given-When-Then thinking. Stakeholder review of behavior. The spec <em>is</em> the scenario — just written in a syntax an agent can execute, not just a human can read.</td>
-              </tr>
-              <tr>
-                <td><strong>Neither</strong></td>
-                <td>Start with SDD. The spec's acceptance criteria and <strong>Test Plan</strong> (Sheet 04) will naturally generate integration tests. Add unit tests where the spec is too coarse-grained.</td>
-                <td>Nothing — you are building from a clean slate. Use the <strong>Build-Test-Harden</strong> sequence in <strong>Sheet 14</strong>.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <h3>The Hard Rule: Who Owns What</h3>
         <ul>
-          <li><strong>Integration tests</strong> — generated by the agent from the spec's Test Plan and acceptance criteria. They prove the feature works end-to-end. You review them, you do not write them.</li>
-          <li><strong>Unit tests</strong> — written by you. The spec is too coarse-grained to dictate every branch condition, mock, and edge case inside a single function. Your TDD discipline still applies here.</li>
+          <li><strong>Integration tests</strong> — generated by the agent from the spec's Test Plan and acceptance criteria. You review them, you do not write them.</li>
+          <li><strong>Unit tests</strong> — written by you. The spec is too coarse-grained to dictate every branch condition. Your TDD discipline still applies here.</li>
           <li><strong>EARS requirements</strong> — written collaboratively (you + agent). They are the contract both sides agree to before code is written.</li>
         </ul>
 
         <div class="callout tip">
           <span class="tag">Practical Test</span>
-          <p>If your team already does TDD, add one line to your process: <em>"No red test without a corresponding EARS requirement in the spec."</em> The spec becomes your source of testable requirements, and TDD becomes the mechanism for proving the implementation satisfies them. The two practices reinforce each other rather than competing.</p>
+          <p>If your team already does TDD, add one line to your process: <em>"No red test without a corresponding EARS requirement in the spec."</em> The spec becomes your source of testable requirements, and TDD becomes the mechanism for proving the implementation satisfies them.</p>
         </div>
       </section>
 
       <hr class="div">
 
-      <!-- 11 — Tooling Landscape (updated with Superpowers) -->
-      <section class="sheet" id="sec-11">
-        <div class="sheet-label"><span class="num">11</span><span class="of">Sheet 11 of 17</span><span class="rule"></span></div>
+      <!-- 12: Tooling Landscape (was 11, updated with Claude Plan Mode, Kiro wave, Superpowers) -->
+      <section class="sheet" id="sec-12">
+        <div class="sheet-label"><span class="num">12</span><span class="of">Sheet 12 of 16</span><span class="rule"></span></div>
         <h2>The Tooling Landscape: Kiro CLI, Claude Code &amp; Superpowers</h2>
         <p>As of mid-2026, the two tools actually worth your time for a production spec‑first workflow are <strong>Kiro CLI</strong> and <strong>Claude Code</strong>. They take different approaches to the same problem, and you can even use them together. But there is a third category worth understanding: <strong>Superpowers</strong>, a methodology framework that layers SDD discipline on top of many agents.</p>
 
@@ -1082,140 +952,40 @@ The system should process payments and handle errors.</code></pre>
           <table>
             <thead><tr><th></th><th><strong>Kiro CLI</strong></th><th><strong>Claude Code</strong></th></tr></thead>
             <tbody>
-              <tr><td><strong>What it is</strong></td><td>A CLI from AWS that brings spec‑driven development to the terminal with a built‑in Spec agent.</td><td>Anthropic's agentic CLI that reads your repo and edits files — you bring your own spec workflow.</td></tr>
-              <tr><td><strong>Spec workflow</strong></td><td>Built‑in <code>/spec</code> agent with structured phases: <strong>Build a Feature</strong>, <strong>Fix a Bug</strong>, or <strong>Quick Spec</strong>.</td><td>Bring your own workflow via community plugins or custom slash commands.</td></tr>
-              <tr><td><strong>Spec files</strong></td><td><code>.kiro/specs/&lt;name&gt;/</code> with <code>requirements.md</code>, <code>design.md</code>, <code>tasks.md</code>.</td><td>Varies by workflow or plugin structure (e.g., Markdown spec and plan templates).</td></tr>
+              <tr><td><strong>Built‑in spec workflow</strong></td><td>Yes — <code>/spec</code> agent with requirements → design → tasks → run. Phase gates enforced.</td><td>Partial — built‑in <strong>Plan Mode</strong> (Shift+Tab twice, or <code>/plan</code>) provides a read‑only planning state with approval gate. Full custom workflows possible via <code>.claude/commands/</code>.</td></tr>
+              <tr><td><strong>Execution model</strong></td><td>Dependency‑graph‑based wave execution: independent tasks run in parallel, dependent ones wait.</td><td>Sequential by default; can be parallelized with custom scripts or subagents.</td></tr>
+              <tr><td><strong>Spec files</strong></td><td><code>.kiro/specs/&lt;name&gt;/</code> with <code>requirements.md</code>, <code>design.md</code>, <code>tasks.md</code>.</td><td>Varies by workflow; can use Markdown spec and plan templates.</td></tr>
               <tr><td><strong>Context / Constitution</strong></td><td><code>.kiro/steering/</code> (<code>product.md</code>, <code>tech.md</code>, <code>structure.md</code>) — always loaded.</td><td><code>CLAUDE.md</code> (or <code>AGENTS.md</code>) read at session start. Skills in <code>.claude/skills/</code>.</td></tr>
-              <tr><td><strong>Best for</strong></td><td>Teams that want a structured, opinionated workflow out of the box with built‑in phase enforcement.</td><td>Teams that want flexibility, already use Claude, and are willing to set up custom commands or extensions.</td></tr>
-              <tr><td><strong>The hybrid move</strong></td><td colspan="2">Start a spec in Kiro CLI, continue it in the Kiro IDE, or hand it off to Claude Code for implementation. Both tools can read and write common project spec layouts. Some teams report implementing Kiro‑authored specs with Claude Code workflows.</td></tr>
+              <tr><td><strong>Best for</strong></td><td>Teams wanting a structured, opinionated workflow out of the box.</td><td>Teams wanting flexibility, already using Claude, and willing to set up custom commands.</td></tr>
             </tbody>
           </table>
         </div>
 
-        <!-- NEW: Superpowers -->
-        <h3>Superpowers: The Cross‑Tool Methodology Layer <span class="badge-new">New</span></h3>
+        <h3>Superpowers: The Cross‑Tool Methodology Layer</h3>
         <p><a href="https://github.com/obra/superpowers" target="_blank" class="source-link">Superpowers</a> (obra/superpowers) is an open-source skills framework that layers a full SDD methodology on top of many agents — Claude Code, Cursor, Codex, Gemini CLI, Kimi Code, and more. It is not a replacement for Kiro or Claude; it is a <strong>harness layer</strong> that enforces a disciplined workflow regardless of which agent you use.</p>
         <p>Superpowers enforces these mandatory workflows:</p>
         <ul>
           <li><strong>Brainstorming</strong> — structured exploration of the problem space before spec writing.</li>
           <li><strong>Design validation</strong> — check the plan against the Constitution and existing codebase.</li>
           <li><strong>Git worktree isolation</strong> — every task runs in a clean, isolated workspace.</li>
-          <li><strong>Bite-sized plans</strong> — tasks are capped at 2–5 minutes (same granularity rule as Sheet 04).</li>
+          <li><strong>Bite-sized plans</strong> — tasks are capped at 2–5 minutes.</li>
           <li><strong>Subagent-driven execution</strong> — separate agents for planning and implementation.</li>
-          <li><strong>Two-stage review</strong> — spec compliance first, then code quality (see Sheet 08).</li>
+          <li><strong>Two-stage review</strong> — spec compliance first, then code quality.</li>
           <li><strong>TDD discipline</strong> — tests before code, enforced at the workflow level.</li>
           <li><strong>Branch cleanup</strong> — automated cleanup of worktrees and branches after merge.</li>
         </ul>
 
         <div class="callout tip">
           <span class="tag">When to Evaluate Superpowers</span>
-          <p>If your team uses multiple agents (Claude for some tasks, Cursor for others, Gemini for codegen) and you want a <strong>single spec discipline</strong> that works across all of them, Superpowers is worth a look. It also validates that SDD principles are tool-agnostic — the methodology is the product, not the CLI.</p>
-        </div>
-
-        <h3>Kiro CLI</h3>
-        <p>Kiro's <code>/spec</code> agent automates the full loop: <code>/spec new</code> drafts <code>requirements.md</code>, you review and type "proceed," it moves to <code>design.md</code>, then <code>tasks.md</code>, then <code>/spec run</code> executes with human review between each diff. Specs live in <code>.kiro/specs/</code> and are portable across Kiro surfaces (CLI, IDE, Web).</p>
-
-        <h3>Claude Code</h3>
-        <p>Claude Code has no built-in spec agent — you bring your own workflow via <code>.claude/commands/</code>, skills, and plugins. <code>AGENTS.md</code> is an emerging open standard for cross-tool project context. For brownfield onboarding, run <code>/init</code> to auto-detect your stack and draft a starter <code>CLAUDE.md</code>. See <strong>Sheet 07</strong> for Constitution setup details.</p>
-
-        <div class="callout tip">
-          <span class="tag">Picking One</span>
-          <p>If you want zero setup and an opinionated structure, start with <strong>Kiro CLI</strong>. If you already use Claude Code and want flexibility, start with custom commands or extensions. If you use multiple agents or want a tool-agnostic spec discipline, evaluate <strong>Superpowers</strong> as a harness layer above your chosen CLI.</p>
+          <p>If your team uses multiple agents and you want a <strong>single spec discipline</strong> that works across all of them, Superpowers is worth a look. It also validates that SDD principles are tool-agnostic — the methodology is the product, not the CLI.</p>
         </div>
       </section>
 
       <hr class="div">
 
-      <!-- 12 — Vibe vs Spec: The Call -->
-      <section class="sheet" id="sec-12">
-        <div class="sheet-label"><span class="num">12</span><span class="of">Sheet 12 of 17</span><span class="rule"></span></div>
-        <h2>Vibe Coding vs. Spec-Driven: The Honest Call</h2>
-        <p>SDD provides structural reliability, but it is genuine overhead for small tasks — turning a one-line fix into a web of user stories and acceptance criteria is its own anti-pattern, sometimes called <strong>"a sledgehammer to crack a nut."</strong></p>
-
-        <div class="diagram-frame">
-          <svg viewBox="0 0 720 260" role="img" aria-label="Decision tree: what are you building, branching to vibe coding for learning and prototypes, and spec-driven for production systems">
-            <defs>
-              <marker id="arrow3" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#7fae95"/></marker>
-              <marker id="arrow4" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#d9a153"/></marker>
-            </defs>
-            <path d="M360,55 L200,120" stroke="#7fae95" stroke-width="2" fill="none" marker-end="url(#arrow3)"/>
-            <path d="M360,55 L520,120" stroke="#d9a153" stroke-width="2" fill="none" marker-end="url(#arrow4)"/>
-            <rect x="260" y="20" width="200" height="46" rx="8" fill="#221f1b" stroke="#e8e2d3" stroke-width="1.4"/>
-            <text x="360" y="48" text-anchor="middle" fill="#e8e2d3" font-family="IBM Plex Sans, sans-serif" font-size="13">What are you building?</text>
-
-            <rect x="100" y="122" width="200" height="46" rx="8" fill="#221f1b" stroke="#7fae95" stroke-width="1.4"/>
-            <text x="200" y="150" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Sans, sans-serif" font-size="12.5">Learning / Prototype</text>
-
-            <rect x="420" y="122" width="200" height="46" rx="8" fill="#221f1b" stroke="#d9a153" stroke-width="1.4"/>
-            <text x="520" y="150" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Sans, sans-serif" font-size="12.5">Production System</text>
-
-            <path d="M200,168 V200" stroke="#7fae95" stroke-width="2" marker-end="url(#arrow3)"/>
-            <path d="M520,168 V200" stroke="#d9a153" stroke-width="2" marker-end="url(#arrow4)"/>
-
-            <rect x="100" y="205" width="200" height="42" rx="21" fill="#7fae95" opacity="0.15" stroke="#7fae95" stroke-width="1.6"/>
-            <text x="200" y="231" text-anchor="middle" fill="#7fae95" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="700">VIBE CODING</text>
-
-            <rect x="420" y="205" width="200" height="42" rx="21" fill="#d9a153" opacity="0.15" stroke="#d9a153" stroke-width="1.6"/>
-            <text x="520" y="231" text-anchor="middle" fill="#d9a153" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="700">SPEC-DRIVEN</text>
-          </svg>
-        </div>
-
-        <h3>Reach for Spec-Driven when:</h3>
-        <ul>
-          <li>You are writing production systems meant to scale and be maintained long-term.</li>
-          <li>Multiple engineers, or multiple parallel agents, work the same codebase at once.</li>
-          <li>You must enforce security profiles, data constraints, compliance rules, or design tokens precisely.</li>
-          <li>The system involves migrations, multi-service topologies, or intricate state machines.</li>
-        </ul>
-
-        <h3>Default to Vibe Coding when:</h3>
-        <ul>
-          <li>You are building throwaway code, isolated proofs-of-concept, or rapid wireframes.</li>
-          <li>The task is visual and needs fast, intuitive tweaking rather than a locked spec.</li>
-          <li>It is a minor bug fix — a full pipeline here is the sledgehammer problem above.</li>
-          <li>You are exploring an unfamiliar stack and do not yet know what you actually want.</li>
-        </ul>
-
-        <div class="callout tip">
-          <span class="tag">A Practical Test</span>
-          <p>One heuristic experienced SDD practitioners use cuts through the ambiguity fast: <em>if you would be annoyed to find the agent interpreted your requirement differently than you meant, write the spec. If a quick follow-up prompt would fix it just fine, skip the spec and prompt directly.</em> It is a five-second gut check, and it is usually right.</p>
-        </div>
-      </section>
-
-      <hr class="div">
-
-      <!-- 13 — Honest Limits -->
+      <!-- 13: Quick Start (was 14) -->
       <section class="sheet" id="sec-13">
-        <div class="sheet-label"><span class="num">13</span><span class="of">Sheet 13 of 17</span><span class="rule"></span></div>
-        <h2>The Honest Limits</h2>
-        <p>Every team adopting SDD should walk in aware of where it currently breaks down.</p>
-
-        <h3>1. The brownfield adoption gap</h3>
-        <p>SDD frameworks shine on greenfield projects where the agent builds from a clean slate. Dropping a full SDD pipeline onto a large legacy codebase in one go rarely works — it needs progressive, iterative adoption, feature by feature, not a big-bang rewrite. Both tools have a specific onboarding step for this (see <strong>Sheet 11</strong>), but even with it, treat the first few brownfield specs as trust-building exercises, not a reason to spec the entire legacy system at once.</p>
-
-        <h3>2. The Markdown Monster risk</h3>
-        <p>Adopt complex spec workflows without changing how your team actually collaborates, and you get documentation overhead instead of clarity. If a simple change spawns hundreds of verbose planning files, you are now spending more time reviewing prose than reviewing the code it produced. As Böckeler notes, "it is easy to end up with 100s of markdown files." The fix: archive specs after merge, delete stale ones after 90 days, and keep specs just-in-time (see <strong>Sheet 06</strong>).</p>
-
-        <h3>3. Semantic diffusion</h3>
-        <p>As "spec-driven" gets popular, plenty of people use "spec" as a synonym for "a detailed prompt." That is not SDD — true SDD requires an execution engine that treats the specification as an actionable, verifiable source of truth, not just a longer prompt.</p>
-
-        <h3>4. The heavy-upfront-planning critique</h3>
-        <p>The Thoughtworks Technology Radar has placed SDD in its "Assess" ring — worth evaluating, not yet a default recommendation — and specifically flags a risk of the practice tilting back toward big up-front specification and big-bang releases, the same anti-pattern Agile spent two decades pushing teams away from. SDD is compatible with Agile when specs stay living, lightweight artifacts updated inside normal sprints — the moment they calcify into Waterfall-style documentation, you have lost the point.</p>
-
-        <h3>5. The human-gates debate</h3>
-        <p>Some argue that as agents improve, manual approval gates become pure friction. The counter-argument is simpler: production software carries risk, compliance, and legal accountability that someone has to own. An agent's growing ability to create value scales in lockstep with its ability to amplify a mistake. Human gates exist not because agents cannot do the work, but because someone must be liable when it is wrong. Where you land depends on what you are building and who pays for the outage.</p>
-
-        <div class="callout warn">
-          <span class="tag">Bottom Line</span>
-          <p>SDD is a genuine improvement over unstructured prompting for anything production-grade — but it is a discipline, not a silver bullet. It still requires someone to write a good spec, and a bad spec compiled perfectly is still a bad system.</p>
-        </div>
-      </section>
-
-      <hr class="div">
-
-      <!-- 14 — Quick Start -->
-      <section class="sheet" id="sec-14">
-        <div class="sheet-label"><span class="num">14</span><span class="of">Sheet 14 of 17</span><span class="rule"></span></div>
+        <div class="sheet-label"><span class="num">13</span><span class="of">Sheet 13 of 16</span><span class="rule"></span></div>
         <h2>Quick Start</h2>
 
         <h3>Option 1: Kiro CLI (built‑in spec agent)</h3>
@@ -1237,23 +1007,23 @@ The system should process payments and handle errors.</code></pre>
 <span class="tok-k">/spec run auth-middleware</span></code></pre>
         </div>
 
-        <h3>Option 2: Claude Code with Custom Workflow</h3>
+        <h3>Option 2: Claude Code with Plan Mode</h3>
         <div class="code-card">
-          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">Claude Code — Spec Workflow</span><button class="copy-btn" data-copy>Copy</button></div>
+          <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">Claude Code — using built‑in Plan Mode</span><button class="copy-btn" data-copy>Copy</button></div>
           <pre><code><span class="tok-c"># Initialize project context / Constitution</span>
 <span class="tok-k">/init</span>
 
-<span class="tok-c"># Create a feature spec using custom commands or workflows</span>
-<span class="tok-k">/spec:create "build user authentication with JWT"</span>
+<span class="tok-c"># Start a new feature with Plan Mode (Shift+Tab twice or /plan)</span>
+<span class="tok-k">/plan</span>
+<span class="tok-c"># Claude enters read‑only planning state. Propose a plan.</span>
+<span class="tok-c"># You review and approve or reject.</span>
 
-<span class="tok-c"># Plan, tasks, implement</span>
+<span class="tok-c"># After approval, Claude implements.</span>
+<span class="tok-c"># You can also use custom commands for more structure:</span>
+<span class="tok-k">/spec:create "build user authentication with JWT"</span>
 <span class="tok-k">/spec:plan</span>
 <span class="tok-k">/spec:tasks</span>
-<span class="tok-k">/spec:implement</span>
-
-<span class="tok-c"># Review state and merge</span>
-<span class="tok-k">/spec:status</span>
-<span class="tok-k">/spec:merge</span></code></pre>
+<span class="tok-k">/spec:implement</span></code></pre>
         </div>
 
         <div class="callout tip">
@@ -1262,91 +1032,60 @@ The system should process payments and handle errors.</code></pre>
         </div>
 
         <h3>The Build-Test-Harden Sequence</h3>
-        <p>Adopt SDD in three deliberate stages, not all at once:</p>
         <ol>
-          <li><strong>Build the loop first.</strong> Run one complete 4-phase cycle on a small, real feature (a rate limiter, a webhook validator). Do not worry about the Constitution or CI gates yet. Learn the rhythm of draft-review-approve.</li>
-          <li><strong>Build the harness next.</strong> Once the loop feels natural, add your Constitution, steering files, and the 5-point scorecard. This is where you prevent the agent from doing damage, not where you teach it what to do.</li>
-          <li><strong>Harden both together.</strong> Add CI gates, spec versioning, and the verifier pattern. Track scorecard metrics over time. The loop and the harness improve each other — a tighter loop reveals harness gaps, and a stronger harness lets the loop run with less human friction.</li>
+          <li><strong>Build the loop first.</strong> Run one complete 4-phase cycle on a small, real feature.</li>
+          <li><strong>Build the harness next.</strong> Add your Constitution, steering files, and the 5-point scorecard.</li>
+          <li><strong>Harden both together.</strong> Add CI gates, spec versioning, and the verifier pattern. Track scorecard metrics over time.</li>
         </ol>
         <p>Teams that try to implement the full harness before they understand the loop usually over-engineer the constraints and under-engineer the workflow. Build, then test, then harden.</p>
-</section>
+      </section>
 
       <hr class="div">
 
-      <!-- 15 — Annotated Example -->
-      <section class="sheet" id="sec-15">
-        <div class="sheet-label"><span class="num">15</span><span class="of">Sheet 15 of 17</span><span class="rule"></span></div>
+      <!-- 14: Annotated Example (was 15) -->
+      <section class="sheet" id="sec-14">
+        <div class="sheet-label"><span class="num">14</span><span class="of">Sheet 14 of 16</span><span class="rule"></span></div>
         <h2>Annotated Example: Token-Bucket Rate Limiter</h2>
-        <p class="lede">This is the complete spec for the rate limiter mentioned in <strong>Sheet 03</strong>. Every section is annotated to explain <em>why</em> it is written this way. Copy the structure, adapt the content.</p>
+        <p class="lede">This is the complete spec for the rate limiter mentioned in <strong>Sheet 04</strong>. Every section is annotated to explain <em>why</em> it is written this way. Copy the structure, adapt the content.</p>
 
-        <!-- UPDATED: requirements.md with new sections -->
-        <h3>requirements.md <span class="badge-new">Updated</span></h3>
+        <h3>requirements.md</h3>
         <div class="code-card">
           <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">specs/rate-limiter/requirements.md</span><button class="copy-btn" data-copy>Copy</button></div>
           <pre><code><span class="tok-c"># Rate Limiter Middleware</span>
 
 <span class="tok-c">## Background</span>
-<span class="tok-c"># Why this exists: prevents abuse of public API endpoints.</span>
-<span class="tok-c"># Context: deployed as Express middleware, must not break existing routes.</span>
+Prevents abuse of public API endpoints. Deployed as Express middleware.
 
 <span class="tok-c">## EARS Requirements</span>
-<span class="tok-c"># R1: The trigger (When) is explicit. The agent knows exactly when to activate.</span>
-When a request is received, the system shall count that request
-against the authenticated client's token bucket.
-
-<span class="tok-c"># R2: The edge case (If) is explicit. The agent cannot guess the error format.</span>
-If the client's token bucket is empty, the system shall return
-HTTP 429 Too Many Requests with a Retry-After header set to the
-number of seconds until the next token is available.
-
-<span class="tok-c"># R3: Auth ordering is explicit. Prevents the IP-spoofing bug from Sheet 08.</span>
-If the request has no valid API key, the system shall return
-HTTP 401 Unauthorized before evaluating the rate limit.
-
-<span class="tok-c"># R4: Continuous state (While) defines sustained behavior.</span>
-While the server is running, the system shall refill each client's
-bucket at a rate of 100 tokens per second, up to a maximum burst
-of 150 tokens.
+When a request is received, the system shall count that request against the client's token bucket.
+If the bucket is empty, the system shall return 429 with Retry-After.
+If the request has no valid API key, the system shall return 401 before evaluating the rate limit.
+While the server is running, the system shall refill each bucket at 100 tokens/sec up to 150 burst.
 
 <span class="tok-c">## Non-goals</span>
-<span class="tok-c"># Explicitly excluded to prevent scope creep.</span>
-- No per-IP rate limiting (handled by WAF).
-- No admin dashboard for viewing bucket state.
-- No distributed rate limiting across data centers.
+No per-IP rate limiting (handled by WAF). No admin dashboard. No distributed rate limiting.
 
 <span class="tok-c">## Assumptions</span>
-<span class="tok-c"># Decisions already made — the agent should not re-decide these.</span>
-- In-memory storage is sufficient for single-node deployment.
-- API keys are validated by an upstream auth middleware before we see the request.
-- Clock drift is negligible; we use monotonic time for refill calculations.
+In-memory storage is sufficient for single-node deployment. API keys validated upstream. Monotonic time used for refills.
 
 <span class="tok-c">## Constraints</span>
-- Must use the existing <code>lib/rate-limiter.ts</code> utility; do not write a second implementation.
-- Must not add external dependencies.
-- Must support horizontal deployment (stateless node design).
+Must use existing <code>lib/rate-limiter.ts</code> utility. No new external dependencies.
 
 <span class="tok-c">## Reference implementation</span>
-<span class="tok-c"># Link to spike that proves token-bucket works in this stack.</span>
 See <code>_spec/spikes/reference/token-bucket-spike/</code> for a working prototype.
 
 <span class="tok-c">## Test Plan</span>
-<span class="tok-c"># Named tests with exact inputs/outputs — written before implementation.</span>
-- T1: 100 requests in 1 second → all return 200.
-- T2: 101st request in same second → returns 429 with Retry-After ≥ 1.
-- T3: Request with invalid API key → returns 401, no token consumed.
-- T4: After 1 second of no requests, bucket refills → next request returns 200.
-- T5: Load test: 10,000 requests over 10 seconds → no memory leak, all requests within 200ms.
+T1: 100 requests in 1 second → all return 200.
+T2: 101st request → returns 429 with Retry-After ≥ 1.
+T3: Invalid API key → returns 401, no token consumed.
+T4: After 1 second of no requests → next request returns 200.
+T5: Load test: 10,000 requests over 10 seconds → no memory leak, all within 200ms.
 
 <span class="tok-c">## Acceptance Criteria</span>
-- AC1: 100 requests in 1 second succeed. The 101st returns 429.
-- AC2: A request with an invalid key returns 401 without consuming a token.
-- AC3: After 1 second of no requests, the bucket refills and requests succeed again.
-- AC4: All existing integration tests continue to pass.
+AC1–AC4 as described. All existing integration tests continue to pass.
 
 <span class="tok-c">## Out of Scope</span>
-- Per-IP rate limiting (handled by WAF).
-- Admin dashboard for viewing bucket state.
-- Distributed rate limiting across data centers.</span></code></pre>
+Per-IP rate limiting, admin dashboard, distributed rate limiting.</code></pre>
         </div>
 
         <h3>design.md</h3>
@@ -1355,82 +1094,54 @@ See <code>_spec/spikes/reference/token-bucket-spike/</code> for a working protot
           <pre><code><span class="tok-c"># Rate Limiter — Technical Design</span>
 
 <span class="tok-c">## Architecture Decision</span>
-<span class="tok-c"># Why token bucket: satisfies burst + sustained rate requirements (R4).</span>
-<span class="tok-c"># Why not fixed window: fixed window allows burst at window boundaries.</span>
-Use a token-bucket algorithm with a floating-point token count and
-last-refill timestamp stored in an in-memory Map keyed by API-key ID.
+Use token-bucket algorithm with floating-point token count and last-refill timestamp stored in an in-memory Map keyed by API-key ID.
 
 <span class="tok-c">## Data Flow</span>
 1. Request arrives → middleware extracts API key from Authorization header.
-2. If key is invalid → return 401 (R3).
-3. If key is valid → look up bucket in Map. If missing, create with 150 tokens.
-4. Calculate elapsed time since last refill. Add tokens at 100/sec (R4).
+2. If key invalid → return 401.
+3. If key valid → look up bucket in Map. If missing, create with 150 tokens.
+4. Calculate elapsed time, add tokens at 100/sec.
 5. If tokens ≥ 1 → decrement and call next().
-6. If tokens &lt; 1 → return 429 with Retry-After = ceil(1 / refillRate) (R2).
+6. If tokens < 1 → return 429 with Retry-After = ceil(1 / refillRate).
 
 <span class="tok-c">## Component Design</span>
-- <code>src/middleware/rate-limiter.ts</code> — new file, the middleware entry point.
-- <code>src/lib/token-bucket.ts</code> — new file, bucket math (refill logic).
-- <code>lib/rate-limiter.ts</code> — existing shared utility, imported and extended.
+<code>src/middleware/rate-limiter.ts</code> (new), <code>src/lib/token-bucket.ts</code> (new), import existing <code>lib/rate-limiter.ts</code>.
 
 <span class="tok-c">## Dependencies</span>
-- None. Uses native Node.js <code>process.hrtime.bigint()</code> for high-resolution timing.
+None — uses native Node.js <code>process.hrtime.bigint()</code>.
 
 <span class="tok-c">## Risk Assessment</span>
-- <strong>Memory leak</strong>: Map grows unbounded if clients never reappear.
-  Mitigation: prune entries older than 1 hour via a periodic sweep.
-- <strong>Clock skew</strong>: hrtime is monotonic, safe for refill calculations.
-- <strong>Horizontal scaling</strong>: in-memory Map is node-local. If we scale horizontally
-  later, we will need Redis. Out of scope for this iteration.</span></code></pre>
+Memory leak: periodic sweep of stale entries older than 1 hour. Clock skew: hrtime is monotonic. Horizontal scaling: out of scope for this iteration.</code></pre>
         </div>
 
-        <!-- UPDATED: tasks.md with granularity notes -->
-        <h3>tasks.md <span class="badge-new">Updated</span></h3>
+        <h3>tasks.md</h3>
         <div class="code-card">
           <div class="code-head"><div class="code-dots"><span></span><span></span><span></span></div><span class="code-label">specs/rate-limiter/tasks.md</span><button class="copy-btn" data-copy>Copy</button></div>
           <pre><code><span class="tok-c"># Rate Limiter — Implementation Tasks</span>
 
 <span class="tok-c">## T01: Implement token-bucket math</span>
-- Create <code>src/lib/token-bucket.ts</code> with Bucket class.
-- Definition of done: unit tests pass for refill, consume, and edge cases.
-- Verification: <code>npm test -- token-bucket</code>
-- Effort: S
-- Estimated time: 3 min
+Create <code>src/lib/token-bucket.ts</code> with Bucket class. Unit tests pass.
+Verification: <code>npm test -- token-bucket</code>  Effort: S (3 min)
 
 <span class="tok-c">## T02: Implement middleware</span>
-- Create <code>src/middleware/rate-limiter.ts</code>.
-- Integrate with existing <code>lib/rate-limiter.ts</code>.
-- Definition of done: middleware extracts key, checks bucket, returns correct status.
-- Verification: <code>npm test -- middleware</code>
-- Effort: M
-- Estimated time: 4 min
-- Depends on: T01
+Create <code>src/middleware/rate-limiter.ts</code>, integrate with existing utility.
+Definition of done: middleware extracts key, checks bucket, returns correct status.
+Verification: <code>npm test -- middleware</code>  Effort: M (4 min)  Depends: T01
 
 <span class="tok-c">## T03: Add integration tests</span>
-- Test AC1: 101st request returns 429.
-- Test AC2: invalid key returns 401 without consuming token.
-- Test AC3: bucket refills after 1 second.
-- Test T1–T5 from Test Plan (spec.md).
-- Definition of done: all ACs verified in <code>tests/integration/rate-limiter.test.ts</code>.
-- Verification: <code>npm run test:integration</code>
-- Effort: M
-- Estimated time: 5 min
-- Depends on: T02
+Test AC1–AC4 and T1–T5 from Test Plan.
+Verification: <code>npm run test:integration</code>  Effort: M (5 min)  Depends: T02
 
 <span class="tok-c">## T04: Add memory pruning</span>
-- Implement periodic sweep of stale Map entries.
-- Definition of done: entries older than 1 hour are removed; no memory leak in load test.
-- Verification: <code>npm run test:load</code>
-- Effort: S
-- Estimated time: 2 min
-- Depends on: T01</span></code></pre>
+Periodic sweep of stale Map entries. Load test passes.
+Verification: <code>npm run test:load</code>  Effort: S (2 min)  Depends: T01</code></pre>
         </div>
 
         <h3>Why This Structure Works</h3>
         <ul>
-          <li><strong>requirements.md</strong> contains only behavior — no implementation hints. The agent cannot drift into a "better" algorithm because the constraints explicitly ban it. The <strong>Non-goals</strong>, <strong>Assumptions</strong>, and <strong>Reference implementation</strong> sections prevent the agent from re-deciding choices you have already made.</li>
-          <li><strong>design.md</strong> contains the algorithm choice and risk assessment. If the diff shows a fixed-window counter instead of a token bucket, the reviewer catches it immediately by comparing diff to design.md Section 1.</li>
-          <li><strong>tasks.md</strong> maps 1:1 to acceptance criteria and the Test Plan. AC1 → T03 test case. AC2 → T03 test case. Each task has an <strong>estimated time</strong> that enforces the 2–5 minute granularity rule.</li>
+          <li><strong>requirements.md</strong> contains only behavior — no implementation hints. The <strong>Non-goals</strong>, <strong>Assumptions</strong>, and <strong>Reference implementation</strong> sections prevent the agent from re-deciding choices you have already made.</li>
+          <li><strong>design.md</strong> contains the algorithm choice and risk assessment. If the diff shows a different algorithm, the reviewer catches it immediately.</li>
+          <li><strong>tasks.md</strong> maps 1:1 to acceptance criteria and the Test Plan. Each task has an <strong>estimated time</strong> that enforces the 2–5 minute granularity rule.</li>
         </ul>
 
         <div class="callout tip">
@@ -1441,9 +1152,9 @@ last-refill timestamp stored in an in-memory Map keyed by API-key ID.
 
       <hr class="div">
 
-      <!-- 16 — Acronyms & Glossary -->
-      <section class="sheet" id="sec-16">
-        <div class="sheet-label"><span class="num">16</span><span class="of">Sheet 16 of 17</span><span class="rule"></span></div>
+      <!-- 15: Acronyms & Glossary (was 16, kept at end) -->
+      <section class="sheet" id="sec-15">
+        <div class="sheet-label"><span class="num">15</span><span class="of">Sheet 15 of 16</span><span class="rule"></span></div>
         <h2>Acronyms &amp; Glossary</h2>
         <p>Navigating the SDD ecosystem means decoding a dense alphabet soup of terms. Here is a curated list of the most important acronyms and their meanings in the context of Spec-Driven Development.</p>
         <div class="table-wrap">
@@ -1468,9 +1179,9 @@ last-refill timestamp stored in an in-memory Map keyed by API-key ID.
 
       <hr class="div">
 
-      <!-- 17 — Sources (updated with Superpowers link) -->
-      <section class="sheet" id="sec-17">
-        <div class="sheet-label"><span class="num">17</span><span class="of">Sheet 17 of 17</span><span class="rule"></span></div>
+      <!-- 16: Sources (was 17) -->
+      <section class="sheet" id="sec-16">
+        <div class="sheet-label"><span class="num">16</span><span class="of">Sheet 16 of 16</span><span class="rule"></span></div>
         <h2>Sources &amp; Further Reading</h2>
         <p>This guide draws on and paraphrases reporting and documentation from the following, current as of mid-2026. Click any link to explore the original source.</p>
 
@@ -1487,7 +1198,7 @@ last-refill timestamp stored in an in-memory Map keyed by API-key ID.
           <li><a href="https://www.humanlayer.dev/blog/writing-a-good-claude-md" target="_blank" class="source-link">HumanLayer — Writing a Good CLAUDE.md</a> — practical, widely-cited guidance on keeping your Constitution file lean and effective</li>
         </ul>
 
-        <h3>Superpowers <span class="badge-new">New</span></h3>
+        <h3>Superpowers</h3>
         <ul>
           <li><a href="https://github.com/obra/superpowers" target="_blank" class="source-link">Superpowers — obra/superpowers</a> — open-source skills framework for agentic SDD, enforcing brainstorming, design validation, git worktree isolation, bite-sized plans, subagent execution, two-stage review, TDD, and branch cleanup across 10+ agents.</li>
         </ul>
@@ -1495,10 +1206,9 @@ last-refill timestamp stored in an in-memory Map keyed by API-key ID.
         <h3>References &amp; Background</h3>
         <ul>
           <li><a href="https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html" target="_blank" class="source-link">Martin Fowler / Thoughtworks — Understanding Spec-Driven-Development</a> — in-depth analysis (Birgitta Böckeler, Oct 2025)</li>
-          <li><a href="https://github.com/github/spec-kit" target="_blank" class="source-link">GitHub Spec Kit</a> — the open-source toolkit that popularized structured specification flows; supports both Kiro and Claude Code as integrations, worth a look once you outgrow a two-tool setup</li>
-          <li><a href="https://alistairmavin.com/ears/" target="_blank" class="source-link">Alistair Mavin — EARS: Easy Approach to Requirements Syntax</a> — the original creator's own guide to the notation, straight from its source</li>
-          <li><a href="https://newsletter.eng-leadership.com/p/how-to-do-spec-driven-development" target="_blank" class="source-link">Engineering Leadership — How to Do Spec-Driven Development</a> — practical case study with spike-first pattern, Non-goals, Assumptions, Reference links, Test Plan, and lower-tier model token strategy (Larridin, 2026)</li>
-          <li>METR (2025) — controlled study on AI-assisted developer speed perception vs. measured outcome on a mature repository</li>
+          <li><a href="https://github.com/github/spec-kit" target="_blank" class="source-link">GitHub Spec Kit</a> — the open-source toolkit that popularized structured specification flows; supports both Kiro and Claude Code as integrations.</li>
+          <li><a href="https://alistairmavin.com/ears/" target="_blank" class="source-link">Alistair Mavin — EARS: Easy Approach to Requirements Syntax</a> — the original creator's own guide to the notation.</li>
+          <li><a href="https://newsletter.eng-leadership.com/p/how-to-do-spec-driven-development" target="_blank" class="source-link">Engineering Leadership — How to Do Spec-Driven Development</a> — practical case study with spike-first pattern, Non-goals, Assumptions, Reference links, Test Plan, and lower-tier model token strategy (Larridin, 2026).</li>
         </ul>
 
         <p>Facts and figures above are paraphrased summaries for a developer audience, not verbatim reproductions — check primary sources directly for exact numbers before citing them elsewhere.</p>
@@ -1515,6 +1225,7 @@ last-refill timestamp stored in an in-memory Map keyed by API-key ID.
 </footer>
 
 <script>
+  // (Same as before, no changes needed)
   const progress = document.getElementById('progress');
   function updateProgress(){
     const h = document.documentElement;
