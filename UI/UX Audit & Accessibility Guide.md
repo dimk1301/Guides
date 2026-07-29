@@ -49,9 +49,6 @@
    - Click the extension icon on any page to run an accessibility scan.  
    - **Manual validation** is still vital – automated tools catch ~30‑40% of issues.
 
-3. **Screen Reader Testing**  
-   - Turn on **NVDA** (Windows) or **VoiceOver** (macOS) and navigate your key pages using only the keyboard.  
-   - Listen for logical reading order, missing labels, and unexpected interactions.
 
 ---
 
@@ -251,18 +248,6 @@ Use Layer 3 (Playwright MCP) if you need to test complex interactions (multi‑s
 | `npx` fails with permission errors | Corporate proxy or offline | Set `NPM_CONFIG_REGISTRY` or download binaries manually |
 | Tools are called but no output | Server may be stuck; restart VS Code | Reload window and restart the server |
 
----
-
-## Appendix: Full Example Repository
-
-We’ve created a [GitHub template repository](https://github.com/example/ui-ux-audit-starter) that includes:
-- `.vscode/mcp.json` with Playwright MCP and ux‑mcp‑server pre‑configured
-- `eslint.config.js` with `jsx-a11y`
-- `jest-axe` setup
-- GitHub Actions workflows for PR checks and nightly scans
-- Storybook + a11y addon example
-
-Clone it and adapt to your project in minutes.
 
 ---
 
