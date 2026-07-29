@@ -1,140 +1,212 @@
-# UI/UX Audit & Accessibility Guide — 2026 Edition
+# Complete UI/UX & Accessibility Audit Guide
+## VS Code + GitHub Copilot + MCP — 2026 Edition
 
-*A practical, step‑by‑step guide for VS Code + GitHub Copilot, covering manual checks, static analysis, automated browser testing, heuristic review, and CI enforcement.*
+> **Last updated:** July 2026  
+> **Target audience:** Frontend developers, QA engineers, and product teams building web applications (React/Vue/Angular/Static)  
+> **Time to full setup:** 45–90 minutes (Layers 0–3), 2–3 hours (all 5 layers)
 
 ---
 
 ## Table of Contents
 
-- [Prerequisites](#prerequisites)
-- [Layer 0 & 1 – Manual & One‑Click Audits](#layer-0--1--manual--oneclick-audits)
-- [Layer 2 – Static Linting in VS Code](#layer-2--static-linting-in-vs-code)
-- [Layer 2.5 – Component‑Level A11y (optional)](#layer-25--componentlevel-a11y-optional)
-- [Layer 3 – Real‑Browser Testing with Playwright MCP](#layer-3--realbrowser-testing-with-playwright-mcp)
-- [Layer 4 – Heuristic / Usability Review via Copilot Chat](#layer-4--heuristic--usability-review-via-copilot-chat)
-- [Layer 5 – CI Enforcement (optional)](#layer-5--ci-enforcement-optional)
-- [Which Layers Do I Need?](#which-layers-do-i-need)
-- [Troubleshooting MCP Servers](#troubleshooting-mcp-servers)
-- [Appendix: Full Example Repository](#appendix-full-example-repository)
+1. [How to Use This Guide](#how-to-use-this-guide)
+2. [Prerequisites](#prerequisites)
+3. [Layer 0 & 1: Manual Baseline Scanning](#layer-0--1-manual-baseline-scanning)
+4. [Layer 2: Static Linting & Component Testing](#layer-2-static-linting--component-testing)
+5. [Layer 3: Real-Browser Testing with AI Agents](#layer-3-real-browser-testing-with-ai-agents)
+6. [Layer 4: Heuristic & Usability Review](#layer-4-heuristic--usability-review)
+7. [Layer 5: CI Enforcement](#layer-5-ci-enforcement)
+8. [Troubleshooting](#troubleshooting)
+9. [Appendix: Tool Comparison Matrix](#appendix-tool-comparison-matrix)
 
 ---
 
-## Prerequisites (do this once)
+## How to Use This Guide
 
-- **VS Code** 1.110+ (latest stable).
-- **GitHub Copilot** and **GitHub Copilot Chat** extensions installed and signed in.
-- **Node.js 20+** – Node 18 is no longer reliably supported by the MCP toolchain; upgrade if needed.
-- **Enable Copilot Agent Mode** – Agent mode is now the default in the chat dropdown; no special setting is required. In the Copilot Chat panel, ensure the dropdown is set to **“Agent”** (not “Ask” or “Edit”).
-- (Optional) Install the **Playwright** browser binaries globally if you plan to use the Playwright MCP server:  
-  `npx playwright install`
+This guide uses a **5-layer progressive model**. Each layer catches issues the previous layer misses, and each layer is more expensive (time/compute) than the last.
 
-> 💡 **What is MCP?**  
-> The Model Context Protocol (MCP) is a standard that lets AI agents (like Copilot) call external tools directly. Instead of copying code, you tell Copilot to *do* something, and it uses the MCP server to run actions (e.g., open a browser, take a screenshot). This guide focuses on MCP servers for testing and automation.
+| Layer | Name | Speed | Cost | Catches |
+|-------|------|-------|------|---------|
+| 0 & 1 | Manual Baseline | ⚡ Fast | Free | Critical a11y, performance, visual bugs |
+| 2 | Static Linting | ⚡ Fast | Free | Code-level a11y violations |
+| 3 | Real-Browser AI Testing | 🐢 Medium | Low | Runtime ARIA, focus, responsive issues |
+| 4 | Heuristic Review | 🐢 Medium | Low (AI tokens) | UX patterns, dark patterns, cognitive load |
+| 5 | CI Enforcement | 🐌 Slow | CI minutes | Regressions, nightly drift |
 
----
-
-## Layer 0 & 1 – Manual & One‑Click Audits
-
-*No MCP required – baseline manual checks.*
-
-### Accessibility & Performance Quick‑Checks
-
-1. **Lighthouse** (built into Chrome DevTools)  
-   - Open your page, press F12, go to the **Lighthouse** tab.  
-   - Run an audit with **Accessibility**, **Performance**, and **Best Practices** enabled.  
-   - Save the report for later reference.
-
-2. **axe DevTools** (browser extension)  
-   - Install from the [Chrome Web Store](https://chrome.google.com/webstore/detail/axe-devtools-web-accessib/lhdoppojpmngadmnindnejefpokejbdd).  
-   - Click the extension icon on any page to run an accessibility scan.  
-   - **Manual validation** is still vital – automated tools catch ~30‑40% of issues.
+> **💡 You do not need all 5 layers for every project.**
+>
+> | Project Type | Recommended Layers |
+> |-------------|-------------------|
+> | Personal blog / landing page | 0, 1, 2 |
+> | Small business site (5–10 pages) | 0, 1, 2, 3 |
+> | SaaS app / dashboard | 0, 1, 2, 3, 4 |
+> | E-commerce / healthcare / gov | **All 5** |
+> | Component library / design system | 0, 1, 2, + Storybook (see Layer 2) |
 
 ---
 
-## Layer 2 – Static Linting in VS Code
+## Prerequisites
 
-*Configuration files only – no MCP.*
+Do this once per machine.
 
-### ESLint with `jsx-a11y` (flat config)
-
-1. Install the plugin:  
+1. **VS Code** updated to the latest stable version (1.110+).
+2. **GitHub Copilot** and **GitHub Copilot Chat** extensions installed and signed in.
+3. **Node.js v20+** installed. Verify with:
    ```bash
-   npm install --save-dev eslint-plugin-jsx-a11y
+   node --version
    ```
-
-2. Create or update your `eslint.config.js` (ESLint 9+ flat config):  
-   ```javascript
-   import jsxA11y from 'eslint-plugin-jsx-a11y';
-
-   export default [
-     // ... your other configs
-     jsxA11y.configs.recommended,
-   ];
-   ```
-   > If you’re still on ESLint 8, you can keep `.eslintrc` with `"plugin:jsx-a11y/recommended"` – but we recommend migrating to flat config.
-
-3. VS Code’s built-in ESLint extension will now highlight accessibility violations in real time.
-
-### jest‑axe (for unit tests)
-
-1. Install:  
-   ```bash
-   npm install --save-dev jest-axe
-   ```
-   > ⚠️ **Note:** `@types/jest-axe` is no longer required – jest-axe ships its own types. Also be aware of dependency conflicts with ESLint 10; if you encounter errors, try pinning jest‑axe to `^4.0.0`.
-
-2. In your test setup file (e.g., `jest.setup.js`), extend Jest:  
-   ```javascript
-   import { toHaveNoViolations } from 'jest-axe';
-   expect.extend(toHaveNoViolations);
-   ```
-
-3. **Verification:** Write a simple test:  
-   ```javascript
-   import { axe } from 'jest-axe';
-
-   test('my component has no a11y violations', async () => {
-     const { container } = render(<MyComponent />);
-     const results = await axe(container);
-     expect(results).toHaveNoViolations();
-   });
-   ```
-   Run `npm test` – if the test passes, you’re all set.
+   > ⚠️ **Node.js 18 is no longer sufficient.** The Playwright MCP server and its transitive dependencies (e.g., Neon database driver) require Node 20+. If you are on v18, upgrade via [nodejs.org](https://nodejs.org/) or your package manager.
+4. **Agent Mode is enabled by default** in VS Code 1.100+. You will see an "Agent" option in the Copilot Chat mode dropdown. If you do not see it, update VS Code.
 
 ---
 
-## Layer 2.5 – Component‑Level A11y (optional)
+## Layer 0 & 1: Manual Baseline Scanning
 
-If you use **Storybook**, add the official accessibility addon to get per‑component axe scans directly in the UI:
+> **Goal:** Establish a baseline of critical issues before writing any code or configuring automation.  
+> **No installation required.**
+
+### Layer 0: Lighthouse (Performance + Accessibility + Best Practices)
+
+1. Open your site in Chrome.
+2. Press `F12` → **Lighthouse** tab.
+3. Check **Accessibility**, **Performance**, and **Best Practices**.
+4. Run the audit on your 3–5 most critical pages (homepage, signup, checkout, dashboard).
+5. **Export the report** (JSON or HTML) and save it as your baseline.
+
+> ✅ **Verification:** You have a Lighthouse JSON/HTML report saved with scores for each category.
+
+### Layer 1: axe DevTools + Screen Reader Spot Check
+
+1. Install the **axe DevTools** browser extension from the [Chrome Web Store](https://chromewebstore.google.com/detail/axe-devtools-web-accessib/lhdoppojpmngadmnindnejefpokejbdd).
+2. Run a **Full Page Scan** on the same pages you tested in Layer 0.
+3. Export the results.
+4. **Screen reader spot check (critical):** Automated tools catch only ~30–40% of accessibility issues. Spend 10 minutes navigating your top page with:
+   - **Windows:** [NVDA](https://www.nvaccess.org/download/) (free)
+   - **macOS:** VoiceOver (`Cmd + F5` to toggle)
+   - Verify you can reach every interactive element via keyboard (`Tab`, `Shift+Tab`, `Enter`, `Space`, `Arrow keys`).
+
+> ✅ **Verification:** You have axe DevTools export + a note about any focus traps or unreachable elements found during screen reader testing.
+
+> 📺 **Further learning:** [axe DevTools tutorial — YouTube](https://www.youtube.com/watch?v=Zsq6UA3yXAI)
+
+---
+
+## Layer 2: Static Linting & Component Testing
+
+> **Goal:** Catch accessibility violations while you write code, before they reach the browser.  
+> **No MCP server needed.** These tools run inside VS Code or your test suite.
+
+### 2A: ESLint with jsx-a11y (Editor-time linting)
+
+This underlines accessibility issues directly in your editor as you type.
+
+**If your project uses ESLint v9+ (flat config):**
+
+```bash
+npm install --save-dev eslint-plugin-jsx-a11y
+```
+
+Then in `eslint.config.js`:
+
+```javascript
+import jsxA11y from 'eslint-plugin-jsx-a11y';
+
+export default [
+  // ...your other configs
+  jsxA11y.flatConfigs.recommended,
+];
+```
+
+**If your project still uses legacy `.eslintrc`:**
+
+```bash
+npm install --save-dev eslint-plugin-jsx-a11y
+```
+
+Then in `.eslintrc.json`:
+
+```json
+{
+  "extends": ["plugin:jsx-a11y/recommended"]
+}
+```
+
+> 💡 **Tip:** Restart VS Code after installing. You should now see red squiggles under inaccessible patterns like `<div onClick={...}>` without `role` or `tabIndex`.
+
+> ✅ **Verification:** Open a component with a known a11y issue (e.g., a clickable `<div>` without keyboard handlers). You should see an ESLint warning in the editor.
+
+### 2B: jest-axe (Test-time assertions)
+
+```bash
+npm install --save-dev jest-axe
+```
+
+In your test setup file (e.g., `jest.setup.js`):
+
+```javascript
+import { toHaveNoViolations } from 'jest-axe';
+expect.extend(toHaveNoViolations);
+```
+
+Example component test:
+
+```javascript
+import { render } from '@testing-library/react';
+import { axe } from 'jest-axe';
+import MyComponent from './MyComponent';
+
+it('should have no accessibility violations', async () => {
+  const { container } = render(<MyComponent />);
+  const results = await axe(container);
+  expect(results).toHaveNoViolations();
+});
+```
+
+> 💡 **Tip:** You can ask Copilot Chat (Ask mode, no MCP needed): *"Add a jest-axe accessibility test for this component"* and paste your component code.
+
+> ✅ **Verification:** Run `npm test`. The test should pass for accessible components and fail with a detailed report for inaccessible ones.
+
+### 2C: Storybook a11y Addon (For component libraries)
+
+If you maintain a component library or design system, add the official Storybook accessibility addon:
 
 ```bash
 npm install --save-dev @storybook/addon-a11y
 ```
 
-Add it to your `.storybook/main.js` and see a new **Accessibility** panel when viewing stories – great for catching issues during component development.
+This adds an "Accessibility" panel to every Storybook story, running axe-core per component with visual regression support.
+
+> ✅ **Verification:** Open Storybook. Every story should show an "Accessibility" tab with pass/fail status.
 
 ---
 
-## Layer 3 – Real‑Browser Testing with Playwright MCP
+## Layer 3: Real-Browser Testing with AI Agents
 
-*Core MCP setup – connects Copilot to a live browser.*
+> **Goal:** Use a real browser (not just static analysis) to test keyboard navigation, responsive layouts, ARIA trees, and dynamic interactions.  
+> **This is the first layer that requires an MCP server.**
 
-### Zero‑Setup Alternative (VS Code Built‑in Tools)
+### What is MCP?
 
-Since early 2026, VS Code provides native browser tools (no MCP required) for simple tasks:
-- Open the command palette and run **“Copilot: Open Browser”** to launch a controlled browser.
-- Use prompts like:  
-  *“Take a screenshot of localhost:3000 and check for overflow”* – Copilot can call the built‑in `screenshotPage` tool.
+**MCP (Model Context Protocol)** is an open standard that lets AI agents like Copilot call external tools — in this case, a real browser. Think of it as a "USB-C port for AI applications." The Playwright MCP server gives Copilot the ability to navigate pages, click elements, take screenshots, and run accessibility audits inside an actual Chromium instance.
 
-For **advanced** testing (tab‑traversal, multi‑page flows, WCAG snapshots), we recommend the official Playwright MCP server.
+### Option A: VS Code Built-in Browser Tools (Zero Setup — Recommended for Simple Tasks)
 
-### Installing Playwright MCP
+As of VS Code 1.110 (February 2026), VS Code includes **native browser agent tools** that work without installing anything:
 
-**Option A – One‑click (fastest):**  
-Visit the [Playwright MCP page](https://playwright.dev/mcp/clients/vscode) and click **“Install in VS Code”** – the extension will auto‑configure everything.
+- `openBrowserPage` — navigate to a URL
+- `screenshotPage` — capture the viewport
+- `readPage` — extract text/structure
+- `closeBrowserPage` — clean up
 
-**Option B – Manual (more control):**  
-Create a `.vscode/mcp.json` file in your project root (this is the 2026 standard – **not** `settings.json`):
+**When to use this:** Quick screenshot comparisons, content verification, or if you are behind a corporate proxy that blocks `npx`.
+
+**Limitation:** These tools are read-only and less powerful than full Playwright MCP. They cannot simulate complex keyboard interactions or run axe-core scans.
+
+### Option B: Playwright MCP Server (Full Power — Recommended for Thorough Audits)
+
+#### Step 1: Configure the MCP server
+
+Create or open `.vscode/mcp.json` in your project root:
 
 ```json
 {
@@ -147,108 +219,260 @@ Create a `.vscode/mcp.json` file in your project root (this is the 2026 standard
 }
 ```
 
-> ⚠️ **Important:** VS Code looks for MCP configs in `.vscode/mcp.json` (workspace) or your user‑level `mcp.json`. The old `settings.json` approach is deprecated.
+> ⚠️ **Note:** In older guides you may see MCP config inside `settings.json`. As of 2026, the canonical location is `.vscode/mcp.json` (workspace-level) or your user profile's `mcp.json` (global). Using `settings.json` is deprecated.
 
-After saving, VS Code will show a **“Start”** link above the JSON; click it to launch the MCP server. The server status appears in the status bar.
+Save the file. VS Code will show a **"Start"** link above the JSON block — click it. Alternatively, open the Command Palette (`Ctrl+Shift+P`) → **MCP: Start Server** → select `playwright`.
 
-### Using Playwright MCP in Copilot Chat
+#### Step 2: Activate in Copilot Chat
 
-1. In the Copilot Chat panel, ensure the dropdown is set to **“Agent”**.
-2. Click the wrench/tools icon and confirm **“playwright”** is checked.
-3. Now you can issue commands in plain English:
+1. Open Copilot Chat (`Ctrl+Alt+I`).
+2. Switch the mode dropdown from **"Ask"** to **"Agent"**.
+3. Click the **wrench/tools icon**.
+4. Confirm **"playwright"** is checked as an active MCP server.
 
-   - *“Navigate to localhost:3000, tab through the page with only the keyboard, and report any focus traps.”*
-   - *“Take screenshots of the signup form at 375px, 768px, and 1440px; check for horizontal overflow.”*
-   - *“Run an accessibility snapshot of the checkout flow and list all ARIA violations.”*
+> 💡 **Tip:** Name your server keys clearly (`playwright`, `playwright-axe`, `ux-mcp`). Copilot picks tools by key name when reasoning about which server to call. Ambiguous names cause it to select the wrong server mid-task.
 
-4. **Verification:** After a command, Copilot will show a transcript of which tools it called. If you don’t see any tool calls, the server may not be running – check the status bar or open the MCP panel.
+#### Step 3: Drive it with natural language
 
-### Official Axe‑Core Integration (instead of unverified community servers)
+With Agent Mode active, try these prompts:
 
-For dedicated WCAG reporting, use the official `@axe-core/playwright` package **with** Playwright MCP’s generic browser control. You can run axe checks via MCP’s `browser_evaluate`:
+- *"Navigate to `localhost:3000`, tab through the entire page with keyboard only, and report any place focus is lost or trapped."*
+- *"Take screenshots of the signup form at 375px, 768px, and 1440px widths and flag any overflow or truncation."*
+- *"Run an accessibility snapshot of the checkout flow and list ARIA violations."*
+- *"Fill out the contact form with invalid email format, submit it, and verify the error message is announced to screen readers."*
 
-- Prompt: *“Use Playwright to run axe-core on the current page and return a summary of violations.”*
+> ✅ **Verification:** After running a prompt, check the **Tool Calls** panel in Copilot Chat. You should see a transcript of `browser_navigate`, `browser_screenshot`, or `browser_click` calls. If you see no tool calls, the MCP server is not connected.
 
-Copilot’s agent mode can also generate a script that runs `@axe-core/playwright` in a standalone test – see Layer 5 for CI integration.
+### Option C: Playwright CLI (Token-Efficient Alternative)
 
-> 💡 **Token‑Efficient Alternative:** For high‑volume usage (e.g., scanning hundreds of pages), consider the **Playwright CLI** (`@playwright/cli`) – it’s 4× more token‑efficient than MCP and can be triggered via Copilot’s terminal execution.
+If you plan to run hundreds of browser tasks (e.g., nightly CI or large-scale audits), use the official Playwright CLI instead of MCP. Released in early 2026, it consumes up to **4× fewer tokens** per session than the MCP server:
 
----
+```bash
+npx @playwright/cli@latest
+```
 
-## Layer 4 – Heuristic & Usability Review via Copilot Chat
+This is a headless automation tool designed specifically for AI agents. Use it when MCP token costs become a concern.
 
-*No extra MCP server required – pure prompting.*
+### Optional: Dedicated axe-core Integration
 
-1. Use the Playwright MCP (or VS Code built‑in browser) to capture screenshots of your 4‑5 core screens.
-2. Drag those images into the Copilot Chat input, or ask the agent to save them to a folder you can reference.
-3. Prompt:  
-   *“Evaluate these screens against Nielsen’s 10 usability heuristics and common dark‑pattern checklists. List violations by screen.”*
-   Copilot’s multimodal reasoning will analyse the visuals and provide a structured report.
+For WCAG-specific reports (rather than general browser control), add the `playwright-axe-mcp` server alongside Playwright:
 
-4. **Optional – Structured Audits:** If you prefer a formal tool, you can install the `ux-mcp-server` (from @elsahafy). Add it to your `.vscode/mcp.json` as another server:
+```json
+{
+  "servers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    },
+    "playwright-axe": {
+      "command": "npx",
+      "args": ["playwright-axe-mcp"]
+    }
+  }
+}
+```
 
-   ```json
-   "ux-mcp": {
-     "command": "npx",
-     "args": ["ux-mcp-server@latest"]
-   }
-   ```
-
-   Then in Agent mode, ask: *“Call the complete_ux_audit tool for my homepage screenshot.”*
-
-> ⚠️ **Limitation:** Automated heuristics are expert reviews, not real user testing. Always supplement with actual user feedback when possible.
-
----
-
-## Layer 5 – CI Enforcement (optional)
-
-*GitHub Actions + pre‑commit hooks – no direct Copilot interaction.*
-
-This layer is **adjacent** to the core VS Code flow, but valuable for teams.
-
-1. **Pre‑commit hook:** Add `eslint` and `jest-axe` to your lint‑staged config so every commit fails if violations are introduced.
-
-2. **GitHub Actions PR check:**  
-   In your workflow, run:
-   ```yaml
-   - run: npm run lint
-   - run: npm test
-   ```
-   This ensures ESLint and jest‑axe run on every pull request.
-
-3. **Nightly Playwright scan:**  
-   Set up a scheduled workflow that spins up a headless Playwright test against your staging URL. Use `@axe-core/playwright` to scan the page and post a report as a workflow artifact.
-
-4. **Ask Copilot to generate the YAML:**  
-   In Agent mode, prompt: *“Write a GitHub Actions workflow that runs ESLint, jest‑axe, and a nightly Playwright axe scan against staging.”* – Copilot will produce the YAML using your repo’s structure and the MCP tools it just used.
+> ⚠️ **Note:** `playwright-axe-mcp` is a community server. For production use, consider the official `@axe-core/playwright` package in your own test scripts instead.
 
 ---
 
-## Which Layers Do I Need?
+## Layer 4: Heuristic & Usability Review
 
-| Project Type                 | Recommended Layers |
-|------------------------------|---------------------|
-| **Solo dev / landing page**  | 0, 1, 2 (maybe 2.5) |
-| **Small team / marketing**   | 0, 1, 2, 3, 4       |
-| **Enterprise SaaS / product**| All 5 layers        |
-| **Component library**        | 2.5, 2, 3 (optional) |
+> **Goal:** Evaluate your UI against established usability principles (Nielsen's heuristics, dark-pattern checklists) and cognitive accessibility.  
+> **No new MCP server required** — this is a prompting exercise using Copilot's multimodal reasoning.
 
-Use Layer 3 (Playwright MCP) if you need to test complex interactions (multi‑step forms, modals, keyboard traps). Skip it if you only have static pages.
+### Method: Screenshot + Prompt Review
+
+1. **Capture screenshots** of your 4–5 core screens using the Playwright MCP from Layer 3 (or VS Code's built-in screenshot tool for simpler pages).
+2. **Drag the screenshots** directly into the Copilot Chat input, or save them to a folder Copilot can reference.
+3. **Prompt Copilot:**
+
+   > *"Evaluate these screens against Nielsen's 10 usability heuristics and common dark-pattern checklists. List violations by screen, severity (critical/warning/nice-to-have), and suggest specific fixes."*
+
+4. Copilot will analyze the images and provide a structured heuristic audit.
+
+> 💡 **Tip:** For a more focused review, add constraints to your prompt:
+> - *"Focus on cognitive accessibility for users with ADHD."*
+> - *"Flag any deceptive patterns that might violate GDPR or CCPA consent requirements."*
+> - *"Check color contrast ratios against WCAG 2.1 AA standards."*
+
+### Optional: Structured UX Audit via MCP
+
+If you prefer a tool-call-based audit over free-form prompting, install the **ux-mcp-server**:
+
+```json
+{
+  "servers": {
+    "ux-mcp": {
+      "command": "npx",
+      "args": ["ux-mcp-server"]
+    }
+  }
+}
+```
+
+This exposes a `complete_ux_audit` tool with 28 knowledge bases and 23 analysis tools. It returns structured JSON rather than prose, which is easier to feed into reports or tickets.
+
+> 📖 **Reference:** [ux-mcp-server documentation — GitHub](https://github.com/elsahafy/ux-mcp-server)
+
+> ✅ **Verification:** You should have a written heuristic review document (from Copilot) or a structured JSON audit (from ux-mcp-server) covering all major screens.
+
+> ⚠️ **Important limitation:** AI heuristic review and automated tools are **not a substitute for user testing**. Budget for 3–5 moderated usability tests with real users before major releases.
 
 ---
 
-## Troubleshooting MCP Servers
+## Layer 5: CI Enforcement
 
-| Symptom | Probable Cause | Fix |
-|---------|---------------|-----|
-| MCP server not starting | Node version < 20 | Run `node -v`; upgrade to 20+ |
-| Browser not launching | Missing browser binaries | Run `npx playwright install` |
-| Copilot doesn’t see MCP tools | Server not started or not checked in tools panel | Click “Start” in `.vscode/mcp.json` and check the wrench icon |
-| `npx` fails with permission errors | Corporate proxy or offline | Set `NPM_CONFIG_REGISTRY` or download binaries manually |
-| Tools are called but no output | Server may be stuck; restart VS Code | Reload window and restart the server |
+> **Goal:** Prevent accessibility regressions by making checks mandatory in your pull request pipeline.  
+> **This layer does not use Copilot directly** — it uses the tools from Layers 2 and 3 inside GitHub Actions.
 
+### Step 1: PR Checks (Block Merges on Violations)
 
+Add this job to `.github/workflows/ci.yml`:
+
+```yaml
+name: CI
+on: [pull_request]
+
+jobs:
+  accessibility:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+
+      # Layer 2: Static linting
+      - run: npx eslint . --max-warnings=0
+
+      # Layer 2: Unit tests with jest-axe
+      - run: npm test -- --coverage
+
+      # Layer 3: Install Playwright browsers
+      - run: npx playwright install --with-deps chromium
+
+      # Layer 3: Run Playwright + axe-core against staging
+      - run: npx playwright test --project=chromium
+        env:
+          BASE_URL: ${{ secrets.STAGING_URL }}
+
+      # Layer 0: Lighthouse CI (optional but recommended)
+      - name: Lighthouse CI
+        run: |
+          npm install -g @lhci/cli@0.14.x
+          lhci autorun
+        env:
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
+```
+
+> 💡 **Tip:** You can ask Copilot Agent Mode (with Playwright MCP active) to draft this YAML for you directly in VS Code. Since it understands your repo structure and the Playwright MCP tool calls from Layer 3, it can generate a workflow tailored to your project.
+
+### Step 2: Nightly Full Audit
+
+Schedule a nightly job that runs a comprehensive axe-core scan against your staging environment and posts results as a PR comment or workflow artifact:
+
+```yaml
+  nightly-audit:
+    runs-on: ubuntu-latest
+    schedule:
+      - cron: '0 2 * * *'  # 2 AM UTC daily
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test tests/accessibility-audit.spec.ts
+        env:
+          BASE_URL: https://staging.yoursite.com
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: accessibility-report
+          path: playwright-report/
+```
+
+> ✅ **Verification:** Create a PR that introduces an accessibility violation (e.g., remove an `alt` attribute). The PR check should fail and block merging.
+
+### Performance Budgets
+
+Add a `budget.json` to your Lighthouse CI config to fail builds on performance regression:
+
+```json
+[
+  {
+    "path": "/*",
+    "resourceSizes": [
+      { "resourceType": "document", "budget": 18 },
+      { "resourceType": "total", "budget": 500 }
+    ],
+    "timings": [
+      { "metric": "interactive", "budget": 3500 },
+      { "metric": "first-meaningful-paint", "budget": 2000 }
+    ]
+  }
+]
+```
 
 ---
 
-*Guide updated for 2026 tooling – if you encounter any outdated steps, please file an issue on the repository.*
+## Troubleshooting
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| `npx @playwright/mcp@latest` fails with EACCES | Node version < 20 | Upgrade to Node.js 20+: `nvm install 20 && nvm use 20` |
+| MCP server shows "Start" but never connects | Corporate proxy blocking CDN | Use VS Code built-in browser tools (Option A) instead, or configure proxy in `.npmrc` |
+| `browser_navigate` times out | Staging server not running | Ensure your dev server (`localhost:3000`) is active before running Agent prompts |
+| ESLint not showing a11y warnings | Flat config not applied correctly | Verify `eslint.config.js` exports the `jsxA11y.flatConfigs.recommended` object |
+| jest-axe fails with cryptic error | `@types/jest-axe` conflict with ESLint 9+ | Remove `@types/jest-axe` if installed; use `jest-axe` directly (it includes its own types as of 2026) |
+| Copilot picks wrong MCP server mid-task | Ambiguous server names | Rename keys in `mcp.json` to be explicit: `playwright`, `playwright-axe`, `ux-mcp` |
+| Screenshots show blank pages | Browser binaries not installed | Run `npx playwright install chromium` |
+| Lighthouse CI fails on first run | No baseline established | Run `lhci wizard` locally once to establish baseline |
+
+---
+
+## Appendix: Tool Comparison Matrix
+
+| Tool | Layer | Cost | Setup | Best For |
+|------|-------|------|-------|----------|
+| Chrome Lighthouse | 0 | Free | Built-in | Performance + a11y baseline |
+| axe DevTools | 1 | Free (basic) | Browser extension | Detailed WCAG violation reports |
+| NVDA / VoiceOver | 1 | Free | Install | Real screen reader behavior |
+| `eslint-plugin-jsx-a11y` | 2 | Free | npm + config | Catch issues while coding |
+| `jest-axe` | 2 | Free | npm + test setup | Automated a11y in unit tests |
+| `@storybook/addon-a11y` | 2 | Free | npm + Storybook | Per-component a11y in isolation |
+| VS Code built-in browser tools | 3 | Free | None | Zero-setup screenshot/navigate |
+| Playwright MCP | 3 | Token costs | `mcp.json` | Full browser automation via AI |
+| Playwright CLI | 3 | Lower tokens | npm install | High-volume automation |
+| `playwright-axe-mcp` | 3 | Token costs | `mcp.json` | Structured axe reports via MCP |
+| `@axe-core/playwright` | 3 | Free | npm + test script | Production-grade axe integration |
+| Copilot multimodal (screenshots) | 4 | Token costs | None | Heuristic / UX review |
+| `ux-mcp-server` | 4 | Token costs | `mcp.json` | Structured UX audit JSON |
+| Lighthouse CI | 5 | CI minutes | GitHub Actions | Performance regression blocking |
+| GitHub Actions + Playwright | 5 | CI minutes | YAML config | Nightly full accessibility scans |
+
+---
+
+## Quick-Start Checklist
+
+- [ ] Node.js 20+ installed
+- [ ] VS Code 1.110+ with Copilot extensions
+- [ ] Lighthouse baseline run on 3–5 key pages
+- [ ] axe DevTools scan completed
+- [ ] 10-minute screen reader keyboard test done
+- [ ] `eslint-plugin-jsx-a11y` installed and verified in editor
+- [ ] `jest-axe` test passing for at least one component
+- [ ] `.vscode/mcp.json` created with Playwright MCP server
+- [ ] Playwright MCP started and verified in Copilot Chat Agent Mode
+- [ ] At least one real-browser AI test completed successfully
+- [ ] Screenshots captured for heuristic review
+- [ ] Heuristic review prompt submitted to Copilot
+- [ ] GitHub Actions workflow added for PR checks
+- [ ] Nightly audit scheduled (for production-grade projects)
+
+---
+
+> **License:** This guide is provided as-is for educational purposes. Tool versions and availability change frequently; always verify against official documentation.
