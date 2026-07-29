@@ -1606,6 +1606,7 @@
 
             <!-- ============================================================ -->
             <!-- CHAPTER 6 — Audit & Evidence (CVE lifecycle moved here — fix #1) -->
+            <!-- Replaced "Our Immediate Action Plan" with "Audit Readiness Scorecard" -->
             <!-- ============================================================ -->
             <section class="chapter" id="ch6">
                 <div class="chapter-head"><div class="chapter-num">06</div><h2>Proving It: Audit & Evidence</h2></div>
@@ -1745,20 +1746,63 @@
                 </ul>
                 <p><b>Read-Only Auditor Role</b> — external auditors get dedicated read-only access to SecObserve dashboards and OpenObserve SQL consoles, zero modify/delete permissions.</p>
 
-                <h3>Our Immediate Action Plan</h3>
+                <!-- ============================================================ -->
+                <!-- REPLACED: "Our Immediate Action Plan" → "Audit Readiness Scorecard" -->
+                <!-- ============================================================ -->
+                <h3>Audit Readiness Scorecard <span class="sub-inline">— what we can prove today</span></h3>
+                <p class="sub">The table below replaces the old risk-register with an evidence-focused view. For each key control, we ask one question: <i>can we prove this to an auditor right now?</i> The answer determines what we're closing next — and ties every action back to the chapter's promise of <b>Proving It</b>.</p>
+
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>Risk</th><th>The Gap</th><th>How We're Fixing It</th></tr></thead>
+                        <thead><tr><th>Control</th><th>Can we prove it?</th><th>Evidence Gap</th><th>Closing Action</th></tr></thead>
                         <tbody>
-                            <tr><td><span class="badge badge--crit">Critical</span></td><td>Secrets stored in plain text.</td><td>Rolling out HashiCorp Vault.</td></tr>
-                            <tr><td><span class="badge badge--crit">Critical</span></td><td>Unverified container images.</td><td>Enforcing Cosign signing + Kyverno verification.</td></tr>
-                            <tr><td><span class="badge badge--crit">Critical</span></td><td>Flat network — easy lateral movement.</td><td>Rolling out Cilium/Calico Network Policies.</td></tr>
-                            <tr><td><span class="badge badge--crit">Critical</span></td><td>Arbitrary commands possible if a container is compromised.</td><td>Deploying Tetragon TracingPolicies to instantly <code>SIGKILL</code> unapproved executions.</td></tr>
-                            <tr><td><span class="badge badge--high">High</span></td><td>SecObserve needs a backup plan.</td><td>Nightly DB backups + tested restore drills.</td></tr>
-                            <tr><td><span class="badge badge--med">Medium</span></td><td>Logging environments consume excessive memory/storage.</td><td>Retiring Java-based ELK/Loki; deploying OpenObserve as unified telemetry backend.</td></tr>
+                            <tr>
+                                <td>Secrets management</td>
+                                <td>❌ No</td>
+                                <td>No audit trail proving secrets are rotated and accessed only via Vault.</td>
+                                <td>HashiCorp Vault rollout — every secret access becomes a queryable event in OpenObserve.</td>
+                            </tr>
+                            <tr>
+                                <td>Image provenance</td>
+                                <td>❌ No</td>
+                                <td>No proof that container images are signed and verified before deployment.</td>
+                                <td>Cosign signing + Kyverno verification enforced at admission; rejected images logged.</td>
+                            </tr>
+                            <tr>
+                                <td>Network segmentation</td>
+                                <td>❌ No</td>
+                                <td>Cannot prove a compromised pod was contained to its segment.</td>
+                                <td>Cilium/Calico policies — rejected cross-namespace traffic logged as enforceable evidence.</td>
+                            </tr>
+                            <tr>
+                                <td>Runtime containment</td>
+                                <td>❌ No</td>
+                                <td>Cannot prove arbitrary commands were blocked at the kernel level.</td>
+                                <td>Tetragon TracingPolicies — kills unapproved executions with <code>SIGKILL</code>; kill events stored in OpenObserve.</td>
+                            </tr>
+                            <tr>
+                                <td>Vulnerability history</td>
+                                <td>⚠️ Partial</td>
+                                <td>Vulnerability history exists in only one place with no restore test.</td>
+                                <td>Nightly DB backups + quarterly restore drills logged back into SecObserve as proof of resilience.</td>
+                            </tr>
+                            <tr>
+                                <td>Telemetry retention</td>
+                                <td>⚠️ Partial</td>
+                                <td>Java-based ELK/Loki stack cannot retain forensic logs cost-effectively.</td>
+                                <td>OpenObserve — compressed Parquet storage with 7-year retention, replacing ELK/Loki.</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
+
+                <p class="sub" style="margin-top:10px;">This scorecard is reviewed quarterly. Each "No" becomes a "Yes" when its closing action is complete and the resulting evidence is flowing into SecObserve or OpenObserve. The full implementation plan for these actions lives in Chapter 9, where each gap maps directly to a step in the roadmap.</p>
+
+                <div class="callout callout--info">
+                    <span class="tag">What Auditors Actually Ask</span>
+                    <p>Auditors don't care that we <i>plan</i> to roll out Vault — they care whether we can show them a query that proves every secret access was logged and authorized. The scorecard above frames our gaps in exactly those terms: not "we have a risk" but "we don't yet have this piece of evidence." That's the shift from project-management thinking to audit-readiness thinking.</p>
+                </div>
+
             </section>
 
             <hr class="div">
@@ -1981,11 +2025,34 @@
             <hr class="div">
 
             <!-- ============================================================ -->
-            <!-- CHAPTER 9 — unchanged                                          -->
+            <!-- CHAPTER 9 — moved "Current Gaps" preamble to top              -->
             <!-- ============================================================ -->
             <section class="chapter" id="ch9">
                 <div class="chapter-head"><div class="chapter-num">09</div><h2>Step-by-Step Implementation Checklist</h2></div>
-                <p class="sub"><i>Note on ordering:</i> these steps follow rollout dependency, not the chapter order above — e.g., Image Provenance is step 6 even though Chapter 4 covered container images, because it depends on Vault and admission control being in place first. Each phase title links back to its source chapter.</p>
+
+                <!-- ============================================================ -->
+                <!-- NEW: "Current Gaps" preamble — moved from Ch6                 -->
+                <!-- ============================================================ -->
+                <div class="callout callout--rule" style="margin-bottom:28px;">
+                    <span class="tag">Why These Steps?</span>
+                    <p>Each step in the roadmap below closes one of the evidence gaps identified in Chapter 6. The table below shows the full set of gaps we're addressing — think of it as the "before" picture that the 7-step roadmap turns into the "after."</p>
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Risk</th><th>The Gap</th><th>How We're Fixing It</th></tr></thead>
+                        <tbody>
+                            <tr><td><span class="badge badge--crit">Critical</span></td><td>Secrets stored in plain text.</td><td>Rolling out HashiCorp Vault.</td></tr>
+                            <tr><td><span class="badge badge--crit">Critical</span></td><td>Unverified container images.</td><td>Enforcing Cosign signing + Kyverno verification.</td></tr>
+                            <tr><td><span class="badge badge--crit">Critical</span></td><td>Flat network — easy lateral movement.</td><td>Rolling out Cilium/Calico Network Policies.</td></tr>
+                            <tr><td><span class="badge badge--crit">Critical</span></td><td>Arbitrary commands possible if a container is compromised.</td><td>Deploying Tetragon TracingPolicies to instantly <code>SIGKILL</code> unapproved executions.</td></tr>
+                            <tr><td><span class="badge badge--high">High</span></td><td>SecObserve needs a backup plan.</td><td>Nightly DB backups + tested restore drills.</td></tr>
+                            <tr><td><span class="badge badge--med">Medium</span></td><td>Logging environments consume excessive memory/storage.</td><td>Retiring Java-based ELK/Loki; deploying OpenObserve as unified telemetry backend.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="sub" style="margin-top:10px;">The roadmap below follows rollout dependency — each step builds on the previous one. Phase titles link back to their source chapters for deeper context.</p>
 
                 <div class="roadmap">
                     <div class="roadmap-line"></div>
