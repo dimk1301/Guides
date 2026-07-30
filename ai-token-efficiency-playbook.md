@@ -4,7 +4,7 @@ A practical, guide for reducing token usage and improving output quality in **Cl
 
 > **Commands verified as of July 2026.** All three tools ship updates frequently — exact flags, thresholds, and slash commands can change between releases. Run `--help` or check official docs before relying on an exact flag name in this guide.
 
-**Jump to:** [Core Mental Model](#core-mental-model) · [Progressive Knowledge Indexing](#progressive-knowledge-indexing) · [10 Golden Rules](#10-golden-rules) · [Prompt Templates](#copy-paste-prompt-templates) · [Developer Workflow](#developer-workflow) · [Cross-Tool Equivalents](#cross-tool-equivalents) · [Claude Code](#claude-code-playbook) · [Kiro CLI](#kiro-cli-playbook) · [GitHub Copilot CLI](#github-copilot-cli-playbook) · [Config Files](#configuration-files-summary) · [Checklist](#team-rollout-checklist) · [5-Minute Plan](#5-minute-adoption-plan)
+**Jump to:** [Core Mental Model](#core-mental-model) · [Progressive Knowledge Indexing](#progressive-knowledge-indexing) · [10 Golden Rules](#10-golden-rules) · [Prompt Templates](#copy-paste-prompt-templates) · [Developer Workflow](#developer-workflow) · [Cross-Tool Equivalents](#cross-tool-equivalents) · [Claude Code](#claude-code-playbook) · [Kiro CLI](#kiro-cli-playbook) · [GitHub Copilot CLI](#github-copilot-cli-playbook) · [Config Files](#configuration-files-summary) · [Optional Third-Party Tools](#optional-third-party-tools) · [Checklist](#team-rollout-checklist) · [5-Minute Plan](#5-minute-adoption-plan)
 
 ---
 
@@ -378,6 +378,26 @@ Copilot CLI works best when constrained using concise instruction files and expl
 
 ---
 
+## Optional Third-Party Tools
+
+Everything above is a native, vendor-shipped feature of Claude Code, Kiro CLI, or Copilot CLI. The tools below are **community/commercial projects that sit on top of those tools** — worth knowing about because they attack the same problem from different angles, but they're not vendor-supported, so vet each one (data flow, maintenance activity, added overhead) before a team-wide rollout. Treat this section as "things to evaluate," not "things to adopt by default."
+
+| Tool | What it does | Which tool(s) it plugs into | Key caveat |
+| --- | --- | --- | --- |
+| **Headroom** | A proxy/library/MCP server that compresses tool outputs, logs, files, and RAG chunks before they reach the model. Claims 60–95% token reduction. | Claude Code, Codex, Copilot, Gemini, Bedrock, Vertex | Works by rerouting your API base URL through a local proxy — review what it caches/logs locally before wiring it into a shared team config. |
+| **KiroGraph** | An MCP server exposing a semantic, tree-sitter-based code knowledge graph — symbol lookups, call graphs, and impact analysis in one query instead of several read/grep tool calls. | Kiro CLI (full support); ~34 other MCP-capable tools (experimental) | Enabling every optional module adds ~4,300 tokens of tool definitions to *every* call — enable only the modules you actually use, or the tool overhead can outweigh the savings. |
+| **Graphify** | A `/graphify` skill that builds a local, tree-sitter-based knowledge graph of code, docs, PDFs, and more; the agent queries the graph (`graphify query`, `graphify path`) instead of reading or grepping files. | Claude Code, Copilot CLI, Cursor, Codex, Gemini CLI, and 15+ more | Code parsing is fully local and free (no LLM call). Docs/PDF/image ingestion routes through your assistant's model API, so it isn't zero-cost for non-code content. |
+
+### Where each one fits into this playbook
+
+* **Headroom** is the closest thing to an automated version of Golden Rules 3 and 5 (minimal snippets, output limits) — it compresses what's already flowing through the pipe rather than requiring you to hand-curate it. Consider it if your logs/tool-output volume is the dominant cost driver and manual summarization isn't scaling.
+* **KiroGraph** extends the *Selective Indexing via Skills + Knowledge Bases* pattern in the Kiro Playbook above: instead of Kiro's agent reading files to build understanding, the graph is pre-built and queried. Good fit if you're already leaning on Kiro's Skills/`/knowledge` split and want the codebase itself indexed the same way.
+* **Graphify** fills the gap in the *Progressive Knowledge Indexing* section's "searched, not loaded, for large corpora" tier for **Claude Code and Copilot CLI** specifically — right now that tier has a native answer in Kiro (`/knowledge`) but not in the other two. If your team's biggest token sink is large-codebase exploration (not logs or docs), this is the most directly applicable of the three.
+
+None of these replace the native commands in the Cross-Tool Equivalents table — they're additive, and each introduces its own dependency (a local proxy, an MCP server, a generated graph file to keep in sync) that a team needs to own and update going forward.
+
+---
+
 ## Good vs. Bad Prompting Examples
 
 ### ❌ Bad Example
@@ -412,6 +432,7 @@ Output: 3 bullets max + minimal patch.
 * [ ] Utilize searchable knowledge bases or RAG indexes for large repos rather than dumping raw directories into context.
 * [ ] Set a default reasoning-effort level per tool (Claude Code `/effort`, Kiro `--effort`, Copilot reasoning effort) and reserve the top tier for genuinely hard tasks.
 * [ ] Prefer proactive manual compaction over waiting for automatic triggers when a big context-heavy task is coming up.
+* [ ] If evaluating a third-party tool (Headroom, KiroGraph, Graphify, or similar), review its data flow and update cadence before rolling it out beyond a single volunteer's machine.
 
 ---
 
