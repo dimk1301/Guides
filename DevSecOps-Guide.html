@@ -1,45 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>The Developer's Guide to DevSecOps</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet" />
     <style>
-        :root {
-            --bg: #0A0E17;
-            --panel: #111826;
-            --panel-alt: #161F30;
-            --border: #25314A;
-            --border-soft: #1B2434;
-            --text: #EAEEF7;
-            --text-muted: #95A1BC;
-            --text-faint: #5A6480;
-
-            --p1: #334155;
-            --p2: #64748B;
-            --p3: #3B82F6;
-            --p4: #F59E0B;
-            --p5: #F97316;
-            --p6: #84CC16;
-            --p7: #6366F1;
-            --p8: #10B981;
-            --p9: #EF4444;
-            --p10: #8B5CF6;
-            --p11: #22D3EE;
-            --p12: #92400E;
-
-            --accent: #4C7EF3;
-            --amber: #F0B429;
-
-            --radius: 10px;
-            --display: 'Inter', system-ui, sans-serif;
-            --sans: 'Inter', system-ui, sans-serif;
-            --mono: 'JetBrains Mono', ui-monospace, monospace;
-        }
-
+        /* ── reset & base ── */
         * {
             box-sizing: border-box;
         }
@@ -57,6 +26,34 @@
             line-height: 1.7;
             -webkit-font-smoothing: antialiased;
         }
+        :root {
+            --bg: #0A0E17;
+            --panel: #111826;
+            --panel-alt: #161F30;
+            --border: #25314A;
+            --border-soft: #1B2434;
+            --text: #EAEEF7;
+            --text-muted: #95A1BC;
+            --text-faint: #5A6480;
+            --p1: #334155;
+            --p2: #64748B;
+            --p3: #3B82F6;
+            --p4: #F59E0B;
+            --p5: #F97316;
+            --p6: #84CC16;
+            --p7: #6366F1;
+            --p8: #10B981;
+            --p9: #EF4444;
+            --p10: #8B5CF6;
+            --p11: #22D3EE;
+            --p12: #92400E;
+            --accent: #4C7EF3;
+            --amber: #F0B429;
+            --radius: 10px;
+            --display: 'Inter', system-ui, sans-serif;
+            --sans: 'Inter', system-ui, sans-serif;
+            --mono: 'JetBrains Mono', ui-monospace, monospace;
+        }
         a {
             color: var(--accent);
         }
@@ -64,6 +61,7 @@
             background: rgba(76, 126, 243, 0.28);
         }
 
+        /* ── progress bar ── */
         #progress {
             position: fixed;
             top: 0;
@@ -75,6 +73,7 @@
             transition: width .1s linear;
         }
 
+        /* ── layout ── */
         .shell {
             display: grid;
             grid-template-columns: 272px 1fr;
@@ -97,7 +96,6 @@
             background: var(--border);
             border-radius: 4px;
         }
-
         .brand {
             display: flex;
             align-items: center;
@@ -166,7 +164,6 @@
             padding: 48px 60px 130px;
             min-width: 0;
         }
-
         .hero {
             padding: 6px 0 36px;
             border-bottom: 1px solid var(--border-soft);
@@ -277,7 +274,7 @@
             line-height: 1.25;
         }
 
-        /* role-based reading guide */
+        /* ── reading guide ── */
         .reading-guide {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -329,6 +326,7 @@
             }
         }
 
+        /* ── chapter styling ── */
         section.chapter {
             margin-bottom: 68px;
             scroll-margin-top: 24px;
@@ -381,7 +379,6 @@
         .sub {
             color: var(--text-muted);
         }
-
         ul,
         ol {
             color: var(--text);
@@ -394,7 +391,6 @@
         li::marker {
             color: var(--text-faint);
         }
-
         code,
         .chip {
             font-family: var(--mono);
@@ -406,6 +402,7 @@
             color: #BFD9FF;
         }
 
+        /* ── callouts ── */
         .callout {
             border-radius: var(--radius);
             padding: 17px 19px;
@@ -455,6 +452,7 @@
             color: #A78BFA;
         }
 
+        /* ── tables ── */
         .table-wrap {
             overflow-x: auto;
             border: 1px solid var(--border);
@@ -499,6 +497,7 @@
             font-size: 14px;
         }
 
+        /* ── badges ── */
         .badge {
             display: inline-flex;
             align-items: center;
@@ -541,6 +540,7 @@
             background: #8B5CF6;
         }
 
+        /* ── roadmap ── */
         .roadmap {
             position: relative;
             margin: 28px 0 6px;
@@ -622,6 +622,7 @@
             font-weight: 600;
         }
 
+        /* ── zones ── */
         .zone-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -649,6 +650,7 @@
             color: var(--text-muted);
         }
 
+        /* ── hub cards ── */
         .hub-card {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -691,6 +693,7 @@
             margin: 0;
         }
 
+        /* ── pilot cards ── */
         .pilot-card {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -743,6 +746,7 @@
             margin-right: 6px;
         }
 
+        /* ── glossary ── */
         .glossary {
             columns: 2;
             column-gap: 56px;
@@ -772,6 +776,7 @@
             color: var(--text-muted);
         }
 
+        /* ── diagrams ── */
         .diagram {
             background: var(--panel);
             border: 1px solid var(--border);
@@ -810,7 +815,7 @@
             border-top: 1px solid var(--border-soft);
         }
 
-        /* citations */
+        /* ── footnotes ── */
         .footnote-ref {
             font-size: 0.75em;
             vertical-align: super;
@@ -838,7 +843,7 @@
             margin-right: 6px;
         }
 
-        /* details / summary — collapsed platform-only blocks */
+        /* ── details ── */
         details.platform-detail {
             margin: 14px 0 6px;
             border-radius: var(--radius);
@@ -993,18 +998,20 @@
     <button class="menu-btn" onclick="document.querySelector('.sidebar').classList.toggle('open')">☰ Chapters</button>
 
     <div class="shell">
+
+        <!-- ═══ SIDEBAR ═══ -->
         <aside class="sidebar">
             <div class="brand">
                 <div class="brand-mark"></div>
                 <div class="brand-text"><b>DevSecOps</b>Developer Guide</div>
             </div>
             <nav class="toc">
-                <a href="#ch1"><span class="n">01</span>Team Rules & Culture</a>
+                <a href="#ch1"><span class="n">01</span>Team Rules &amp; Culture</a>
                 <a href="#ch2"><span class="n">02</span>Shift Left Pipeline</a>
                 <a href="#ch3"><span class="n">03</span>Developer Tools</a>
                 <a href="#ch4"><span class="n">04</span>Secure Container Images</a>
-                <a href="#ch5"><span class="n">05</span>Toolkit & Zones</a>
-                <a href="#ch6"><span class="n">06</span>Audit & Evidence</a>
+                <a href="#ch5"><span class="n">05</span>Toolkit &amp; Zones</a>
+                <a href="#ch6"><span class="n">06</span>Audit &amp; Evidence</a>
                 <a href="#ch7"><span class="n">07</span>Resilience</a>
                 <a href="#ch8"><span class="n">08</span>AI Assistants</a>
                 <a href="#ch9"><span class="n">09</span>Implementation Checklist</a>
@@ -1012,10 +1019,13 @@
             </nav>
         </aside>
 
+        <!-- ═══ MAIN ═══ -->
         <main>
+
+            <!-- ── HERO ── -->
             <div class="hero">
                 <p class="eyebrow">Internal Engineering Handbook</p>
-                <h1 class="title">The Developer's Guide<br>to DevSecOps</h1>
+                <h1 class="title">The Developer's Guide<br />to DevSecOps</h1>
                 <p class="lede">A secure, automated pipeline for our on-premise Kubernetes data platform — zero dollars in licensing, built on NIST, OWASP, and CIS.</p>
 
                 <div class="mission">
@@ -1023,7 +1033,7 @@
                     <p>We are building a secure, automated pipeline for our on-premise Kubernetes data platform. It costs zero dollars in licensing fees and follows industry gold standards like NIST, OWASP, and CIS.</p>
                 </div>
 
-                <!-- ROLE-BASED READING GUIDE (fix #3) -->
+                <!-- reading guide -->
                 <div class="reading-guide">
                     <div class="rg-col">
                         <span class="rg-label"><span class="badge">👨‍💻 App Developer</span></span>
@@ -1060,11 +1070,11 @@
                 </div>
             </div>
 
-            <!-- ============================================================ -->
-            <!-- CHAPTER 1 — unchanged                                          -->
-            <!-- ============================================================ -->
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- CHAPTER 1                                              -->
+            <!-- ════════════════════════════════════════════════════════ -->
             <section class="chapter" id="ch1">
-                <div class="chapter-head"><div class="chapter-num">01</div><h2>Team Rules & Security Culture <span class="sub-inline">— NIST SSDF</span></h2></div>
+                <div class="chapter-head"><div class="chapter-num">01</div><h2>Team Rules &amp; Security Culture <span class="sub-inline">— NIST SSDF</span></h2></div>
                 <p>Great tools don't matter if we don't have the right habits. This pipeline is built around the <b>NIST Secure Software Development Framework (SSDF)</b>, which focuses on four key areas: preparing our team, protecting our code, producing secure software, and responding to vulnerabilities.</p>
 
                 <h3>Ground Rules</h3>
@@ -1097,6 +1107,8 @@
                     <p style="margin-top:10px;">This isn't a full threat model — it's a 30-second pause. No tool catches this; it only happens if the habit is part of the culture.</p>
                     <p style="margin-top:10px;font-size:14px;"><i>Don't forget operational threats, not just design ones</i> — e.g., lateral movement after a breach, config drift after deployment, weak separation between prod and non-prod. These only become real once something is actually running.</p>
                     <p style="margin-top:10px;font-size:14px;">This is an informal version of a named methodology called <b>STRIDE</b> — the same thinking Threat Dragon (Ch2) uses formally. If your team ever needs something more specialized — privacy-focused (LINDDUN), resilience-focused (DIE), or AI/ML-specific (PLOT4ai) — Threat Dragon supports those too. Most teams never need to reach for them, but the option's there.</p>
+                    <!-- PASTA one-liner -->
+                    <p style="margin-top:10px;font-size:14px;">For teams needing formal business-risk quantification (e.g., pre-audit for financial regulators), <b>PASTA</b> is a more comprehensive 7-stage alternative — but most teams never need to reach for it.</p>
                 </div>
 
                 <h3>Exception-Management Template</h3>
@@ -1117,11 +1129,11 @@
                 </ul>
             </section>
 
-            <hr class="div">
+            <hr class="div" />
 
-            <!-- ============================================================ -->
-            <!-- CHAPTER 2 — unchanged                                          -->
-            <!-- ============================================================ -->
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- CHAPTER 2                                              -->
+            <!-- ════════════════════════════════════════════════════════ -->
             <section class="chapter" id="ch2">
                 <div class="chapter-head"><div class="chapter-num">02</div><h2>The Game Plan: "Shift Left"</h2></div>
                 <p>Our core strategy is simple: <b>catch bugs early</b>. Instead of waiting for a security audit right before launch, our tools check for issues while you're designing, coding, and building.</p>
@@ -1133,8 +1145,10 @@
                         <thead><tr><th>Phase</th><th>Tool</th><th>What it Does</th><th>Why it Matters</th></tr></thead>
                         <tbody>
                             <tr><td>1. Requirements</td><td>OWASP ASVS</td><td>Creates security checklists.</td><td>Sets clear security goals before we even write code.</td></tr>
-                            <tr><td>2. Design</td><td>Threat Dragon</td><td>Helps us map out potential threats.</td><td>Flushes out bad architectural ideas early.</td></tr>
-                            <tr><td>3. Code</td><td>SonarLint & Bearer CLI</td><td>Scans your code right in your IDE.</td><td>Acts like a spellchecker for bugs and data leaks.</td></tr>
+                            <!-- Design row: enhanced with STRIDE + LINDDUN note -->
+                            <tr><td>2. Design</td><td>Threat Dragon</td><td>Helps us map out potential threats using the <b>STRIDE</b> framework (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege) to systematically check every trust boundary in your architecture. <b>Threat Dragon runs STRIDE automatically</b> — when you select a process or data store in your diagram, the "suggested threats" feature applies the STRIDE categories to that element. You don't need a separate STRIDE tool. <b>Switch to LINDDUN</b> mode if your feature handles personal data or GDPR-regulated processing.</td>
+                            <td>Flushes out bad architectural ideas early.</td></tr>
+                            <tr><td>3. Code</td><td>SonarLint &amp; Bearer CLI</td><td>Scans your code right in your IDE.</td><td>Acts like a spellchecker for bugs and data leaks.</td></tr>
                             <tr><td>4. Pre-Commit</td><td>Checkov + Gitleaks</td><td>Checks for bad infra configs and pasted passwords.</td><td>Stops silly mistakes before they reach the main codebase.</td></tr>
                             <tr><td>5. Build</td><td>OWASP dep-scan <code>--deep</code></td><td>Scans app libraries AND the container OS.</td><td>One report of every ingredient and its known vulnerabilities.</td></tr>
                             <tr><td>6. Validate</td><td>OWASP ZAP</td><td>Tests the running app in a live environment (DAST).</td><td>Catches things code-scanners miss, like broken login flows.</td></tr>
@@ -1146,6 +1160,21 @@
                             <tr><td>12. Stream Hub</td><td>OpenObserve</td><td>Consolidated, low-resource log/metric database.</td><td>Ingests FluentBit/OTel streams into cheap Parquet storage at 10x less RAM.</td></tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- DREAD callout -->
+                <div class="callout callout--info" style="border-left-color:var(--amber);">
+                    <span class="tag" style="color:var(--amber);">Prioritizing Threats: DREAD</span>
+                    <p>After Threat Dragon identifies a threat, we score it with <b>DREAD</b> to decide which ones become tickets this sprint:</p>
+                    <ul style="margin:8px 0 0 20px;font-size:15px;">
+                        <li><b>D</b>amage — How bad is the impact? (1–10)</li>
+                        <li><b>R</b>eproducibility — How reliably can it be exploited? (1–10)</li>
+                        <li><b>E</b>xploitability — How easy is the attack? (1–10)</li>
+                        <li><b>A</b>ffected Users — How many users hit? (1–10)</li>
+                        <li><b>D</b>iscoverability — How easy is it to find? (1–10)</li>
+                    </ul>
+                    <p style="margin-top:10px;">Average = priority score. A threat scoring 8+ becomes a pre-coding ticket; 5–7 is post-MVP; below 5 is accepted risk with a note.</p>
+                    <p style="margin-top:6px;font-size:14px;color:var(--text-muted);"><i>Note: We drop "Discoverability" for design-time threats (security through obscurity is not a control).</i></p>
                 </div>
 
                 <div class="diagram">
@@ -1162,29 +1191,23 @@
                                 <stop offset="0%" stop-color="#10B981" stop-opacity="0.22"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.05"/>
                             </linearGradient>
                         </defs>
-
                         <rect x="40" y="60" width="230" height="90" rx="14" fill="url(#gradCommit)" stroke="#64748B" stroke-width="1.5"/>
                         <text x="155" y="90" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Commit</text>
                         <text x="155" y="110" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">Pre-commit hooks +</text>
                         <text x="155" y="125" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">dep-scan on build</text>
-
                         <line x1="270" y1="105" x2="313" y2="105" stroke="#5A6480" stroke-width="2" marker-end="url(#arrowEnv)"/>
-
                         <rect x="315" y="45" width="270" height="120" rx="14" fill="url(#gradTest)" stroke="#3B82F6" stroke-width="1.5"/>
                         <text x="450" y="75" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Dev Environment</text>
                         <text x="450" y="95" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">Fast, shallow check —</text>
                         <text x="450" y="111" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">OWASP ZAP against the branch</text>
                         <text x="450" y="132" text-anchor="middle" fill="#F59E0B" font-family="Inter" font-size="10.5" font-weight="600">Break build on failure</text>
-
                         <line x1="585" y1="105" x2="628" y2="105" stroke="#5A6480" stroke-width="2" marker-end="url(#arrowEnv)"/>
-
                         <rect x="630" y="40" width="270" height="130" rx="14" fill="url(#gradProd)" stroke="#10B981" stroke-width="1.5"/>
                         <text x="765" y="70" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Production</text>
                         <text x="765" y="90" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">Last gate — deep, full-app scan,</text>
                         <text x="765" y="106" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">not just the diff, right before</text>
                         <text x="765" y="122" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">real users see it</text>
                         <text x="765" y="143" text-anchor="middle" fill="#F59E0B" font-family="Inter" font-size="10.5" font-weight="600">Break build on failure</text>
-
                         <text x="470" y="200" text-anchor="middle" fill="#5A6480" font-family="Inter" font-size="11" font-style="italic">Two environments, two depths of check — same rule: nothing skips ahead on a failure.</text>
                     </svg>
                     <p class="diagram-caption">The same lifecycle from the table above, compressed to what most small teams actually run: one Dev environment, one Production environment.</p>
@@ -1213,11 +1236,11 @@
                 </ul>
             </section>
 
-            <hr class="div">
+            <hr class="div" />
 
-            <!-- ============================================================ -->
-            <!-- CHAPTER 3 — Developer Tools (was Ch4, moved up — fix #2)      -->
-            <!-- ============================================================ -->
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- CHAPTER 3                                              -->
+            <!-- ════════════════════════════════════════════════════════ -->
             <section class="chapter" id="ch3">
                 <div class="chapter-head"><div class="chapter-num">03</div><h2>Developer Tools <span class="sub-inline">— catching bugs before commit</span></h2></div>
                 <p>The cheapest time to fix a bug is while you're writing the code. We run two layers of protection:</p>
@@ -1250,29 +1273,25 @@
                         <defs>
                             <marker id="arrow4" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5A6480"/></marker>
                         </defs>
-
                         <rect x="20" y="16" width="720" height="214" rx="14" fill="#111826" stroke="#25314A" stroke-width="1.5"/>
                         <text x="400" y="36" text-anchor="middle" fill="#5A6480" font-family="Inter" font-size="10.5" font-weight="700" style="letter-spacing:1px">LOCAL DEV TOOLING — IDE &amp; PRE-COMMIT</text>
-
                         <text x="400" y="58" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11" font-weight="600">General-purpose</text>
                         <g>
                             <rect x="140" y="66" width="150" height="50" rx="8" fill="#161F30" stroke="#3B82F6" stroke-width="1.5"/>
                             <text x="215" y="87" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">Bearer CLI</text>
-                            <text x="215" y="103" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">privacy & data-leak scan</text>
+                            <text x="215" y="103" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">privacy &amp; data-leak scan</text>
                         </g>
                         <g>
                             <rect x="305" y="66" width="150" height="50" rx="8" fill="#161F30" stroke="#F59E0B" stroke-width="1.5"/>
                             <text x="380" y="87" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">SonarLint</text>
-                            <text x="380" y="103" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">code quality & bugs</text>
+                            <text x="380" y="103" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">code quality &amp; bugs</text>
                         </g>
                         <g>
                             <rect x="470" y="66" width="150" height="50" rx="8" fill="#161F30" stroke="#F43F5E" stroke-width="1.5"/>
                             <text x="545" y="87" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12" font-weight="700">Gitleaks</text>
-                            <text x="545" y="103" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">secret & credential scan</text>
+                            <text x="545" y="103" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5">secret &amp; credential scan</text>
                         </g>
-
                         <line x1="40" y1="132" x2="720" y2="132" stroke="#1B2434" stroke-width="1"/>
-
                         <text x="400" y="152" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11" font-weight="600">Language-specific</text>
                         <g>
                             <rect x="27" y="160" width="130" height="50" rx="8" fill="#161F30" stroke="#0EA5E9" stroke-width="1.5"/>
@@ -1299,9 +1318,8 @@
                             <text x="668" y="181" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="11.5" font-weight="700">ShellCheck</text>
                             <text x="668" y="197" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10">shell script linter</text>
                         </g>
-
                         <line x1="400" y1="230" x2="400" y2="300" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrow4)"/>
-                        <text x="400" y="270" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12" font-style="italic">auto-runs on save & at commit time</text>
+                        <text x="400" y="270" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12" font-style="italic">auto-runs on save &amp; at commit time</text>
                         <rect x="280" y="300" width="240" height="50" rx="25" fill="#10B981" opacity="0.15" stroke="#10B981" stroke-width="1.5"/>
                         <text x="400" y="331" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">Commit-Ready Code</text>
                     </svg>
@@ -1342,11 +1360,11 @@
                 </div>
             </section>
 
-            <hr class="div">
+            <hr class="div" />
 
-            <!-- ============================================================ -->
-            <!-- CHAPTER 4 — Secure Container Images (was Ch3, moved down — fix #2) -->
-            <!-- ============================================================ -->
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- CHAPTER 4                                              -->
+            <!-- ════════════════════════════════════════════════════════ -->
             <section class="chapter" id="ch4">
                 <div class="chapter-head"><div class="chapter-num">04</div><h2>Starting Safe: Secure Container Images</h2></div>
                 <p>Standard container images pulled by default from public hubs are bloated with extra tools like <code>curl</code> or <code>bash</code>. Hackers love these tools. We use stripped-down images instead:</p>
@@ -1384,14 +1402,13 @@
                 </ul>
             </section>
 
-            <hr class="div">
+            <hr class="div" />
 
-            <!-- ============================================================ -->
-            <!-- CHAPTER 5 — Toolkit & Zones (zone map + platform details)      -->
-            <!-- The CVE lifecycle has been moved to Ch6 (fix #1).             -->
-            <!-- ============================================================ -->
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- CHAPTER 5                                              -->
+            <!-- ════════════════════════════════════════════════════════ -->
             <section class="chapter" id="ch5">
-                <div class="chapter-head"><div class="chapter-num">05</div><h2>Our Security Toolkit & Where Everything Lives</h2></div>
+                <div class="chapter-head"><div class="chapter-num">05</div><h2>Our Security Toolkit &amp; Where Everything Lives</h2></div>
 
                 <div class="callout callout--info">
                     <span class="tag">In Short</span>
@@ -1472,9 +1489,7 @@
 
                 <p class="sub">Both hubs feed forward into later chapters: SecObserve's findings become the audit trail in Chapter 6, and OpenObserve's retention settings are what make the disaster-recovery drills in Chapter 7 provable rather than just assumed.</p>
 
-                <!-- ============================================================ -->
-                <!-- RUNTIME TELEMETRY FLOW — collapsed (stays in Ch5)             -->
-                <!-- ============================================================ -->
+                <!-- runtime telemetry flow -->
                 <details class="platform-detail">
                     <summary>▸ Platform-team detail: runtime telemetry flow</summary>
                     <div class="detail-body">
@@ -1499,7 +1514,6 @@
                                         <stop offset="0%" stop-color="#22D3EE" stop-opacity="0.14"/><stop offset="100%" stop-color="#22D3EE" stop-opacity="0.03"/>
                                     </linearGradient>
                                 </defs>
-
                                 <rect x="165" y="20" width="380" height="66" rx="14" fill="url(#gradSource)" stroke="#64748B" stroke-width="1.5"/>
                                 <g transform="translate(205,53)" stroke="#94A3B8" stroke-width="1.6" fill="none" stroke-linejoin="round">
                                     <path d="M0,-9 L8,-4.5 L8,4.5 L0,9 L-8,4.5 L-8,-4.5 Z"/>
@@ -1507,23 +1521,19 @@
                                 </g>
                                 <text x="365" y="49" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">KUBERNETES WORKLOAD ZONE</text>
                                 <text x="365" y="67" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11.5">Pod Workloads / Node Linux Kernel</text>
-
                                 <path d="M350,86 C350,104, 350,104, 350,112" fill="none" stroke="#5A6480" stroke-width="2"/>
                                 <path d="M350,112 C350,132, 232,128, 195,152" fill="none" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow5)"/>
                                 <path d="M350,112 C350,132, 468,128, 505,152" fill="none" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow5)"/>
-
                                 <rect x="188" y="104" width="100" height="22" rx="11" fill="#111826" stroke="#25314A" stroke-width="1"/>
                                 <text x="238" y="119" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5" font-style="italic">live log events</text>
                                 <rect x="412" y="104" width="112" height="22" rx="11" fill="#111826" stroke="#25314A" stroke-width="1"/>
                                 <text x="468" y="119" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5" font-style="italic">time-series metrics</text>
-
                                 <rect x="65" y="152" width="260" height="64" rx="14" fill="url(#gradCollect)" stroke="#22D3EE" stroke-width="1.5"/>
                                 <g transform="translate(95,184)" stroke="#22D3EE" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M-8,-6 L8,-6 L4,6 L-4,6 Z"/>
                                 </g>
                                 <text x="205" y="180" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">Log Shipper</text>
                                 <text x="205" y="198" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">Vector · FluentBit · Promtail</text>
-
                                 <rect x="375" y="152" width="260" height="64" rx="14" fill="url(#gradCollect)" stroke="#22D3EE" stroke-width="1.5"/>
                                 <g transform="translate(405,184)" stroke="#22D3EE" stroke-width="1.7" fill="none" stroke-linecap="round">
                                     <path d="M-7,5 C-7,-3 7,-3 7,5" />
@@ -1532,13 +1542,11 @@
                                 </g>
                                 <text x="515" y="180" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="12.5" font-weight="700">OpenObserve Collector</text>
                                 <text x="515" y="198" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11">cluster state + Tetragon counters</text>
-
                                 <path d="M205,216 C205,244, 300,254, 344,264" fill="none" stroke="#22D3EE" stroke-width="2" opacity="0.8"/>
                                 <path d="M515,216 C515,244, 400,254, 356,264" fill="none" stroke="#22D3EE" stroke-width="2" opacity="0.8"/>
                                 <path d="M350,262 C350,272, 350,272, 350,282" fill="none" stroke="#22D3EE" stroke-width="2.5" marker-end="url(#arrow5)"/>
                                 <rect x="418" y="248" width="128" height="24" rx="12" fill="#111826" stroke="#22D3EE" stroke-width="1"/>
                                 <text x="482" y="264" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="10.5" font-style="italic">OTLP / HTTP JSON</text>
-
                                 <rect x="80" y="286" width="540" height="234" rx="16" fill="url(#gradEngine)" stroke="#22D3EE" stroke-width="1.5"/>
                                 <g transform="translate(120,318)" stroke="#22D3EE" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <rect x="-10" y="-9" width="20" height="18" rx="3"/>
@@ -1549,32 +1557,27 @@
                                 <text x="360" y="316" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="17" font-weight="700">OPENOBSERVE</text>
                                 <text x="360" y="336" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">Single-Binary Rust Engine</text>
                                 <line x1="115" y1="354" x2="605" y2="354" stroke="#25314A" stroke-width="1"/>
-
                                 <g transform="translate(148,388)" stroke="#22D3EE" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M-9,-6 L9,-6 M-9,0 L9,0 M-9,6 L9,6"/>
                                     <path d="M-9,-9 L9,-9 L9,9 L-9,9 Z" opacity="0.5"/>
                                 </g>
                                 <text x="172" y="393" fill="#EAEEF7" font-family="Inter" font-size="13.5">Columnar Parquet file engine (MinIO / local)</text>
-
                                 <g transform="translate(148,426)" stroke="#22D3EE" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M-9,9 L-9,-2 M-3,9 L-3,-9 M3,9 L3,2 M9,9 L9,-6"/>
                                 </g>
                                 <text x="172" y="431" fill="#EAEEF7" font-family="Inter" font-size="13.5">Built-in visual dashboards (zero Grafana)</text>
-
                                 <g transform="translate(148,464)" stroke="#22D3EE" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M0,-9 C5,-9 7,-5 7,0 C7,4 8,6 9,7 L-9,7 C-8,6 -7,4 -7,0 C-7,-5 -5,-9 0,-9 Z"/>
                                     <path d="M-3,7 C-3,9.5 3,9.5 3,7"/>
                                 </g>
-                                <text x="172" y="469" fill="#EAEEF7" font-family="Inter" font-size="13.5">Real-time SQL alerting & PromQL engine</text>
+                                <text x="172" y="469" fill="#EAEEF7" font-family="Inter" font-size="13.5">Real-time SQL alerting &amp; PromQL engine</text>
                             </svg>
                             <p class="diagram-caption">A lightweight Log Shipper and the OpenObserve Collector converge into one analytics backend.</p>
                         </div>
                     </div>
                 </details>
 
-                <!-- ============================================================ -->
-                <!-- INFRASTRUCTURE CONTROLS — collapsed                            -->
-                <!-- ============================================================ -->
+                <!-- infrastructure controls -->
                 <details class="platform-detail">
                     <summary>▸ Platform-team detail: infrastructure controls</summary>
                     <div class="detail-body">
@@ -1600,16 +1603,14 @@
                     <p><span class="plabel">When to reach for it:</span> if you want AppArmor/SELinux enforcement authored as Kubernetes policy rather than hand-written per node, or your kernels support AppArmor/SELinux more cleanly than BPF-LSM. If Tetragon's TracingPolicies already cover your enforcement needs, there's no urgency to add it.</p>
                 </div>
             </section>
-            <!-- END CHAPTER 5 -->
 
-            <hr class="div">
+            <hr class="div" />
 
-            <!-- ============================================================ -->
-            <!-- CHAPTER 6 — Audit & Evidence (CVE lifecycle moved here — fix #1) -->
-            <!-- Replaced "Our Immediate Action Plan" with "Audit Readiness Scorecard" -->
-            <!-- ============================================================ -->
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- CHAPTER 6                                              -->
+            <!-- ════════════════════════════════════════════════════════ -->
             <section class="chapter" id="ch6">
-                <div class="chapter-head"><div class="chapter-num">06</div><h2>Proving It: Audit & Evidence</h2></div>
+                <div class="chapter-head"><div class="chapter-num">06</div><h2>Proving It: Audit &amp; Evidence</h2></div>
                 <p>It's not enough to say we're secure; we have to prove it to auditors and ourselves. Every tool we use generates evidence, feeding into two centralized hubs: <b>SecObserve</b> (static, point-in-time build findings) and <b>OpenObserve</b> (live, high-velocity stream analytics).</p>
 
                 <div class="callout callout--dev">
@@ -1622,17 +1623,17 @@
                     <table>
                         <thead><tr><th>Tool</th><th>What it Protects</th><th>The Proof it Creates</th><th>Where It Lives</th></tr></thead>
                         <tbody>
-                            <tr><td>ASVS & Threat Dragon</td><td>Planning & Design</td><td>Checklists and threat models tracked as tickets before coding begins.</td><td>Project Board</td></tr>
+                            <tr><td>ASVS &amp; Threat Dragon</td><td>Planning &amp; Design</td><td>Checklists and threat models tracked as tickets before coding begins.</td><td>Project Board</td></tr>
                             <tr><td style="white-space:normal;min-width:150px;line-height:1.5;">SonarLint · Bearer · ESLint · FindSecBugs · Bandit · gosec · ShellCheck</td><td>Local Code Safety</td><td>Local scan histories proving bugs were fixed before commit.</td><td>SCM / PR Logs</td></tr>
-                            <tr><td>Kube-bench / Checkov</td><td>Config & Compliance</td><td>Audit-ready reports on our app configs and Kubernetes settings.</td><td>SecObserve</td></tr>
+                            <tr><td>Kube-bench / Checkov</td><td>Config &amp; Compliance</td><td>Audit-ready reports on our app configs and Kubernetes settings.</td><td>SecObserve</td></tr>
                             <tr><td>OpenSCAP + STIG Viewer</td><td>Host Compliance</td><td>Audit-ready reports auditors already recognize.</td><td>SecObserve</td></tr>
                             <tr><td>Gitleaks</td><td>Secrets</td><td>Pipeline logs proving exposed keys were caught and rotated.</td><td>SecObserve</td></tr>
                             <tr><td>dep-scan <code>--deep</code></td><td>Supply Chain</td><td>SBOMs and vulnerability reports for libraries + base OS.</td><td>SecObserve</td></tr>
                             <tr><td>OWASP ZAP</td><td>Staging / DAST</td><td>Baseline scan reports proving the app was attack-tested.</td><td>SecObserve</td></tr>
                             <tr><td>Kyverno + Cosign</td><td>Deployment Policies</td><td>Logs of rejected deployments (root containers, missing signatures).</td><td>OpenObserve</td></tr>
                             <tr><td>Falco + Falcosidekick</td><td>Live Environment</td><td>Real-time anomaly and threat alerts routed to incident response.</td><td>OpenObserve</td></tr>
-                            <tr><td>Tetragon</td><td>Kernel & Process Integrity</td><td>Execution lineage, namespace logs, kernel-enforced <code>SIGKILL</code> trails.</td><td>OpenObserve</td></tr>
-                            <tr><td>Velero & etcd Snapshots</td><td>Disaster Recovery</td><td>Successful restore-drill logs as Proof of Protection.</td><td>SecObserve</td></tr>
+                            <tr><td>Tetragon</td><td>Kernel &amp; Process Integrity</td><td>Execution lineage, namespace logs, kernel-enforced <code>SIGKILL</code> trails.</td><td>OpenObserve</td></tr>
+                            <tr><td>Velero &amp; etcd Snapshots</td><td>Disaster Recovery</td><td>Successful restore-drill logs as Proof of Protection.</td><td>SecObserve</td></tr>
                             <tr><td>VEX Statements</td><td>Vulnerability Impact</td><td>A formal record of why a flagged CVE does or doesn't actually affect us — so "we saw it and made a call" is provable, not just assumed.</td><td>SecObserve</td></tr>
                         </tbody>
                     </table>
@@ -1645,7 +1646,30 @@
 
                 <p class="sub">The live telemetry flowing into OpenObserve gets similar rigor: compressed, append-only files on secure storage mean application teams can't alter or delete operational security records — an unalterable trail for forensic audits.</p>
 
-                <!-- === CVE LIFECYCLE — moved from Ch5 (fix #1) === -->
+                <!-- ── CVSS SECTION ── -->
+                <h3>How We Score Severity: CVSS</h3>
+                <p>Every vulnerability finding is scored using the industry-standard <b>CVSS</b> (Common Vulnerability Scoring System), producing a 0.0–10.0 rating:</p>
+
+                <div class="table-wrap" style="margin:10px 0 16px;">
+                    <table>
+                        <thead><tr><th>Range</th><th>Severity</th><th>What We Do</th></tr></thead>
+                        <tbody>
+                            <tr><td>0.0</td><td>None</td><td>Log only</td></tr>
+                            <tr><td>0.1–3.9</td><td>Low</td><td>Track, fix in next maintenance window</td></tr>
+                            <tr><td>4.0–6.9</td><td>Medium</td><td>Fix within current sprint</td></tr>
+                            <tr><td>7.0–8.9</td><td>High</td><td>Fix before production deployment</td></tr>
+                            <tr><td>9.0–10.0</td><td>Critical</td><td>Fix immediately; blocks all deploys</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p><b>Base Score</b> = intrinsic severity of the bug (exploitability, impact).<br />
+                <b>Environmental Score</b> = adjusted for our context (is the affected system internet-facing? does a compensating control exist?).</p>
+
+                <p>SecObserve consumes CVSS scores from dep-scan and ZAP automatically. When the Security Champion overrides a severity, the justification is logged as a VEX statement (see Evidence Matrix above).</p>
+                <!-- ── end CVSS section ── -->
+
+                <!-- === CVE LIFECYCLE === -->
                 <h3>The CVE Lifecycle <span class="sub-inline">— management by exception, not by meeting</span></h3>
                 <p class="sub"><i>30-second version:</i> most CVEs clear themselves automatically. Only a genuinely new HIGH/CRITICAL finding with no existing rule ever reaches a human.</p>
                 <p class="sub"><b>How it actually works:</b></p>
@@ -1668,54 +1692,41 @@
                         <defs>
                             <marker id="arrowCve3" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#5A6480"/></marker>
                         </defs>
-
                         <line x1="160" y1="172" x2="175" y2="172" stroke="#5A6480" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
                         <line x1="365" y1="172" x2="380" y2="172" stroke="#5A6480" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
                         <line x1="590" y1="172" x2="605" y2="172" stroke="#5A6480" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
                         <line x1="745" y1="172" x2="760" y2="105" stroke="#22D3EE" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
                         <line x1="745" y1="172" x2="760" y2="282" stroke="#10B981" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
-
                         <line x1="450" y1="216" x2="450" y2="310" stroke="#F59E0B" stroke-width="2.5" marker-end="url(#arrowCve3)"/>
                         <text x="450" y="266" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12" font-style="italic">no rule match</text>
-
                         <line x1="560" y1="310" x2="560" y2="216" stroke="#F59E0B" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#arrowCve3)"/>
                         <text x="560" y="266" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12" font-style="italic">adds rule</text>
-
                         <path d="M 380 342 C 220 342, 110 280, 90 208" fill="none" stroke="#94A3B8" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#arrowCve3)"/>
                         <text x="230" y="300" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12" font-style="italic">no easy fix — sent back to Commit</text>
-
                         <path d="M 760 300 C 640 340, 610 260, 590 205" fill="none" stroke="#3B82F6" stroke-width="2.5" stroke-dasharray="6 5" marker-end="url(#arrowCve3)"/>
                         <text x="700" y="365" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12.5" font-style="italic">scheduled rescan</text>
                         <text x="700" y="382" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12.5" font-style="italic">OWASP dep-scan</text>
-
                         <rect x="20" y="140" width="140" height="64" rx="10" fill="#161F30" stroke="#F97316" stroke-width="1.5"/>
                         <text x="90" y="168" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Commit</text>
                         <text x="90" y="187" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">dependency bump</text>
-
                         <rect x="175" y="140" width="190" height="64" rx="10" fill="#161F30" stroke="#3B82F6" stroke-width="1.5"/>
-                        <text x="270" y="168" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Build & Scan</text>
+                        <text x="270" y="168" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Build &amp; Scan</text>
                         <text x="270" y="187" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">OWASP dep-scan --deep</text>
-
                         <rect x="380" y="128" width="210" height="88" rx="14" fill="#8B5CF6" opacity="0.15" stroke="#8B5CF6" stroke-width="1.5"/>
                         <text x="485" y="160" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="15" font-weight="700">SecObserve</text>
                         <text x="485" y="180" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11.5">auto-triage · rule engine</text>
                         <text x="485" y="197" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="11.5">only new HIGH+ escalates ↓</text>
-
                         <polygon points="675,136 745,172 675,208 605,172" fill="#161F30" stroke="#94A3B8" stroke-width="1.5"/>
                         <text x="675" y="178" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="13.5" font-weight="700">Rollout</text>
-
                         <rect x="760" y="70" width="230" height="64" rx="10" fill="#161F30" stroke="#22D3EE" stroke-width="1.5" stroke-dasharray="6 4"/>
                         <text x="875" y="98" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Non-Productive</text>
                         <text x="875" y="117" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">no gate — always rolls out</text>
-
                         <rect x="760" y="250" width="230" height="64" rx="10" fill="#161F30" stroke="#10B981" stroke-width="1.5"/>
                         <text x="875" y="278" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Productive</text>
                         <text x="875" y="297" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">gated on CVE verdict</text>
-
                         <rect x="380" y="310" width="230" height="64" rx="10" fill="#161F30" stroke="#F59E0B" stroke-width="1.5"/>
                         <text x="495" y="338" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Security Champion</text>
                         <text x="495" y="357" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">one quick call: fix or suppress</text>
-
                         <line x1="40" y1="440" x2="72" y2="440" stroke="#5A6480" stroke-width="2.5"/>
                         <text x="80" y="444" fill="#95A1BC" font-family="Inter" font-size="12">automatic flow</text>
                         <line x1="290" y1="440" x2="322" y2="440" stroke="#F59E0B" stroke-width="2.5"/>
@@ -1734,21 +1745,18 @@
                 </div>
 
                 <p class="sub">One note on the CVE workflow above before moving on: automation bots might suggest fixes on your PRs, but only human engineers can approve them — the Security Champion's judgment call is never automated away, only the noise around it is.</p>
-                <!-- === end CVE lifecycle === -->
 
                 <h3>Evidence Management</h3>
                 <p><b>Automated Evidence Collection</b> — CI/CD attaches to each release artifact in SecObserve: SBOM, dep-scan report, Checkov report, Gitleaks report, ZAP baseline scan.</p>
                 <p><b>Retention Policy</b>:</p>
                 <ul>
-                    <li>Critical findings & kernel security logs — 7 years</li>
+                    <li>Critical findings &amp; kernel security logs — 7 years</li>
                     <li>High/Medium alerts — 2 years</li>
                     <li>Low/Informational — 1 year</li>
                 </ul>
                 <p><b>Read-Only Auditor Role</b> — external auditors get dedicated read-only access to SecObserve dashboards and OpenObserve SQL consoles, zero modify/delete permissions.</p>
 
-                <!-- ============================================================ -->
-                <!-- REPLACED: "Our Immediate Action Plan" → "Audit Readiness Scorecard" -->
-                <!-- ============================================================ -->
+                <!-- Audit Readiness Scorecard -->
                 <h3>Audit Readiness Scorecard <span class="sub-inline">— what we can prove today</span></h3>
                 <p class="sub">For each key control, we ask one question: <i>can we prove this to an auditor right now?</i> The answer determines what we're closing next — and ties every action back to the chapter's promise of <b>Proving It</b>.</p>
 
@@ -1805,11 +1813,11 @@
 
             </section>
 
-            <hr class="div">
+            <hr class="div" />
 
-            <!-- ============================================================ -->
-            <!-- CHAPTER 7 — unchanged                                          -->
-            <!-- ============================================================ -->
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- CHAPTER 7                                              -->
+            <!-- ════════════════════════════════════════════════════════ -->
             <section class="chapter" id="ch7">
                 <div class="chapter-head"><div class="chapter-num">07</div><h2>Bouncing Back <span class="sub-inline">— Resilience</span></h2></div>
                 <p>Disaster recovery is a core part of security. Even with every prevention tool running, things can still go wrong — a bad deploy, a hardware failure, a real attack. What matters is whether we can get back the data and systems we lost.</p>
@@ -1839,11 +1847,11 @@
                 </ul>
             </section>
 
-            <hr class="div">
+            <hr class="div" />
 
-            <!-- ============================================================ -->
-            <!-- CHAPTER 8 — unchanged                                          -->
-            <!-- ============================================================ -->
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- CHAPTER 8                                              -->
+            <!-- ════════════════════════════════════════════════════════ -->
             <section class="chapter" id="ch8">
                 <div class="chapter-head"><div class="chapter-num">08</div><h2>AI Assistants <span class="sub-inline">— helping, not taking over</span></h2></div>
                 <p class="sub"><i>In plain terms:</i> the AI can suggest a fix, draft a policy, or group related alerts together — but it never gets to click the final "approve," "merge," or "deploy" button. That's always a person.</p>
@@ -1875,7 +1883,6 @@
                         <defs>
                             <marker id="arrow8" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#5A6480"/></marker>
                             <marker id="arrow8b" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8B96AC"/></marker>
-
                             <linearGradient id="gradFind" x1="0" y1="0" x2="1" y2="1">
                                 <stop offset="0%" stop-color="#EF4444" stop-opacity="0.24"/><stop offset="100%" stop-color="#EF4444" stop-opacity="0.05"/>
                             </linearGradient>
@@ -1889,7 +1896,6 @@
                                 <stop offset="0%" stop-color="#10B981" stop-opacity="0.24"/><stop offset="100%" stop-color="#10B981" stop-opacity="0.05"/>
                             </linearGradient>
                         </defs>
-
                         <rect x="30" y="54" width="170" height="78" rx="14" fill="url(#gradFind)" stroke="#EF4444" stroke-width="1.5"/>
                         <circle cx="30" cy="54" r="15" fill="#EF4444" stroke="#111826" stroke-width="3"/>
                         <text x="30" y="59" text-anchor="middle" fill="#fff" font-family="Inter" font-size="13" font-weight="700">1</text>
@@ -1899,9 +1905,7 @@
                         </g>
                         <text x="80" y="88" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">FIND</text>
                         <text x="80" y="106" fill="#95A1BC" font-family="Inter" font-size="11">Scanner flags issue</text>
-
                         <line x1="200" y1="93" x2="243" y2="93" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow8)"/>
-
                         <rect x="245" y="54" width="170" height="78" rx="14" fill="url(#gradFix)" stroke="#8B5CF6" stroke-width="1.5"/>
                         <circle cx="245" cy="54" r="15" fill="#8B5CF6" stroke="#111826" stroke-width="3"/>
                         <text x="245" y="59" text-anchor="middle" fill="#fff" font-family="Inter" font-size="13" font-weight="700">2</text>
@@ -1917,9 +1921,7 @@
                         </g>
                         <text x="295" y="88" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">FIX</text>
                         <text x="295" y="106" fill="#95A1BC" font-family="Inter" font-size="11">Agent applies change</text>
-
                         <line x1="415" y1="93" x2="458" y2="93" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow8)"/>
-
                         <rect x="460" y="54" width="170" height="78" rx="14" fill="url(#gradVerify)" stroke="#3B82F6" stroke-width="1.5"/>
                         <circle cx="460" cy="54" r="15" fill="#3B82F6" stroke="#111826" stroke-width="3"/>
                         <text x="460" y="59" text-anchor="middle" fill="#fff" font-family="Inter" font-size="13" font-weight="700">3</text>
@@ -1928,10 +1930,8 @@
                             <path d="M-3,0.5 L-0.8,3 L3.3,-3" stroke-width="1.6"/>
                         </g>
                         <text x="510" y="88" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">VERIFY</text>
-                        <text x="510" y="106" fill="#95A1BC" font-family="Inter" font-size="11">Tests & policies</text>
-
+                        <text x="510" y="106" fill="#95A1BC" font-family="Inter" font-size="11">Tests &amp; policies</text>
                         <line x1="630" y1="93" x2="673" y2="93" stroke="#5A6480" stroke-width="2" marker-end="url(#arrow8)"/>
-
                         <rect x="675" y="54" width="170" height="78" rx="14" fill="url(#gradApprove)" stroke="#10B981" stroke-width="1.5"/>
                         <circle cx="675" cy="54" r="15" fill="#10B981" stroke="#111826" stroke-width="3"/>
                         <text x="675" y="59" text-anchor="middle" fill="#fff" font-family="Inter" font-size="13" font-weight="700">4</text>
@@ -1940,8 +1940,7 @@
                             <path d="M-6,8 C-6,2.5 6,2.5 6,8"/>
                         </g>
                         <text x="725" y="88" fill="#EAEEF7" font-family="Inter" font-size="13" font-weight="700">APPROVE</text>
-                        <text x="725" y="106" fill="#95A1BC" font-family="Inter" font-size="11">Reviews & merges</text>
-
+                        <text x="725" y="106" fill="#95A1BC" font-family="Inter" font-size="11">Reviews &amp; merges</text>
                         <path d="M 760 132 C 760 216, 115 216, 115 132" fill="none" stroke="#8B96AC" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow8b)"/>
                         <circle cx="437" cy="221" r="13" fill="#161F30" stroke="#8B96AC" stroke-width="1.3"/>
                         <text x="437" y="226" text-anchor="middle" fill="#8B96AC" font-family="Inter" font-size="14">&#8635;</text>
@@ -2016,23 +2015,20 @@
                     <p><span class="plabel">Where it fits:</span> as a ninth local scanner alongside the ones in Chapter 3, but scoped specifically to any repo that defines or orchestrates agent behavior — not something every service needs. Small org, limited history; treat findings as a useful second opinion for now rather than an authoritative gate.</p>
                 </div>
 
-                <!-- footnotes for Chapter 8 citations (fix #5) -->
+                <!-- footnotes for Chapter 8 citations -->
                 <div class="footnotes" id="fn1">
                     <p><span class="fn-label">[1]</span> Tony, C., et al. <i>"Recursive Criticism and Improvement (RCI) for LLM Code Generation."</i> ACM Transactions on Software Engineering and Methodology (TOSEM), 2025. The study found a 77.5% reduction in vulnerability density for GPT-4 under RCI prompting compared to zero-shot generation. <a href="#fnref1" style="font-size:12px;">↩</a></p>
                 </div>
             </section>
 
-            <hr class="div">
+            <hr class="div" />
 
-            <!-- ============================================================ -->
-            <!-- CHAPTER 9 — moved "Current Gaps" preamble to top              -->
-            <!-- ============================================================ -->
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- CHAPTER 9                                              -->
+            <!-- ════════════════════════════════════════════════════════ -->
             <section class="chapter" id="ch9">
                 <div class="chapter-head"><div class="chapter-num">09</div><h2>Step-by-Step Implementation Checklist</h2></div>
 
-                <!-- ============================================================ -->
-                <!-- NEW: "Current Gaps" preamble — moved from Ch6                 -->
-                <!-- ============================================================ -->
                 <div class="callout callout--rule" style="margin-bottom:28px;">
                     <span class="tag">Why These Steps?</span>
                     <p>Each step in the roadmap below closes one of the evidence gaps identified in Chapter 6. The table below shows the full set of gaps we're addressing — think of it as the "before" picture that the 7-step roadmap turns into the "after."</p>
@@ -2060,7 +2056,7 @@
                     <div class="step">
                         <div class="step-marker">1</div>
                         <div class="step-content">
-                            <div class="step-title">Foundations & Code Security Gatekeeping <a href="#ch1" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.1 & Ch.3</a></div>
+                            <div class="step-title">Foundations &amp; Code Security Gatekeeping <a href="#ch1" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.1 &amp; Ch.3</a></div>
                             <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> make sure a bad commit can't quietly slip into the codebase. <span style="color:var(--text-faint);font-size:12px;">— Quick win, mostly configuration</span></p>
                             <ul class="step-list">
                                 <li><span class="step-check"></span><span><b>Org-Wide MFA</b> — across all SCM accounts.</span></li>
@@ -2069,6 +2065,7 @@
                                 <li><span class="step-check"></span><span><b>Dependency Vetting Habit</b> — run <code>dep-scan</code> ad hoc before adding any new third-party library, alongside a quick check of its repo health and GitHub Security tab.</span></li>
                                 <li><span class="step-check"></span><span><b>Pre-Commit Enforcement</b> — shared config, CI verifies hooks ran.</span></li>
                                 <li><span class="step-check"></span><span><b>Vulnerability Management Engine</b> — stand up SecObserve as the central static reporting hub.</span></li>
+                                <li><span class="step-check"></span><span><b>Threat Modeling Habit</b> — run one Threat Dragon STRIDE session per major feature before coding starts.</span></li>
                             </ul>
                         </div>
                     </div>
@@ -2076,7 +2073,7 @@
                     <div class="step">
                         <div class="step-marker">2</div>
                         <div class="step-content">
-                            <div class="step-title">CI/CD Guardrails & Software Supply Chain <a href="#ch2" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.2</a></div>
+                            <div class="step-title">CI/CD Guardrails &amp; Software Supply Chain <a href="#ch2" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.2</a></div>
                             <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> catch bad dependencies and missing SBOMs before they reach a build artifact. <span style="color:var(--text-faint);font-size:12px;">— 1–2 weeks</span></p>
                             <ul class="step-list">
                                 <li><span class="step-check"></span><span><b>Pipeline Manifest Scanning</b> — Checkov + Gitleaks in unskippable CI loops.</span></li>
@@ -2090,7 +2087,7 @@
                     <div class="step">
                         <div class="step-marker">3</div>
                         <div class="step-content">
-                            <div class="step-title">Core Platform Ingress & Cluster Admission <a href="#ch5" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.5</a></div>
+                            <div class="step-title">Core Platform Ingress &amp; Cluster Admission <a href="#ch5" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.5</a></div>
                             <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> stop untrusted traffic and non-compliant deployments at the front door. <span style="color:var(--text-faint);font-size:12px;">— 1–2 weeks</span></p>
                             <ul class="step-list">
                                 <li><span class="step-check"></span><span><b>Edge Hardening</b> — HTTPS redirect, HSTS, CSP, TLS 1.3 at ingress.</span></li>
@@ -2117,7 +2114,7 @@
                     <div class="step">
                         <div class="step-marker">5</div>
                         <div class="step-content">
-                            <div class="step-title">Runtime Shielding & Kernel Enforcement <a href="#ch5" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.5</a></div>
+                            <div class="step-title">Runtime Shielding &amp; Kernel Enforcement <a href="#ch5" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.5</a></div>
                             <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> detect and stop malicious behavior in a container that's already running. <span style="color:var(--text-faint);font-size:12px;">— 2–3 weeks, includes a 7-day observation period</span></p>
                             <ul class="step-list">
                                 <li><span class="step-check"></span><span><b>Behavioral Auditing</b> — Falco + Falcosidekick, alerts to team messaging.</span></li>
@@ -2132,7 +2129,7 @@
                     <div class="step">
                         <div class="step-marker">6</div>
                         <div class="step-content">
-                            <div class="step-title">Image Provenance & Platform Hardening <a href="#ch4" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.4</a></div>
+                            <div class="step-title">Image Provenance &amp; Platform Hardening <a href="#ch4" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.4</a></div>
                             <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> prove every image is exactly what we built, and keep it patched. <span style="color:var(--text-faint);font-size:12px;">— 2–3 weeks</span></p>
                             <ul class="step-list">
                                 <li><span class="step-check"></span><span><b>Secrets Lifecycle</b> — roll out HashiCorp Vault, remove plain-text configs.</span></li>
@@ -2147,7 +2144,7 @@
                     <div class="step">
                         <div class="step-marker">7</div>
                         <div class="step-content">
-                            <div class="step-title">Disaster Resilience & Autonomous Operations <a href="#ch7" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.7 & Ch.8</a></div>
+                            <div class="step-title">Disaster Resilience &amp; Autonomous Operations <a href="#ch7" style="font-size:12px;font-weight:500;color:var(--accent);">→ Ch.7 &amp; Ch.8</a></div>
                             <p class="sub" style="margin:0 0 12px;font-size:14px;"><i>Goal:</i> make sure a bad day doesn't become a permanent loss, and set safe boundaries for AI helpers. <span style="color:var(--text-faint);font-size:12px;">— Ongoing</span></p>
                             <ul class="step-list">
                                 <li><span class="step-check"></span><span><b>Disaster Recovery Pipelines</b> — daily snapshots for etcd, Velero volumes, databases.</span></li>
@@ -2162,11 +2159,11 @@
                 </div>
             </section>
 
-            <hr class="div">
+            <hr class="div" />
 
-            <!-- ============================================================ -->
-            <!-- CHAPTER 10 — unchanged                                        -->
-            <!-- ============================================================ -->
+            <!-- ════════════════════════════════════════════════════════ -->
+            <!-- CHAPTER 10                                             -->
+            <!-- ════════════════════════════════════════════════════════ -->
             <section class="chapter" id="ch10">
                 <div class="chapter-head"><div class="chapter-num">10</div><h2>Acronyms</h2></div>
                 <dl class="glossary">
@@ -2181,9 +2178,11 @@
                     <div class="gterm"><dt>CRA</dt><dd>Cyber Resilience Act (EU)</dd></div>
                     <div class="gterm"><dt>CSP</dt><dd>Content Security Policy</dd></div>
                     <div class="gterm"><dt>CVE</dt><dd>Common Vulnerabilities and Exposures</dd></div>
+                    <div class="gterm"><dt>CVSS</dt><dd>Common Vulnerability Scoring System</dd></div>
                     <div class="gterm"><dt>DAST</dt><dd>Dynamic Application Security Testing</dd></div>
                     <div class="gterm"><dt>DB</dt><dd>Database</dd></div>
                     <div class="gterm"><dt>DMZ</dt><dd>Demilitarized Zone (a buffer network between untrusted and trusted zones)</dd></div>
+                    <div class="gterm"><dt>DREAD</dt><dd>Damage, Reproducibility, Exploitability, Affected Users, Discoverability — a threat-prioritization framework</dd></div>
                     <div class="gterm"><dt>eBPF</dt><dd>Extended Berkeley Packet Filter (lets tools like Tetragon watch/control the kernel safely)</dd></div>
                     <div class="gterm"><dt>ELK</dt><dd>Elasticsearch, Logstash, Kibana (the logging stack OpenObserve replaced)</dd></div>
                     <div class="gterm"><dt>EOL</dt><dd>End of Life (a software version no longer receiving updates)</dd></div>
@@ -2192,6 +2191,7 @@
                     <div class="gterm"><dt>HTTP</dt><dd>HyperText Transfer Protocol</dd></div>
                     <div class="gterm"><dt>IaC</dt><dd>Infrastructure as Code</dd></div>
                     <div class="gterm"><dt>IDE</dt><dd>Integrated Development Environment (your code editor)</dd></div>
+                    <div class="gterm"><dt>LINDDUN</dt><dd>Privacy threat modeling framework (Linkability, Identifiability, Non-repudiation, Detectability, Disclosure, Unawareness, Non-compliance) — supported by Threat Dragon</dd></div>
                     <div class="gterm"><dt>LLM</dt><dd>Large Language Model</dd></div>
                     <div class="gterm"><dt>LSM</dt><dd>Linux Security Module (the kernel framework AppArmor, SELinux, and BPF-LSM plug into; see KubeArmor, Ch.5)</dd></div>
                     <div class="gterm"><dt>MAC</dt><dd>Mandatory Access Control (the model behind AppArmor and SELinux; access is denied unless a policy explicitly permits it)</dd></div>
@@ -2201,6 +2201,7 @@
                     <div class="gterm"><dt>OS</dt><dd>Operating System</dd></div>
                     <div class="gterm"><dt>OTLP</dt><dd>OpenTelemetry Protocol (a standard format for shipping logs/metrics)</dd></div>
                     <div class="gterm"><dt>OWASP</dt><dd>Open Web Application Security Project (nonprofit behind most free security standards we use)</dd></div>
+                    <div class="gterm"><dt>PASTA</dt><dd>Process for Attack Simulation and Threat Analysis — a 7-stage business-risk quantification methodology</dd></div>
                     <div class="gterm"><dt>PII</dt><dd>Personally Identifiable Information</dd></div>
                     <div class="gterm"><dt>PR</dt><dd>Pull Request</dd></div>
                     <div class="gterm"><dt>PSA</dt><dd>Pod Security Admission (built-in Kubernetes API server check against fixed Pod Security Standards profiles)</dd></div>
@@ -2216,6 +2217,7 @@
                     <div class="gterm"><dt>SPDX</dt><dd>Software Package Data Exchange (an SBOM format)</dd></div>
                     <div class="gterm"><dt>SSDF</dt><dd>Secure Software Development Framework (NIST)</dd></div>
                     <div class="gterm"><dt>STIG</dt><dd>Security Technical Implementation Guide</dd></div>
+                    <div class="gterm"><dt>STRIDE</dt><dd>Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege — the threat-categorization framework behind Threat Dragon</dd></div>
                     <div class="gterm"><dt>TLS</dt><dd>Transport Layer Security</dd></div>
                     <div class="gterm"><dt>VEX</dt><dd>Vulnerability Exploitability eXchange</dd></div>
                     <div class="gterm"><dt>WORM</dt><dd>Write Once, Read Many (storage that can't be edited or deleted)</dd></div>
@@ -2258,11 +2260,10 @@
 
         sections.forEach(s => observer.observe(s));
 
-        // === FIX #4: Mobile drawer closes on link click ===
+        // Mobile drawer closes on link click
         const sidebar = document.querySelector('.sidebar');
         const menuBtn = document.querySelector('.menu-btn');
 
-        // Close drawer when a TOC link is clicked
         document.querySelectorAll('nav.toc a').forEach(link => {
             link.addEventListener('click', () => {
                 if (window.innerWidth <= 940) {
@@ -2271,7 +2272,6 @@
             });
         });
 
-        // Close drawer when clicking outside it (optional UX polish)
         document.addEventListener('click', (e) => {
             if (window.innerWidth <= 940) {
                 const isOpen = sidebar.classList.contains('open');
@@ -2282,7 +2282,6 @@
             }
         });
 
-        // Ensure sidebar starts closed on mobile page load
         if (window.innerWidth <= 940) {
             sidebar.classList.remove('open');
         }
