@@ -1026,11 +1026,11 @@
             <div class="hero">
                 <p class="eyebrow">Internal Engineering Handbook</p>
                 <h1 class="title">The Developer's Guide<br />to DevSecOps</h1>
-                <p class="lede">A secure, automated pipeline for our on-premise Kubernetes data platform — zero dollars in licensing, built on NIST, OWASP, and CIS.</p>
+                <p class="lede">A secure, automated pipeline for our on-premise Kubernetes data platform — no cost in licensing, built on NIST, OWASP, and CIS.</p>
 
                 <div class="mission">
                     <span class="tag">GOAL</span>
-                    <p>We are building a secure, automated pipeline for our on-premise Kubernetes data platform. It costs zero dollars in licensing fees and follows industry gold standards like NIST, OWASP, and CIS.</p>
+                    <p>We are building a secure, automated pipeline for our on-premise Kubernetes data platform. It has no licensing fees and follows industry gold standards like NIST, OWASP, and CIS.</p>
                 </div>
 
                 <!-- reading guide -->
@@ -1074,8 +1074,8 @@
             <!-- CHAPTER 1                                              -->
             <!-- ════════════════════════════════════════════════════════ -->
             <section class="chapter" id="ch1">
-                <div class="chapter-head"><div class="chapter-num">01</div><h2>Team Rules &amp; Security Culture <span class="sub-inline">— NIST SSDF</span></h2></div>
-                <p>Great tools don't matter if we don't have the right habits. This pipeline is built around the <b>NIST Secure Software Development Framework (SSDF)</b>, which focuses on four key areas: preparing our team, protecting our code, producing secure software, and responding to vulnerabilities.</p>
+                <d iv class="chapter-head"><div class="chapter-num">01</div><h2>Team Rules &amp; Security Culture <span class="sub-inline">— NIST SSDF</span></h2></div>
+               <p>This pipeline is built around the <b>NIST Secure Software Development Framework (SSDF)</b>, which focuses on four key areas: preparing our team, protecting our code, producing secure software, and responding to vulnerabilities. SSDF implements the <b>Protect</b> and <b>Detect</b> functions of the broader <b>NIST Cybersecurity Framework (CSF)</b> — the organization-wide standard our security leadership reports against.</p>
 
                 <h3>Ground Rules</h3>
                 <ul>
@@ -1150,7 +1150,7 @@
                             <td>Flushes out bad architectural ideas early.</td></tr>
                             <tr><td>3. Code</td><td>SonarLint &amp; Bearer CLI</td><td>Scans your code right in your IDE.</td><td>Acts like a spellchecker for bugs and data leaks.</td></tr>
                             <tr><td>4. Pre-Commit</td><td>Checkov + Gitleaks</td><td>Checks for bad infra configs and pasted passwords.</td><td>Stops silly mistakes before they reach the main codebase.</td></tr>
-                            <tr><td>5. Build</td><td>OWASP dep-scan <code>--deep</code></td><td>Scans app libraries AND the container OS.</td><td>One report of every ingredient and its known vulnerabilities.</td></tr>
+                            <tr><td>5. Build</td><td>OWASP dep-scan <code>--deep</code> · Opengrep</td><td>dep-scan scans app libraries AND the container OS. Opengrep runs an interfile taint analysis, tracing untrusted input (e.g. <code>req.body</code>) through function and file boundaries to the dangerous sink it ends up at — SQL injection, XSS, command injection.</td><td>One report of every ingredient and its known vulnerabilities, plus the class of bug that only shows up once you follow data across the whole app, not just one file.</td></tr>
                             <tr><td>6. Validate</td><td>OWASP ZAP</td><td>Tests the running app in a live environment (DAST).</td><td>Catches things code-scanners miss, like broken login flows.</td></tr>
                             <tr><td>7. Govern</td><td>SecObserve</td><td>Central dashboard for all static security alerts.</td><td>Keeps build-time and dependency bugs organized so they get fixed.</td></tr>
                             <tr><td>8. Deploy</td><td>Kyverno + Cosign</td><td>Checks K8s manifests, verifies image signatures.</td><td>Admission webhook: validates, mutates, or rejects manifests against custom policy before they're persisted to <code>etcd</code>.</td></tr>
@@ -1160,6 +1160,11 @@
                             <tr><td>12. Stream Hub</td><td>OpenObserve</td><td>Consolidated, low-resource log/metric database.</td><td>Ingests FluentBit/OTel streams into cheap Parquet storage at 10x less RAM.</td></tr>
                         </tbody>
                     </table>
+                </div>
+
+                <div class="callout callout--info" style="border-left-color:#22D3EE;">
+                    <span class="tag" style="color:#22D3EE;">Why Opengrep, not "just add Semgrep"</span>
+                    <p>Semgrep's free CLI (the LGPL-licensed Community Edition) only analyzes one file at a time — it does not follow tainted data across a file boundary. That capability was moved behind Semgrep's paid Pro tier in late 2024. <b>Opengrep</b> is a community fork of the pre-2024 codebase that kept cross-file taint tracking open source, which is why it — not Semgrep CE — is what closes this gap for free. It runs in the Build stage above, not on your laptop: interfile analysis is memory- and time-heavy, so it belongs in CI, not a pre-commit hook.</p>
                 </div>
 
                 <!-- DREAD callout -->
@@ -1343,6 +1348,8 @@
                     </table>
                 </div>
 
+                <p class="sub" style="font-size:14px;"><i>Why isn't Opengrep in this list?</i> Everything above is intentionally fast — single-file, single-function checks that return in under a second so they're not annoying to run on every save. Tracing tainted data across files needs more time and memory than that. It's still part of your protection, just one stage later — see the Build stage in Chapter 2.</p>
+
                 <h3>Developer Environment Controls</h3>
                 <ul>
                     <li><b>IDE Config-as-Code</b> — share SonarLint/ESLint/Bandit/gosec rules as code in <code>.vscode/</code> or <code>.idea/</code>.</li>
@@ -1420,7 +1427,7 @@
                 <div class="zone-grid">
                     <div class="zone"><span class="zname">Planning Zone</span><p>OWASP ASVS and Threat Dragon figure out what needs to be secured before we start typing — the checklist and threat model a PR gets judged against later.</p></div>
                     <div class="zone"><span class="zname">Workstation Zone — Your Laptop</span><p>SonarLint, Bearer CLI, Bandit, gosec, ShellCheck, and Gitleaks keep your local environment safe, catching the same classes of bug CI would — just before you've pushed anything.</p></div>
-                    <div class="zone"><span class="zname">Pipeline Zone — CI/CD</span><p>Checkov scans Terraform/Helm, Gitleaks double-checks for passwords, dep-scan <code>--deep</code> checks libraries and the base image OS. Nothing here is optional — this is the unskippable gate from Chapter 3.</p></div>
+                    <div class="zone"><span class="zname">Pipeline Zone — CI/CD</span><p>Checkov scans Terraform/Helm, Gitleaks double-checks for passwords, dep-scan <code>--deep</code> checks libraries and the base image OS, and Opengrep traces tainted input across functions and files to catch injection flaws (SQLi, XSS, command injection) that single-file scanners structurally can't see. Nothing here is optional — this is the unskippable gate from Chapter 3.</p></div>
                     <div class="zone"><span class="zname">Staging Zone</span><p>OWASP ZAP attacks our staging app to find runtime holes — broken auth flows, misconfigured headers, injection points — that no static scanner upstream can see, because they only exist once the app is actually running.</p></div>
                     <div class="zone" style="grid-column:1 / -1;"><span class="zname">Edge Zone — Ingress / Load Balancer</span><p>Before traffic reaches the cluster we enforce HTTPS redirect, HSTS, CSP, and TLS 1.3, and publish <code>security.txt</code>. Baseline config, not a scan — set once per app, closing the exact holes ZAP would otherwise keep flagging in Staging.</p></div>
                 </div>
@@ -1629,6 +1636,7 @@
                             <tr><td>OpenSCAP + STIG Viewer</td><td>Host Compliance</td><td>Audit-ready reports auditors already recognize.</td><td>SecObserve</td></tr>
                             <tr><td>Gitleaks</td><td>Secrets</td><td>Pipeline logs proving exposed keys were caught and rotated.</td><td>SecObserve</td></tr>
                             <tr><td>dep-scan <code>--deep</code></td><td>Supply Chain</td><td>SBOMs and vulnerability reports for libraries + base OS.</td><td>SecObserve</td></tr>
+                            <tr><td>Opengrep</td><td>Cross-File Injection Flaws</td><td>Interfile taint-tracking reports showing untrusted input was traced to its sink — and either fixed or knowingly accepted.</td><td>SecObserve</td></tr>
                             <tr><td>OWASP ZAP</td><td>Staging / DAST</td><td>Baseline scan reports proving the app was attack-tested.</td><td>SecObserve</td></tr>
                             <tr><td>Kyverno + Cosign</td><td>Deployment Policies</td><td>Logs of rejected deployments (root containers, missing signatures).</td><td>OpenObserve</td></tr>
                             <tr><td>Falco + Falcosidekick</td><td>Live Environment</td><td>Real-time anomaly and threat alerts routed to incident response.</td><td>OpenObserve</td></tr>
@@ -2078,6 +2086,7 @@
                             <ul class="step-list">
                                 <li><span class="step-check"></span><span><b>Pipeline Manifest Scanning</b> — Checkov + Gitleaks in unskippable CI loops.</span></li>
                                 <li><span class="step-check"></span><span><b>Dependency Triage</b> — OWASP dep-scan <code>--deep</code> in build pipelines.</span></li>
+                                <li><span class="step-check"></span><span><b>Cross-File Taint Analysis</b> — Opengrep in CI, tracing untrusted input across functions and files to catch injection flaws (SQLi, XSS, command injection) local per-language linters can't see.</span></li>
                                 <li><span class="step-check"></span><span><b>SBOM</b> — CycloneDX or SPDX generated on every production build.</span></li>
                                 <li><span class="step-check"></span><span><b>Dynamic Application Testing</b> — OWASP ZAP against a live environment on every deploy.</span></li>
                             </ul>
