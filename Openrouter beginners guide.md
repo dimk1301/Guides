@@ -6,17 +6,18 @@
 ## 📋 Table of Contents
 1. [What Is OpenRouter? (And How It Differs from Perplexity)](#what-is-openrouter)
 2. [Account Setup & Your €10 Budget Strategy](#account-setup)
-3. [🏷️ How to Use Model Suffixes: The Complete Practical Guide](#suffixes)
-4. [Need 1: Web Chat](#need-1-web-chat)
-5. [Need 2: Deep Research in Web Chat](#need-2-deep-research)
-6. [Need 3: Summarize & Explain Articles](#need-3-summarize)
-7. [Need 4: Create Markdown & HTML Guides](#need-4-guides)
-8. [Need 5: Coding with Claude Code & Kiro CLI](#need-5-coding)
-9. [Need 6: YouTube Transcript Translation to Greek](#need-6-youtube)
-10. [Token Efficiency: How to Stretch €10 Across a Month](#token-efficiency)
-11. [Weekly Budget Tracker & Model Cheat Sheet](#cheat-sheet)
+3. [How to Choose a Model (Web Chat & Everywhere)](#how-to-choose)
+4. [🏷️ How to Use Model Suffixes: The Complete Practical Guide](#suffixes)
+5. [Need 1: Web Chat](#need-1-web-chat)
+6. [Need 2: Deep Research in Web Chat](#need-2-deep-research)
+7. [Need 3: Summarize & Explain Articles](#need-3-summarize)
+8. [Need 4: Create Markdown & HTML Guides](#need-4-guides)
+9. [Need 5: Coding with Claude Code & Kiro CLI](#need-5-coding)
+10. [Need 6: YouTube Transcript Translation to Greek](#need-6-youtube)
+11. [Token Efficiency: How to Stretch €10 Across a Month](#token-efficiency)
+12. [Weekly Budget Tracker & Model Cheat Sheet](#cheat-sheet)
 
-*Read top to bottom on first pass: sections 1–2 get you oriented and set up, section 3 is a suffix reference you can skim now and return to later, and sections 4–11 walk through each of the six needs plus budget management.*
+*Read top to bottom on first pass: sections 1–2 get you oriented and set up, section 3 helps you decide which model to use for what, section 4 is a suffix reference you can skim now and return to later, and sections 5–12 walk through each of the six needs plus budget management.*
 
 ---
 
@@ -78,9 +79,47 @@ Before spending anything, you get:
 
 ---
 
+<a id="how-to-choose"></a>
+
+## 3. How to Choose a Model (Web Chat & Everywhere)
+
+Section 4 (next) tells you *how* to apply a model choice once you've made it — where to type a suffix, which box, which config field. This section covers the part that's usually harder for beginners: figuring out **which model to reach for in the first place**.
+
+### The three questions to ask, in order
+
+1. **What kind of task is this?** (chat, coding, summarization, guide-writing, research, translation)
+2. **How much does it matter if the answer is slightly wrong?** Low-stakes (drafting, brainstorming, "explain this to me") vs. high-stakes (something you'll publish, send to a client, or act on without double-checking).
+3. **Does the model need to do anything beyond generate text?** — call tools/functions, read an image, or hold a huge amount of context in one go. Not every model can, especially not every free model.
+
+### Quick decision table
+
+| Your task | Start here (free) | If it's rate-limited or not good enough | Skip straight to a paid/premium model when |
+|---|---|---|---|
+| Casual chat / quick Q&A | General free model (e.g. Llama 3.3 70B, GPT-OSS 20B) | Same model with `:floor` | Rarely needed — this is exactly what the free tier is for |
+| Coding drafts, boilerplate | Free coding model (e.g. Laguna M.1, North Mini Code) | Cheap paid (`ling-2.6-flash`, `gpt-oss-120b`) | Complex multi-file debugging, production-bound code, or anything security-sensitive |
+| Summarizing / explaining long text | Free long-context model (e.g. Nemotron Ultra, 1M context) | `:floor` on the same model | Rarely needed — the free 1M-context models handle most articles and PDFs |
+| Guide / documentation generation | Free instruct/coding model | Cheap paid model for a final polish pass | The output is client-facing or going to be published |
+| Multi-step research | Free web search toggle in the chatroom | Paid search plugin (Exa/Perplexity, ~$0.005–0.015/request) | You need structured, citation-heavy output at real volume |
+| Translation | Free multilingual model (e.g. Gemma 4) | `:floor` if quality is off | Literary/idiomatic translation you're going to publish |
+| Anything you'll actually rely on | — | — | **Always** run a final pass on a premium model (Claude/GPT-tier) before you ship it, no matter how you got there |
+
+This table condenses the per-task recommendations spread through Sections 5–10 (Need 1–6) — those sections still list specific model names for each task; this is the "which row do I start from" version that ties them together.
+
+### How to actually browse models — not just type a memorized slug
+
+Section 4.1 shows you how to *type* a model+suffix once you already know what you want. Before that:
+
+- **`openrouter.ai/models`** lets you filter by price ("Free"), sort by context length or popularity, and see each model's context window and per-token price before you commit to it — don't just copy slugs from a cheat sheet without a look.
+- The **in-chat model dropdown** shows the same price/context info inline. It's worth scrolling it once to see what's actually there, rather than only ever typing exact slugs from memory.
+- If a model's description mentions "tool calling," "function calling," or "vision," that's your signal it can do more than plain chat — relevant if you want it to browse the web, read an image, or produce structured output. Not every free model supports these; check before you build a workflow around one.
+
+> ⚠️ **Free models rotate.** OpenRouter's free lineup changes often — models get added, retired, or moved to paid pricing without much notice. Treat every model name in this guide (including the cheat sheet in Section 12) as a snapshot, not a permanent list. If a model named here is missing or no longer free when you look, check `openrouter.ai/models` filtered to "Free" for its current replacement.
+
+---
+
 <a id="suffixes"></a>
 
-## 3. 🏷️ How to Use Model Suffixes: The Complete Practical Guide
+## 4. 🏷️ How to Use Model Suffixes: The Complete Practical Guide
 
 Model suffixes are the **#1 money-saving feature** on OpenRouter, but beginners often miss them because they're not obvious in the interface. This chapter shows you **exactly** where to type them and what happens.
 
@@ -94,13 +133,13 @@ Model suffixes are the **#1 money-saving feature** on OpenRouter, but beginners 
 | `:floor` | Routes to the cheapest paid provider | When free is rate-limited or unavailable |
 | `:nitro` | Routes to the fastest provider | When speed matters more than cost |
 
-> ⚠️ **There is no `:auto` suffix.** You can't append `:auto` to a model slug — OpenRouter will reject it. "Let OpenRouter pick the best model for me" is a *different feature* called `openrouter/auto`, which you use as its own model (not as a suffix on another model). See **Section 3.6** below for how it actually works.
+> ⚠️ **There is no `:auto` suffix.** You can't append `:auto` to a model slug — OpenRouter will reject it. "Let OpenRouter pick the best model for me" is a *different feature* called `openrouter/auto`, which you use as its own model (not as a suffix on another model). See **Section 4.6** below for how it actually works.
 
 > ⚠️ **Important:** These suffixes go **at the end of the model slug**, not the beginning. `meta-llama/llama-3.3-70b-instruct:free` ✅ — `:free/llama-3.3-70b` ❌
 
 ---
 
-### 3.1 Using Suffixes in the OpenRouter Web Chatroom
+### 4.1 Using Suffixes in the OpenRouter Web Chatroom
 
 The web chatroom is at `openrouter.ai/chat`. Here's exactly how to use suffixes there:
 
@@ -154,7 +193,7 @@ Model: Meta: Llama 3.3 70B Instruct (Floor)
 
 ---
 
-### 3.2 Using Suffixes in API Calls (Python, JavaScript, curl)
+### 4.2 Using Suffixes in API Calls (Python, JavaScript, curl)
 
 When calling the OpenRouter API directly, the suffix is part of the `model` string in your JSON payload.
 
@@ -226,7 +265,7 @@ curl https://openrouter.ai/api/v1/chat/completions \
 
 ---
 
-### 3.3 Using Suffixes in Claude Code
+### 4.3 Using Suffixes in Claude Code
 
 Claude Code is a CLI tool. You switch models using the `/model` command.
 
@@ -284,7 +323,7 @@ claude -p "Write a function to sort a list"
 
 ---
 
-### 3.4 Using Suffixes in Kiro CLI
+### 4.4 Using Suffixes in Kiro CLI
 
 > 📝 **Important correction:** Kiro (AWS's agentic IDE/CLI) is a real, actively developed product — but it isn't primarily an "OpenRouter front-end." Kiro ships with its own built-in model access (Anthropic Claude, OpenAI GPT-5.6, DeepSeek, Qwen, GLM, MiniMax, and more) billed through your AWS/Kiro credits, configured via `kiro-cli settings` commands rather than a `models.yaml` file or a "Settings → AI Providers" screen. There is **no confirmed native OpenRouter provider slot** in Kiro at the time of writing — treat any specific menu path as unverified until you check Kiro's own docs at [kiro.dev/docs](https://kiro.dev/docs/).
 
@@ -307,7 +346,7 @@ This routes *tool calls* through OpenRouter rather than swapping Kiro's own chat
 
 ---
 
-### 3.5 Using Suffixes in Other Third-Party Tools
+### 4.5 Using Suffixes in Other Third-Party Tools
 
 Most tools that support OpenRouter accept the suffix in the model field:
 
@@ -343,7 +382,7 @@ Any tool that lets you set a "Model" or "Model ID" string works the same way —
 
 ---
 
-### 3.6 The Special `openrouter/auto` Model + Cost Tiers
+### 4.6 The Special `openrouter/auto` Model + Cost Tiers
 
 This is a **different concept** from suffixes but achieves the same goal: saving money.
 
@@ -382,7 +421,7 @@ Instead of picking a specific model, you tell OpenRouter: *"Pick the best model 
 
 ---
 
-### 3.7 Common Mistakes & How to Fix Them
+### 4.7 Common Mistakes & How to Fix Them
 
 #### Mistake 1: Typing the Suffix in the Wrong Place
 ```
@@ -428,7 +467,7 @@ Only switch to :floor when :free hits rate limits.
 
 ---
 
-### 3.8 Quick Reference: Where to Type the Suffix
+### 4.8 Quick Reference: Where to Type the Suffix
 
 | Tool/Platform | Where to Type | Example |
 |---------------|--------------|---------|
@@ -437,7 +476,7 @@ Only switch to :floor when :free hits rate limits.
 | **JavaScript** | `model` property in body | `model: "anthropic/claude-sonnet-4.5:floor"` |
 | **curl** | `"model"` in `-d` payload | `"model": "openai/gpt-oss-120b:free"` |
 | **Claude Code** | `/model` command or `--model` flag | `/model poolside/laguna-m.1:free` |
-| **Kiro** | Not applicable — reach OpenRouter models via its MCP server instead (see §3.4) | n/a |
+| **Kiro** | Not applicable — reach OpenRouter models via its MCP server instead (see §4.4) | n/a |
 | **TypingMind** | Settings → Model field | `google/gemma-4-31b-it:free` |
 | **Open WebUI** | API Model ID field | `nvidia/nemotron-3-ultra-550b-a55b:free` |
 | **Continue.dev** | `model` in config.json | `"model": "cohere/north-mini-code:free"` |
@@ -445,7 +484,7 @@ Only switch to :floor when :free hits rate limits.
 
 ---
 
-### 3.9 Testing Your Suffix Setup
+### 4.9 Testing Your Suffix Setup
 
 Run this quick test to verify everything works:
 
@@ -477,7 +516,7 @@ curl https://openrouter.ai/api/v1/chat/completions \
 
 ---
 
-### 3.10 Advanced: Combining Suffixes with Other Features
+### 4.10 Advanced: Combining Suffixes with Other Features
 
 #### Suffix + Web Search Plugin
 ```json
@@ -522,7 +561,9 @@ curl https://openrouter.ai/api/v1/chat/completions \
 
 <a id="need-1-web-chat"></a>
 
-## 4. Need 1: Web Chat
+## 5. Need 1: Web Chat
+
+> Not sure which model to reach for? See the decision table in **Section 3**.
 
 ### Option A: OpenRouter Chatroom (Browser)
 - Go to `openrouter.ai/chat`
@@ -557,7 +598,9 @@ meta-llama/llama-3.3-70b-instruct:floor
 
 <a id="need-2-deep-research"></a>
 
-## 5. Need 2: Deep Research in Web Chat
+## 6. Need 2: Deep Research in Web Chat
+
+> Not sure which model to reach for? See the decision table in **Section 3**.
 
 ### How OpenRouter Handles Research
 
@@ -603,7 +646,9 @@ OpenRouter has a built-in deep research feature that:
 
 <a id="need-3-summarize"></a>
 
-## 6. Need 3: Summarize & Explain Articles
+## 7. Need 3: Summarize & Explain Articles
+
+> Not sure which model to reach for? See the decision table in **Section 3**.
 
 ### The Workflow
 1. **Paste the article text** directly into chat (most efficient)
@@ -645,7 +690,9 @@ This lets you paste entire PDFs or long articles without chunking.
 
 <a id="need-4-guides"></a>
 
-## 7. Need 4: Create Markdown & HTML Guides
+## 8. Need 4: Create Markdown & HTML Guides
+
+> Not sure which model to reach for? See the decision table in **Section 3**.
 
 ### Best Models for Structured Content
 
@@ -676,7 +723,9 @@ This lets you paste entire PDFs or long articles without chunking.
 
 <a id="need-5-coding"></a>
 
-## 8. Need 5: Coding with Claude Code & Kiro CLI
+## 9. Need 5: Coding with Claude Code & Kiro CLI
+
+> Not sure which model to reach for? See the decision table in **Section 3**.
 
 ### Part A: Claude Code + OpenRouter Setup
 
@@ -780,7 +829,9 @@ Coding agents (Claude Code, Kiro) can burn through tokens fast. Here's how to co
 
 <a id="need-6-youtube"></a>
 
-## 9. Need 6: YouTube Transcript Translation to Greek
+## 10. Need 6: YouTube Transcript Translation to Greek
+
+> Not sure which model to reach for? See the decision table in **Section 3**.
 
 ### The Workflow
 
@@ -829,7 +880,7 @@ Translate to Greek, then analyze: main arguments, tone, target audience, and 3 k
 
 <a id="token-efficiency"></a>
 
-## 10. Token Efficiency: How to Stretch €10 Across a Month
+## 11. Token Efficiency: How to Stretch €10 Across a Month
 
 ### The Golden Rules
 
@@ -849,13 +900,13 @@ Free models first → Cheap paid → Premium only for final quality check
 | Critical final review | Claude/GPT | Don't use free for this |
 
 #### Rule 3: Use `:floor` for Automatic Savings
-Append `:floor` to any model slug to route to the cheapest provider automatically — full syntax and examples are in **Section 3**.
+Append `:floor` to any model slug to route to the cheapest provider automatically — full syntax and examples are in **Section 4**.
 
 #### Rule 4: Use `:nitro` When Speed Matters
-Append `:nitro` when latency matters more than cost — see **Section 3** for details.
+Append `:nitro` when latency matters more than cost — see **Section 4** for details.
 
 #### Rule 5: Use `openrouter/auto` with Cost Tiers
-Let OpenRouter pick a model for you within a budget band (`low`/`medium`/`high`/`xhigh`/`max`) — this is a separate model, not a suffix; see **Section 3.6** for the full setup.
+Let OpenRouter pick a model for you within a budget band (`low`/`medium`/`high`/`xhigh`/`max`) — this is a separate model, not a suffix; see **Section 4.6** for the full setup.
 
 #### Rule 6: Compress Your Prompts
 
@@ -912,7 +963,7 @@ Check your OpenRouter **Activity** tab every Sunday. If you're at 50% budget by 
 
 <a id="cheat-sheet"></a>
 
-## 11. Weekly Budget Tracker & Model Cheat Sheet
+## 12. Weekly Budget Tracker & Model Cheat Sheet
 
 ### Your €10 Monthly Budget Breakdown
 
@@ -928,27 +979,28 @@ Check your OpenRouter **Activity** tab every Sunday. If you're at 50% budget by 
 #### 🆓 FREE TIER (€0)
 ```
 General Chat:
-  meta-llama/llama-3.3-70b-instruct:free
-  openai/gpt-oss-20b:free
+  meta-llama/llama-3.3-70b-instruct:free    # text only
+  openai/gpt-oss-20b:free                    # text only, tool-calling
 
 Coding:
-  poolside/laguna-m.1:free
-  cohere/north-mini-code:free
-  poolside/laguna-xs-2.1:free
+  poolside/laguna-m.1:free                  # tool-calling, reasoning
+  cohere/north-mini-code:free               # tool-calling, reasoning
+  poolside/laguna-xs-2.1:free               # tool-calling, reasoning
 
 Long Context (1M tokens):
-  nvidia/nemotron-3-ultra-550b-a55b:free
+  nvidia/nemotron-3-ultra-550b-a55b:free    # tool-calling
 
 Multilingual/Greek:
-  google/gemma-4-31b-it:free
+  google/gemma-4-31b-it:free                # vision, tool-calling
 
 Reasoning/Research:
-  nvidia/nemotron-3-super-120b-a12b:free
-  qwen/qwen3-next-80b-a3b-instruct:free
+  nvidia/nemotron-3-super-120b-a12b:free    # check current capabilities on the model page
+  qwen/qwen3-next-80b-a3b-instruct:free     # check current capabilities on the model page
 
 Auto-select:
   openrouter/free
 ```
+> Capability tags above (vision / tool-calling) are current as of this guide's last update — see the model-rotation note in Section 3 before relying on any specific ID long-term.
 
 #### 💰 CHEAP PAID (€0.01-0.50 per heavy session)
 ```
