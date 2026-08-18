@@ -1081,7 +1081,7 @@
                 <ul>
                     <li><b>Security Training</b> — Every engineer completes annual secure coding training (OWASP Top 10) before getting CI/CD pipeline access.</li>
                     <li><b>Lock Every Account</b> — MFA is mandatory on every SCM (GitHub/GitLab) account. Stolen or reused passwords are still the #1 way real breaches start, and this one setting blocks most of them before any tool below ever fires.</li>
-                    <li><b>Vet New Dependencies Before They Land</b> — Adding a brand-new third-party library takes 30 seconds of sanity-checking first: check the repo's last commit date and open issues, glance at its GitHub "Security" tab for known advisories, look up its <a href="https://deps.dev" target="_blank" rel="noopener">OpenSSF Scorecard</a> on deps.dev for a single 0–10 trust signal, and run a quick <code>dep-scan</code> against it — the same tool our build pipeline already uses, works the same way regardless of language. Catching a bad dependency here is far cheaper than removing it after five other packages depend on it.</li>
+                    <li><b>Vet New Dependencies Before They Land</b> — Adding a brand-new third-party library takes 30 seconds of sanity-checking first: check the repo's last commit date and open issues, glance at its GitHub "Security" tab for known advisories, look up its <a href="https://deps.dev" target="_blank" rel="noopener">OpenSSF Scorecard</a> on deps.dev for a single 0–10 trust signal, and run a quick <code>dep-scan</code> against it — the same tool our build pipeline already uses, works the same way regardless of language. Catching a bad dependency here is far cheaper than removing it after five other packages depend on it. <b>For cloud-native infrastructure tools specifically</b> — an admission controller, runtime scanner, backup engine, or anything joining the toolkit in Chapter 5 rather than an app dependency — the same instinct applies to <code>cncf.io/projects/&lt;name&gt;</code>: check the maturity stage and acceptance date, and cross-check its health on <a href="https://clomonitor.io" target="_blank" rel="noopener">CLOMonitor</a>. Sandbox means early and unproven, Incubating means real production adoption, Graduated means the safest bet — same 30 seconds, just aimed at the CNCF landscape instead of npm or PyPI.</li>
                     <li><b>Don't Skip the Gates</b> — Bypassing automated checks (Checkov, Gitleaks, Kyverno) is forbidden unless you have a documented exception signed by a Security Lead.</li>
                     <li><b>Treat Security Rules Like Code</b> — Changing a security rule (Kyverno policy, Falco alert) goes through the same PR process as application code: two reviewers, one signed commit.</li>
                     <li><b>Make It Safe to Report Bugs</b> — <code>SECURITY.md</code> in every repo, <code>security.txt</code> on every live app, so researchers report privately.</li>
@@ -1153,7 +1153,7 @@
                             <tr><td>5. Build</td><td>OWASP dep-scan <code>--deep</code> · Opengrep</td><td>dep-scan scans app libraries AND the container OS. Opengrep runs an interfile taint analysis, tracing untrusted input (e.g. <code>req.body</code>) through function and file boundaries to the dangerous sink it ends up at — SQL injection, XSS, command injection.</td><td>One report of every ingredient and its known vulnerabilities, plus the class of bug that only shows up once you follow data across the whole app, not just one file.</td></tr>
                             <tr><td>6. Validate</td><td>OWASP ZAP</td><td>Tests the running app in a live environment (DAST).</td><td>Catches things code-scanners miss, like broken login flows.</td></tr>
                             <tr><td>7. Govern</td><td>SecObserve</td><td>Central dashboard for all static security alerts.</td><td>Keeps build-time and dependency bugs organized so they get fixed.</td></tr>
-                            <tr><td>8. Deploy</td><td>Kyverno + Cosign</td><td>Checks K8s manifests, verifies image signatures.</td><td>Admission webhook: validates, mutates, or rejects manifests against custom policy before they're persisted to <code>etcd</code>.</td></tr>
+                            <tr><td>8. Deploy</td><td>Kyverno <span style="font-size:11px;color:var(--text-faint);">(CNCF Graduated)</span> + Cosign</td><td>Checks K8s manifests, verifies image signatures.</td><td>Admission webhook: validates, mutates, or rejects manifests against custom policy before they're persisted to <code>etcd</code>.</td></tr>
                             <tr><td>9. Runtime</td><td>Falco + Tetragon</td><td>Watches syscalls, enforces kernel boundaries.</td><td>Falco evaluates syscalls in userspace and raises alerts; Tetragon enforces inline via eBPF, terminating a process before a malicious action completes.</td></tr>
                             <tr><td>10. Audit</td><td>Kube-bench</td><td>Checks K8s settings against CIS standards.</td><td>Confirms our core platform is locked down tight.</td></tr>
                             <tr><td>11. Compliance</td><td>OpenSCAP + STIG Viewer</td><td>Audit-ready reporting.</td><td>Produces reports auditors already recognize.</td></tr>
@@ -1432,15 +1432,40 @@
                     <div class="zone" style="grid-column:1 / -1;"><span class="zname">Edge Zone — Ingress / Load Balancer</span><p>Before traffic reaches the cluster we enforce HTTPS redirect, HSTS, CSP, and TLS 1.3, and publish <code>security.txt</code>. Baseline config, not a scan — set once per app, closing the exact holes ZAP would otherwise keep flagging in Staging.</p></div>
                 </div>
 
-                <p class="sub" style="margin-top:14px;">Everything above catches problems we already know about — a bad pattern, a leaked secret, a missing header. But once a workload is admitted to the cluster, three more layers take over, in order: admission control decides whether it's allowed to start at all, kernel containment restricts what the running process can touch, and runtime detection watches for anything unusual once it's actually executing.</p>
+                <p class="sub" style="margin-top:14px;">Everything above catches problems we already know about — a bad pattern, a leaked secret, a missing header. But once a workload is admitted to the cluster, four more layers take over, in order: admission control decides whether it's allowed to start at all, workload identity proves who it actually is once it's running, kernel containment restricts what the running process can touch, and runtime detection watches for anything unusual once it's actually executing.</p>
 
                 <div class="zone-grid" style="margin-top:12px;">
 
                     <!-- Admission Control Zone -->
                     <div class="zone" style="grid-column:1 / -1;">
                         <span class="zname">Admission Control Zone — kube-apiserver</span>
-                        <p><b>Pod Security Admission (PSA)</b> is built into the API server itself — no extra install. It checks every Pod against one of three fixed profiles (<code>privileged</code> / <code>baseline</code> / <code>restricted</code>), set per namespace via a label; <code>restricted</code> rejects a Pod requesting root or missing a Seccomp profile. <b>Kyverno</b> runs alongside it as a fully custom admission webhook covering any resource type, with <i>validate</i>, <i>mutate</i>, <i>generate</i>, and <i>verify images</i> operations. Both run before the object is persisted to <code>etcd</code> — nothing below this line runs unless both approve.</p>
+                        <p><b>Pod Security Admission (PSA)</b> is built into the API server itself — no extra install. It checks every Pod against one of three fixed profiles (<code>privileged</code> / <code>baseline</code> / <code>restricted</code>), set per namespace via a label; <code>restricted</code> rejects a Pod requesting root or missing a Seccomp profile. <b>Kyverno</b> runs alongside it as a fully custom admission webhook covering any resource type, with <i>validate</i>, <i>mutate</i>, <i>generate</i>, and <i>verify images</i> operations — and as of March 2026 sits at <b>CNCF Graduated</b> status, the same top tier as Kubernetes itself, with maintainers spanning six organizations rather than any single company. Both run before the object is persisted to <code>etcd</code> — nothing below this line runs unless both approve.</p>
                     </div>
+
+                    <!-- Workload Identity Zone -->
+                    <div class="zone" style="grid-column:1 / -1;">
+                        <span class="zname">Workload Identity Zone — SPIFFE/SPIRE</span>
+                        <p>Every pod gets a short-lived cryptographic identity (an <b>SVID</b>) automatically the moment it starts — no certificate request, no shared API key. Two services can then prove who they are to each other and set up mTLS without either one holding a long-lived secret. This is the piece Cilium/Calico alone can't provide: network policy decides whether traffic between two pods is <i>allowed to flow</i>; this decides whether the pod on the other end is <i>actually who it claims to be</i>.</p>
+                    </div>
+
+                    <div class="callout callout--dev" style="grid-column:1 / -1;margin:0 0 12px 0;">
+                        <span class="tag">For Developers</span>
+                        <p>You don't request or manage any of this. Your pod gets its identity automatically, and most service-to-service calls get mTLS for free with no code change. The one thing worth checking: if your service currently authenticates to Vault with its own static token or a hand-managed cert, that pattern gets replaced by a SPIFFE-based Vault login — ask the Security Champion if you're not sure which pattern your service uses today.</p>
+                    </div>
+
+                    <!-- collapsed detail: workload identity architecture -->
+                    <details class="platform-detail" style="grid-column:1 / -1;margin:0 0 12px 0;">
+                        <summary>▸ Platform-team detail: how workload identity works</summary>
+                        <div class="detail-body">
+                            <p><b>SPIFFE</b> is the standard; <b>SPIRE</b> is the software that implements it — a Server plus a per-node Agent DaemonSet, the same deployment shape already used for Cilium and Tetragon. On every node, the Agent attests each workload using signals the Kubernetes API already exposes (namespace, service account, pod labels — the same metadata Kyverno already inspects at admission) and issues an SVID scoped to exactly that identity.</p>
+                            <ul style="margin:10px 0 0;font-size:14.5px;">
+                                <li><b>Short-lived by default</b> — SVIDs typically rotate hourly and re-issue automatically; nothing to renew or track manually, unlike a hand-managed TLS cert.</li>
+                                <li><b>One trust domain for the cluster</b> — every workload validates against the same root of trust; federating across multiple clusters is possible later but isn't needed to start.</li>
+                                <li><b>Vault integration</b> — Vault's native SPIFFE/JWT auth method lets a workload log in using its SVID instead of a Kubernetes service-account token, which is the cleaner bootstrapping path once both Vault (Chapter 9, Step 6) and SPIRE are live.</li>
+                            </ul>
+                            <p style="font-size:14px;color:var(--text-muted);margin-top:10px;">SPIFFE and SPIRE are both <b>CNCF Graduated</b> — the same top tier as Kyverno, Falco, and Cilium — so unlike the pilot tools elsewhere in this chapter, this isn't a "prove itself first" addition.</p>
+                        </div>
+                    </details>
 
                     <!-- OS Kernel Containment Zone -->
                     <div class="zone" style="grid-column:1 / -1;">
@@ -1475,7 +1500,7 @@
                     <div class="zone" style="grid-column:1 / -1;"><span class="zname">Compliance</span><p>OpenSCAP + STIG Viewer keeps the underlying host operating systems up to code and produces audit-ready reports auditors already recognize, on a cadence independent of any single app's release schedule. The same pass checks that host OS version itself against endoflife.date — a node can be fully patched and still be running a release that's about to lose support entirely.</p></div>
                 </div>
 
-                <p class="sub" style="margin-top:14px;">Nine zones, but only two places where any of it actually gets read. Static findings (a scan result, a CVE, a config drift) and live telemetry (a syscall, a rejected deployment, a kernel-enforced kill) are very different shapes of data. So instead of forcing them into one tool, we split them across two purpose-built hubs.</p>
+                <p class="sub" style="margin-top:14px;">Ten zones, but only two places where any of it actually gets read. Static findings (a scan result, a CVE, a config drift) and live telemetry (a syscall, a rejected deployment, a kernel-enforced kill) are very different shapes of data. So instead of forcing them into one tool, we split them across two purpose-built hubs.</p>
 
                 <h3>Management Hubs</h3>
                 <p class="sub"><i>In plain terms:</i> SecObserve holds point-in-time findings generated before a workload ships; OpenObserve holds continuous telemetry generated while it's running.</p>
@@ -1601,10 +1626,11 @@
                 <!-- Emerging Tools — KubeArmor pilot -->
                 <h3>Emerging Tools Worth Piloting <span class="sub-inline">— not yet load-bearing</span></h3>
                 <p class="sub">One more tool surfaced recently that's worth watching for the OS Kernel Containment Zone above. It's a real, actively-maintained project — not a required addition, and not a replacement for anything already in this chapter — but worth a pilot on a low-risk namespace before deciding whether it earns a permanent spot.</p>
+                <p class="sub" style="font-size:14px;"><i>Why "Pilot" and not just added outright:</i> this is the Chapter 1 dependency-vetting habit applied to infrastructure tooling — checked against its CNCF maturity stage, acceptance date, and CLOMonitor health score before it gets anywhere near an unskippable gate. The badge below reflects what that check found, not a one-off judgment call.</p>
 
                 <div class="pilot-card">
                     <div class="pname">KubeArmor <span class="badge badge--pilot">Pilot</span></div>
-                    <div class="pmeta">CNCF Sandbox project · github.com/kubearmor/KubeArmor</div>
+                    <div class="pmeta">CNCF Sandbox project (accepted Nov 2021, still Sandbox) · maintained primarily by AccuKnox · github.com/kubearmor/KubeArmor</div>
                     <p><span class="plabel">What it does:</span> generates and enforces <b>AppArmor</b>, <b>SELinux</b>, or <b>BPF-LSM</b> policy (see the OS Kernel Containment Zone above) from a Kubernetes CRD instead of a hand-authored native profile, restricting which paths, capabilities, and network interfaces a container may touch on its node.</p>
                     <p><span class="plabel">How it differs from what we already run:</span> Falco evaluates syscalls in userspace and alerts; Tetragon enforces inline at the syscall/process level via eBPF. KubeArmor's scope is narrower — the container-to-host boundary specifically — and overlaps more with Tetragon's enforcement role than with Falco's alerting role. Running all three from day one is more tool sprawl than most teams need.</p>
                     <p><span class="plabel">When to reach for it:</span> if you want AppArmor/SELinux enforcement authored as Kubernetes policy rather than hand-written per node, or your kernels support AppArmor/SELinux more cleanly than BPF-LSM. If Tetragon's TracingPolicies already cover your enforcement needs, there's no urgency to add it.</p>
@@ -1639,6 +1665,7 @@
                             <tr><td>Opengrep</td><td>Cross-File Injection Flaws</td><td>Interfile taint-tracking reports showing untrusted input was traced to its sink — and either fixed or knowingly accepted.</td><td>SecObserve</td></tr>
                             <tr><td>OWASP ZAP</td><td>Staging / DAST</td><td>Baseline scan reports proving the app was attack-tested.</td><td>SecObserve</td></tr>
                             <tr><td>Kyverno + Cosign</td><td>Deployment Policies</td><td>Logs of rejected deployments (root containers, missing signatures).</td><td>OpenObserve</td></tr>
+                            <tr><td>SPIFFE/SPIRE</td><td>Service-to-Service Identity</td><td>SVID issuance and rotation logs proving a service-to-service call was cryptographically authenticated, not just network-allowed.</td><td>OpenObserve</td></tr>
                             <tr><td>Falco + Falcosidekick</td><td>Live Environment</td><td>Real-time anomaly and threat alerts routed to incident response.</td><td>OpenObserve</td></tr>
                             <tr><td>Tetragon</td><td>Kernel &amp; Process Integrity</td><td>Execution lineage, namespace logs, kernel-enforced <code>SIGKILL</code> trails.</td><td>OpenObserve</td></tr>
                             <tr><td>Velero &amp; etcd Snapshots</td><td>Disaster Recovery</td><td>Successful restore-drill logs as Proof of Protection.</td><td>SecObserve</td></tr>
@@ -1843,6 +1870,11 @@
                     </table>
                 </div>
 
+                <div class="callout callout--info" style="border-left-color:var(--p11);">
+                    <span class="tag" style="color:var(--p11);">Tool Note: Velero's CNCF Status</span>
+                    <p>Velero entered CNCF Sandbox in March 2026 — the same maturity stage as KubeArmor's pilot in Chapter 5. The label is identical, but the risk underneath isn't: Velero is Apache-2.0, forkable, and already maintained across multiple organizations (Broadcom, Red Hat, Microsoft), unlike a genuinely single-vendor Sandbox project. The CNCF move itself is what's closing the remaining gap — it exists specifically to shift governance away from any one company's roadmap. No change to how we use Velero here; worth knowing so "Sandbox" isn't read as a red flag in this chapter when it wasn't treated as load-bearing evidence risk in Chapter 6's evidence matrix either.</p>
+                </div>
+
                 <div class="callout callout--info">
                     <span class="tag">The One Rule</span>
                     <p>Backups are stored somewhere even our own cluster administrators can't delete or change. Full admin access to the cluster should still not reach yesterday's backup — that's the difference between a bad day and a permanent loss. In practice: <b>WORM (Write Once, Read Many)</b> object-lock on backup storage, enforced by the storage system itself, not Kubernetes permissions — so it still protects us even if K8s access is fully compromised.</p>
@@ -2007,6 +2039,7 @@
 
                 <h3>Emerging Tools Worth Piloting <span class="sub-inline">— new attack surface, new tooling</span></h3>
                 <p class="sub">The Package Hallucination callout above covers one new risk from AI-assisted development. Two more have shown up recently, tied to two different layers of that same risk: what your AI assistant's <b>MCP connections</b> can quietly reach, and what your AI assistant's <b>generated agent code</b> might get wrong. Both tools below are real and functional, but young — single-maintainer or small-org projects with limited track records. Pilot before treating either as load-bearing, the same way we'd treat any new scanner before adding it to an unskippable gate.</p>
+                <p class="sub" style="font-size:14px;"><i>Note:</i> neither of these is a CNCF project, so the <code>cncf.io</code> maturity check from Chapter 1 doesn't apply directly to them — but the same instinct does. Small-org and single-maintainer status is exactly what that check is designed to surface, whichever registry or foundation you're checking a tool against.</p>
 
                 <div class="pilot-card">
                     <div class="pname">mcp-audit <span class="badge badge--pilot">Pilot</span></div>
@@ -2070,7 +2103,7 @@
                                 <li><span class="step-check"></span><span><b>Org-Wide MFA</b> — across all SCM accounts.</span></li>
                                 <li><span class="step-check"></span><span><b>Branch Protection</b> — signed commits, two reviews, CODEOWNERS validation.</span></li>
                                 <li><span class="step-check"></span><span><b>Local Security Tooling</b> — SonarLint, Bearer CLI, Bandit, gosec, ShellCheck, Gitleaks; shared <code>.gitignore</code> baseline.</span></li>
-                                <li><span class="step-check"></span><span><b>Dependency Vetting Habit</b> — run <code>dep-scan</code> ad hoc before adding any new third-party library, alongside a quick check of its repo health and GitHub Security tab.</span></li>
+                                <li><span class="step-check"></span><span><b>Dependency Vetting Habit</b> — run <code>dep-scan</code> ad hoc before adding any new third-party library, alongside a quick check of its repo health and GitHub Security tab; for cloud-native infrastructure tools, check its CNCF maturity stage at <code>cncf.io/projects</code> and health on CLOMonitor.</span></li>
                                 <li><span class="step-check"></span><span><b>Pre-Commit Enforcement</b> — shared config, CI verifies hooks ran.</span></li>
                                 <li><span class="step-check"></span><span><b>Vulnerability Management Engine</b> — stand up SecObserve as the central static reporting hub.</span></li>
                                 <li><span class="step-check"></span><span><b>Threat Modeling Habit</b> — run one Threat Dragon STRIDE session per major feature before coding starts.</span></li>
@@ -2101,7 +2134,7 @@
                             <ul class="step-list">
                                 <li><span class="step-check"></span><span><b>Edge Hardening</b> — HTTPS redirect, HSTS, CSP, TLS 1.3 at ingress.</span></li>
                                 <li><span class="step-check"></span><span><b>Vulnerability Disclosure</b> — <code>SECURITY.md</code> per repo, <code>security.txt</code> on live properties.</span></li>
-                                <li><span class="step-check"></span><span><b>Admission Control</b> — Kyverno as the primary policy-driven admission webhook, with Pod Security Admission as the built-in baseline underneath it.</span></li>
+                                <li><span class="step-check"></span><span><b>Admission Control</b> — Kyverno (CNCF Graduated) as the primary policy-driven admission webhook, with Pod Security Admission as the built-in baseline underneath it.</span></li>
                                 <li><span class="step-check"></span><span><b>Network Micro-Segmentation</b> — Cilium/Calico policies replace the flat network.</span></li>
                             </ul>
                         </div>
@@ -2146,6 +2179,7 @@
                                 <li><span class="step-check"></span><span><b>Immutable Base Layers</b> — migrate to dhi.io or Distroless.</span></li>
                                 <li><span class="step-check"></span><span><b>Host Compliance Auditing</b> — OpenSCAP + STIG Viewer across node hosts, producing audit-ready reports auditors already recognize.</span></li>
                                 <li><span class="step-check"></span><span><b>EOL Tracking</b> — scheduled check of base OS and language runtime versions against endoflife.date, flagging anything nearing end-of-life.</span></li>
+                                <li><span class="step-check"></span><span><b>Workload Identity</b> — deploy SPIFFE/SPIRE so every pod gets a short-lived cryptographic identity automatically; switch Vault logins to the SPIFFE auth method instead of static tokens (see Chapter 5).</span></li>
                             </ul>
                         </div>
                     </div>
@@ -2184,6 +2218,7 @@
                     <div class="gterm"><dt>CI/CD</dt><dd>Continuous Integration / Deployment</dd></div>
                     <div class="gterm"><dt>CIS</dt><dd>Center for Internet Security</dd></div>
                     <div class="gterm"><dt>CLI</dt><dd>Command Line Interface</dd></div>
+                    <div class="gterm"><dt>CNCF</dt><dd>Cloud Native Computing Foundation — hosts infrastructure projects (Kubernetes, Falco, Kyverno) at Sandbox, Incubating, or Graduated maturity; see Chapter 1's dependency-vetting habit</dd></div>
                     <div class="gterm"><dt>CRA</dt><dd>Cyber Resilience Act (EU)</dd></div>
                     <div class="gterm"><dt>CSP</dt><dd>Content Security Policy</dd></div>
                     <div class="gterm"><dt>CVE</dt><dd>Common Vulnerabilities and Exposures</dd></div>
@@ -2224,9 +2259,12 @@
                     <div class="gterm"><dt>SCM</dt><dd>Source Control Management (e.g., GitHub, GitLab)</dd></div>
                     <div class="gterm"><dt>SHA</dt><dd>Secure Hash Algorithm (used to uniquely identify a specific commit)</dd></div>
                     <div class="gterm"><dt>SPDX</dt><dd>Software Package Data Exchange (an SBOM format)</dd></div>
+                    <div class="gterm"><dt>SPIFFE</dt><dd>Secure Production Identity Framework For Everyone — a CNCF-graduated standard for issuing cryptographic identity to workloads instead of relying on shared secrets (see Chapter 5)</dd></div>
+                    <div class="gterm"><dt>SPIRE</dt><dd>SPIFFE Runtime Environment — the software that implements SPIFFE, issuing and auto-rotating short-lived identity documents (SVIDs) to running pods</dd></div>
                     <div class="gterm"><dt>SSDF</dt><dd>Secure Software Development Framework (NIST)</dd></div>
                     <div class="gterm"><dt>STIG</dt><dd>Security Technical Implementation Guide</dd></div>
                     <div class="gterm"><dt>STRIDE</dt><dd>Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege — the threat-categorization framework behind Threat Dragon</dd></div>
+                    <div class="gterm"><dt>SVID</dt><dd>SPIFFE Verifiable Identity Document — the short-lived cryptographic ID a workload uses to prove who it is to another workload, without a static secret</dd></div>
                     <div class="gterm"><dt>TLS</dt><dd>Transport Layer Security</dd></div>
                     <div class="gterm"><dt>VEX</dt><dd>Vulnerability Exploitability eXchange</dd></div>
                     <div class="gterm"><dt>WORM</dt><dd>Write Once, Read Many (storage that can't be edited or deleted)</dd></div>
@@ -2239,7 +2277,7 @@
 
     <footer>
         DEVSECOPS · INTERNAL ENGINEERING HANDBOOK · ON-PREM KUBERNETES DATA PLATFORM
-        <span style="display:block;font-size:11px;color:var(--text-faint);margin-top:4px;">Last reviewed: June 2026</span>
+        <span style="display:block;font-size:11px;color:var(--text-faint);margin-top:4px;">Last reviewed: August 2026</span>
     </footer>
 
     <script>
