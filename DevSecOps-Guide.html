@@ -917,6 +917,17 @@
             display: none;
         }
 
+        .pre-block {
+            background: var(--bg);
+            padding: 12px 16px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            overflow-x: auto;
+            font-family: var(--mono);
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
         @media (max-width: 940px) {
             .shell {
                 grid-template-columns: 1fr;
@@ -1017,6 +1028,10 @@
                 <a href="#ch9"><span class="n">09</span>Implementation Checklist</a>
                 <a href="#ch10"><span class="n">10</span>Acronyms</a>
             </nav>
+            <div style="margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--border-soft);">
+                <p style="font-family: var(--sans); font-weight: 600; font-size: 11px; color: var(--text-faint); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px;">Support &amp; Escalation</p>
+                <p style="font-size: 13px; color: var(--text-muted); margin: 0;">Security questions? #security-support · security@company.com · Security Champion: @sec-champ</p>
+            </div>
         </aside>
 
         <!-- ═══ MAIN ═══ -->
@@ -1032,6 +1047,28 @@
                     <span class="tag">GOAL</span>
                     <p>We are building a secure, automated pipeline for our on-premise Kubernetes data platform. It has zero licensing fees and follows industry gold standards like NIST, OWASP, and CIS.</p>
                 </div>
+
+                <details class="platform-detail" style="margin-bottom: 20px;">
+                    <summary>⚡ Quickstart — copy-paste to get going</summary>
+                    <div class="detail-body">
+                        <p>Run these commands in your repository root to enable local security checks:</p>
+                        <div class="pre-block">
+                            # Install pre-commit hooks<br />
+                            pre-commit install<br /><br />
+                            # Run Gitleaks locally<br />
+                            gitleaks detect -v<br /><br />
+                            # Run Bandit (Python)<br />
+                            bandit -r .<br /><br />
+                            # Run gosec (Go)<br />
+                            gosec ./...<br /><br />
+                            # Run ShellCheck<br />
+                            shellcheck script.sh<br /><br />
+                            # Run dep-scan (requires Docker)<br />
+                            docker run -v $(pwd):/src appthreat/dep-scan --deep -i /src
+                        </div>
+                        <p style="font-size: 13px; color: var(--text-faint);">For the full pipeline, see Chapter 2. For IDE setup, see Chapter 3.</p>
+                    </div>
+                </details>
 
                 <!-- reading guide -->
                 <div class="reading-guide">
@@ -1150,7 +1187,7 @@
                             <td>Flushes out bad architectural ideas early.</td></tr>
                             <tr><td>3. Code</td><td>SonarLint &amp; Bearer CLI</td><td>Scans your code right in your IDE.</td><td>Acts like a spellchecker for bugs and data leaks.</td></tr>
                             <tr><td>4. Pre-Commit</td><td>Checkov + Gitleaks</td><td>Checks for bad infra configs and pasted passwords.</td><td>Stops silly mistakes before they reach the main codebase.</td></tr>
-                            <tr><td>5. Build</td><td>OWASP dep-scan <code>--deep</code> · Opengrep</td><td>dep-scan scans app libraries AND the container OS. Opengrep runs an interfile taint analysis, tracing untrusted input (e.g. <code>req.body</code>) through function and file boundaries to the dangerous sink it ends up at — SQL injection, XSS, command injection.</td><td>One report of every ingredient and its known vulnerabilities, plus the class of bug that only shows up once you follow data across the whole app, not just one file.</td></tr>
+                            <tr><td>5. Build</td><td>OWASP dep-scan <code>--deep</code> · Opengrep</td><td>dep-scan scans app libraries AND the container OS. Opengrep runs cross-function taint analysis (<code>--taint-intrafile</code>), tracing untrusted input (e.g. <code>req.body</code>) through multiple functions to the dangerous sink it ends up at — SQL injection, XSS, command injection.</td><td>One report of every ingredient and its known vulnerabilities, plus the class of bug that only shows up once you follow data across the whole app, not just one file.</td></tr>
                             <tr><td>6. Validate</td><td>OWASP ZAP</td><td>Tests the running app in a live environment (DAST).</td><td>Catches things code-scanners miss, like broken login flows.</td></tr>
                             <tr><td>7. Govern</td><td>SecObserve</td><td>Central dashboard for all static security alerts.</td><td>Keeps build-time and dependency bugs organized so they get fixed.</td></tr>
                             <tr><td>8. Deploy</td><td>Kyverno <span style="font-size:11px;color:var(--text-faint);">(CNCF Graduated)</span> + Cosign</td><td>Checks K8s manifests, verifies image signatures.</td><td>Admission webhook: validates, mutates, or rejects manifests against custom policy before they're persisted to <code>etcd</code>.</td></tr>
@@ -1164,7 +1201,7 @@
 
                 <div class="callout callout--info" style="border-left-color:#22D3EE;">
                     <span class="tag" style="color:#22D3EE;">Why Opengrep, not "just add Semgrep"</span>
-                    <p>Semgrep's free CLI (the LGPL-licensed Community Edition) only analyzes one file at a time — it does not follow tainted data across a file boundary. That capability was moved behind Semgrep's paid Pro tier in late 2024. <b>Opengrep</b> is a community fork of the pre-2024 codebase that kept cross-file taint tracking open source, which is why it — not Semgrep CE — is what closes this gap for free. It runs in the Build stage above, not on your laptop: interfile analysis is memory- and time-heavy, so it belongs in CI, not a pre-commit hook.</p>
+                    <p>Semgrep's free Community Edition is LGPL-licensed, but since its late-2024 licensing change its taint analysis stops at a single function — following tainted data across function calls, fingerprinting, and tracked ignores all moved to the paid platform. <b>Opengrep</b> is the community fork (LGPL 2.1, maintained by a consortium of appsec vendors) that restored cross-function taint analysis for free. True cross-<i>file</i> (interfile) tracking is Opengrep's top roadmap item — verify its status before citing it as shipped; if we need interfile today, the free option is CodeQL. Either way it runs in the Build stage, not on your laptop: taint analysis is memory- and time-heavy, so it belongs in CI, not a pre-commit hook.</p>
                 </div>
 
                 <!-- DREAD callout -->
@@ -1348,7 +1385,7 @@
                     </table>
                 </div>
 
-                <p class="sub" style="font-size:14px;"><i>Why isn't Opengrep in this list?</i> Everything above is intentionally fast — single-file, single-function checks that return in under a second so they're not annoying to run on every save. Tracing tainted data across files needs more time and memory than that. It's still part of your protection, just one stage later — see the Build stage in Chapter 2.</p>
+                <p class="sub" style="font-size:14px;"><i>Why isn't Opengrep in this list?</i> Everything above is intentionally fast — single-file, single-function checks that return in under a second so they're not annoying to run on every save. Tracing tainted data across functions needs more time and context than a single-file linter can provide, which is why it runs in CI — see the Build stage in Chapter 2.</p>
 
                 <h3>Developer Environment Controls</h3>
                 <ul>
@@ -1427,7 +1464,7 @@
                 <div class="zone-grid">
                     <div class="zone"><span class="zname">Planning Zone</span><p>OWASP ASVS and Threat Dragon figure out what needs to be secured before we start typing — the checklist and threat model a PR gets judged against later.</p></div>
                     <div class="zone"><span class="zname">Workstation Zone — Your Laptop</span><p>SonarLint, Bearer CLI, Bandit, gosec, ShellCheck, and Gitleaks keep your local environment safe, catching the same classes of bug CI would — just before you've pushed anything.</p></div>
-                    <div class="zone"><span class="zname">Pipeline Zone — CI/CD</span><p>Checkov scans Terraform/Helm, Gitleaks double-checks for passwords, dep-scan <code>--deep</code> checks libraries and the base image OS, and Opengrep traces tainted input across functions and files to catch injection flaws (SQLi, XSS, command injection) that single-file scanners structurally can't see. Nothing here is optional — this is the unskippable gate from Chapter 3.</p></div>
+                    <div class="zone"><span class="zname">Pipeline Zone — CI/CD</span><p>Checkov scans Terraform/Helm, Gitleaks double-checks for passwords, dep-scan <code>--deep</code> checks libraries and the base image OS, and Opengrep traces tainted input across function boundaries to catch injection flaws (SQLi, XSS, command injection) that single-file scanners structurally can't see. Nothing here is optional — this is the unskippable gate from Chapter 3.</p></div>
                     <div class="zone"><span class="zname">Staging Zone</span><p>OWASP ZAP attacks our staging app to find runtime holes — broken auth flows, misconfigured headers, injection points — that no static scanner upstream can see, because they only exist once the app is actually running.</p></div>
                     <div class="zone" style="grid-column:1 / -1;"><span class="zname">Edge Zone — Ingress / Load Balancer</span><p>Before traffic reaches the cluster we enforce HTTPS redirect, HSTS, CSP, and TLS 1.3, and publish <code>security.txt</code>. Baseline config, not a scan — set once per app, closing the exact holes ZAP would otherwise keep flagging in Staging.</p></div>
                 </div>
@@ -1455,7 +1492,7 @@
 
                     <!-- collapsed detail: workload identity architecture -->
                     <details class="platform-detail" style="grid-column:1 / -1;margin:0 0 12px 0;">
-                        <summary>▸ Platform-team detail: how workload identity works</summary>
+                        <summary>Platform-team detail: how workload identity works</summary>
                         <div class="detail-body">
                             <p><b>SPIFFE</b> is the standard; <b>SPIRE</b> is the software that implements it — a Server plus a per-node Agent DaemonSet, the same deployment shape already used for Cilium and Tetragon. On every node, the Agent attests each workload using signals the Kubernetes API already exposes (namespace, service account, pod labels — the same metadata Kyverno already inspects at admission) and issues an SVID scoped to exactly that identity.</p>
                             <ul style="margin:10px 0 0;font-size:14.5px;">
@@ -1475,7 +1512,7 @@
 
                     <!-- collapsed detail: kernel mechanism reference table -->
                     <details class="platform-detail" style="grid-column:1 / -1;margin:0 0 12px 0;">
-                        <summary>▸ Platform-team detail: how kernel containment works</summary>
+                        <summary>Platform-team detail: how kernel containment works</summary>
                         <div class="detail-body">
                             <div class="mech-table">
                                 <table>
@@ -1523,7 +1560,7 @@
 
                 <!-- runtime telemetry flow -->
                 <details class="platform-detail">
-                    <summary>▸ Platform-team detail: runtime telemetry flow</summary>
+                    <summary>Platform-team detail: runtime telemetry flow</summary>
                     <div class="detail-body">
                         <h3 style="margin-top:0;">Runtime Telemetry Flow <span class="sub-inline">— platform-team reference</span></h3>
                         <div class="callout callout--info" style="margin-top:0;">
@@ -1611,7 +1648,7 @@
 
                 <!-- infrastructure controls -->
                 <details class="platform-detail">
-                    <summary>▸ Platform-team detail: infrastructure controls</summary>
+                    <summary>Platform-team detail: infrastructure controls</summary>
                     <div class="detail-body">
                         <h3 style="margin-top:0;">Infrastructure Controls <span class="sub-inline">— platform-team reference</span></h3>
                         <p class="sub">Three standing controls keep the hubs above trustworthy. You don't manage these day to day — just know they exist:</p>
@@ -1662,7 +1699,7 @@
                             <tr><td>OpenSCAP + STIG Viewer</td><td>Host Compliance</td><td>Audit-ready reports auditors already recognize.</td><td>SecObserve</td></tr>
                             <tr><td>Gitleaks</td><td>Secrets</td><td>Pipeline logs proving exposed keys were caught and rotated.</td><td>SecObserve</td></tr>
                             <tr><td>dep-scan <code>--deep</code></td><td>Supply Chain</td><td>SBOMs and vulnerability reports for libraries + base OS.</td><td>SecObserve</td></tr>
-                            <tr><td>Opengrep</td><td>Cross-File Injection Flaws</td><td>Interfile taint-tracking reports showing untrusted input was traced to its sink — and either fixed or knowingly accepted.</td><td>SecObserve</td></tr>
+                            <tr><td>Opengrep</td><td>Cross-Function Injection Flaws</td><td>Cross-function taint-tracking reports showing untrusted input was traced to its sink — and either fixed or knowingly accepted.</td><td>SecObserve</td></tr>
                             <tr><td>OWASP ZAP</td><td>Staging / DAST</td><td>Baseline scan reports proving the app was attack-tested.</td><td>SecObserve</td></tr>
                             <tr><td>Kyverno + Cosign</td><td>Deployment Policies</td><td>Logs of rejected deployments (root containers, missing signatures).</td><td>OpenObserve</td></tr>
                             <tr><td>SPIFFE/SPIRE</td><td>Service-to-Service Identity</td><td>SVID issuance and rotation logs proving a service-to-service call was cryptographically authenticated, not just network-allowed.</td><td>OpenObserve</td></tr>
@@ -1757,7 +1794,7 @@
                         <text x="875" y="98" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Non-Productive</text>
                         <text x="875" y="117" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">no gate — always rolls out</text>
                         <rect x="760" y="250" width="230" height="64" rx="10" fill="#161F30" stroke="#10B981" stroke-width="1.5"/>
-                        <text x="875" y="278" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Productive</text>
+                        <text x="875" y="278" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Production</text>
                         <text x="875" y="297" text-anchor="middle" fill="#95A1BC" font-family="Inter" font-size="12">gated on CVE verdict</text>
                         <rect x="380" y="310" width="230" height="64" rx="10" fill="#161F30" stroke="#F59E0B" stroke-width="1.5"/>
                         <text x="495" y="338" text-anchor="middle" fill="#EAEEF7" font-family="Inter" font-size="14" font-weight="700">Security Champion</text>
@@ -2058,7 +2095,7 @@
 
                 <!-- footnotes for Chapter 8 citations -->
                 <div class="footnotes" id="fn1">
-                    <p><span class="fn-label">[1]</span> Tony, C., et al. <i>"Recursive Criticism and Improvement (RCI) for LLM Code Generation."</i> ACM Transactions on Software Engineering and Methodology (TOSEM), 2025. The study found a 77.5% reduction in vulnerability density for GPT-4 under RCI prompting compared to zero-shot generation. <a href="#fnref1" style="font-size:12px;">↩</a></p>
+                    <p><span class="fn-label">[1]</span> Tony, C., Díaz Ferreyra, N. E., &amp; Scandariato, R. <i>"Prompting Techniques for Secure Code Generation: A Systematic Investigation."</i> ACM Transactions on Software Engineering and Methodology (TOSEM), 34(4), 2025. RCI prompting (technique orig. Kim et al., 2023) reduced average weakness density by 77.5% for GPT-4 versus a basic prompt. <a href="#fnref1" style="font-size:12px;">↩</a></p>
                 </div>
             </section>
 
@@ -2119,7 +2156,7 @@
                             <ul class="step-list">
                                 <li><span class="step-check"></span><span><b>Pipeline Manifest Scanning</b> — Checkov + Gitleaks in unskippable CI loops.</span></li>
                                 <li><span class="step-check"></span><span><b>Dependency Triage</b> — OWASP dep-scan <code>--deep</code> in build pipelines.</span></li>
-                                <li><span class="step-check"></span><span><b>Cross-File Taint Analysis</b> — Opengrep in CI, tracing untrusted input across functions and files to catch injection flaws (SQLi, XSS, command injection) local per-language linters can't see.</span></li>
+                                <li><span class="step-check"></span><span><b>Cross-Function Taint Analysis</b> — Opengrep in CI, tracing untrusted input across functions to catch injection flaws (SQLi, XSS, command injection) local per-language linters can't see.</span></li>
                                 <li><span class="step-check"></span><span><b>SBOM</b> — CycloneDX or SPDX generated on every production build.</span></li>
                                 <li><span class="step-check"></span><span><b>Dynamic Application Testing</b> — OWASP ZAP against a live environment on every deploy.</span></li>
                             </ul>
