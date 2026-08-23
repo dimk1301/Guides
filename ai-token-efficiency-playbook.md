@@ -28,7 +28,9 @@ A standard chatbot mostly pays for what it *says* — output tokens, generated s
 
 ```
 
-Because history is resent in full on every turn, the *cumulative* input volume across a session grows much faster than the number of turns — a 50-turn debugging session isn't 50x the cost of a 1-turn question, it's worse, since turn 50 re-pays for everything said in turns 1–49. In practice this means the large majority of an agent's bill comes from input tokens rather than output. That's the real reason Rules 1, 3, 7, and 9 below (fresh sessions, minimal snippets, proactive resets, inspecting context) matter more for agentic tools than they would for a one-shot chatbot question.
+Because history is resent in full on every turn, the *cumulative* input volume across a session grows much faster than the number of turns. A 50-turn debugging session isn't 50x the cost of a 1-turn question, it's worse.
+
+**The mathematical shape of this cost:** if context grows linearly by $K$ tokens per turn over $N$ turns, total billed tokens scale quadratically: $\mathcal{O}(N^2 \cdot K)$. This means even a single 500-line file read in turn 3 incurs a compounding cost — it's billed again on turn 4, turn 5, and turn 30. This quadratic behavior is the reason Rules 1, 3, 7, and 9 below (fresh sessions, minimal snippets, proactive resets, inspecting context) matter more for agentic tools than they would for a one-shot chatbot question.
 
 > Exact input/output cost splits vary by task and provider — treat "input dominates" as the general shape of agentic costs, not a fixed percentage to cite.
 
@@ -45,7 +47,7 @@ Because history is resent in full on every turn, the *cumulative* input volume a
                                  ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                          LLM Request                            │
-└──────────────┬──────────────────────────────────┬───────────────┘
+└──────────────┬──────────────────────────────┬───────────────────┘
                │                                  │
                ▼                                  ▼
 ┌──────────────────────────────┐  ┌──────────────────────────────┐
@@ -97,7 +99,7 @@ This is also *why* editing `CLAUDE.md`, switching models, or changing effort lev
 
 Most token waste from documentation comes from an all-or-nothing choice: either load every doc/skill/instruction file into context "just in case," or don't give the model access at all. Progressive knowledge indexing is the middle path, and it works the same way across tools even though the names differ:
 
-1. **Metadata-only at startup.** Only a name and short description of each doc/skill loads at session start — essentially a table of contents. This costs next to nothing.
+1. **Metadata-only at startup.** Only a name and short description of each doc/skill/instruction loads at session start — essentially a table of contents. This costs next to nothing.
 2. **Full content loaded on demand.** The agent pulls in the full text of a doc only when your current prompt actually matches its description.
 3. **Searched, not loaded, for large corpora.** For big doc sets or whole codebases, nothing sits in context at all — it's indexed and queried like search, only when needed.
 
@@ -129,6 +131,7 @@ Use these rules even if you are new to AI coding tools.
 8. **Use configuration files:** Store persistent rules in tool-specific instruction files instead of repeating them every time. Keep them static — editing them mid-session breaks the cache (see *How Prompt Caching Breaks*, above).
 9. **Inspect active context:** Use built-in context tools to inspect, compact, or clear context rather than guessing.
 10. **Index large repos:** Prefer indexed or searchable knowledge stores for big codebases and docs instead of loading them permanently into context.
+11. **Delegate noisy exploration to subagents:** For large-scale scanning, grepping, or log analysis tasks, create isolated subagents to do the exploratory work and return only a summary. This breaks the quadratic cost compounding on exploratory tool output. *(See [Subagent Context Isolation](#subagent-context-isolation) in the Claude Code section for details and worked examples.)*
 
 *(These are levers, not a checklist to run on every prompt — see [When to Stop Optimizing](#when-to-stop-optimizing) below for when applying them isn't worth the overhead.)*
 
@@ -240,6 +243,10 @@ Output: 5 bullets max, include trade-offs and recommendation.
 * Start a new session with that summary.
 * Continue only with the current objective and relevant files.
 
+### The Git Boundary Rule
+
+Make it a practice to clear or reset your session every time code is committed to Git. This prevents a single long-running session from accumulating stale context across multiple independent changes. A quick compaction or `/clear` at each Git boundary keeps the token burn low and prevents reasoning drift across unrelated tasks.
+
 ### Team Pattern
 
 For teams, standardize four things:
@@ -287,11 +294,12 @@ The three tools converge on the same five levers, just with different commands. 
 | --- | --- | --- | --- |
 | **Reasoning depth control** | `/effort` | `--effort` (launch) / `/effort` (mid-session) | Reasoning effort via `/model` picker |
 | **Manual compaction** | `/compact` | `/compact` | `/compact` |
-| **Automatic compaction** | None — manual only | On context overflow | On approaching context limit |
+| **Automatic compaction** | None — manual only | On context overflow | On approaching context limit (~80% currently) |
 | **Scoped file reading** | `@file` references | Built-in read/grep tools | `#file`, `#selection`, `#editor` |
 | **Lazy-loaded documentation** | Skills | Skills + `/knowledge` *(Experimental)* | Path-scoped `*.instructions.md` (coarser — file-type match, not relevance) |
 | **Non-destructive usage check** | `/context` | `/context show` | `/context` |
 | **Autonomous-run budget cap** | Not native — enforce via a wrapper/turn count you track yourself | Not native — same | Native: per-session AI-credit limit, stops cleanly and asks before exceeding |
+| **Subagent context isolation** | `.claude/agents/` (YAML frontmatter) | Not native | Not native |
 
 The practical takeaway: whichever tool you're on, the same rule applies — **tune reasoning depth to the task, compact proactively rather than waiting for a wall, read only what's needed, and let large docs load lazily instead of upfront.** Details and exact syntax: see each tool's Playbook section.
 
@@ -313,6 +321,50 @@ Claude Code relies on **Prompt Caching** to reuse unchanged context prefixes. Ce
 | `/clear` | Wipes conversation history completely. | Rebuilds cache from scratch. |
 | `/effort` | Sets reasoning depth (`low` through `xhigh`/`max`). | Likely affects cache reuse, since effort level is part of the request configuration — avoid changing it mid-task. |
 
+#### Subagent Context Isolation
+
+**What it is:** For large-scale exploratory work (repository scanning, grepping across many files, log analysis), create an isolated subagent context that runs independently and returns only a summary to the main session. This breaks the quadratic context-growth pattern by ensuring noisy exploratory output doesn't accumulate in the primary window.
+
+**Why it matters — the token economics:**
+
+Without subagents, a single repository scan returning 8,000 tokens of file paths accumulates a cost over subsequent turns. Over a 20-turn session, that single scan costs:
+$$20 \times 8,000 = 160,000 \text{ billed tokens}$$
+
+With subagents, the subagent reads 8,000 tokens once (paying for it once) and returns a 100-token summary to the main thread. The main thread pays only:
+$$8,000 + (20 \times 100) = 10,000 \text{ billed tokens}$$
+
+**Savings: ~150,000 tokens (93.75% reduction) on that single operation.**
+
+**How to use it:**
+
+Define reusable subagents in `.claude/agents/` with YAML frontmatter:
+
+```yaml
+---
+name: codebase-scan
+description: Search the repo for specific function signatures or patterns.
+model: haiku
+---
+Scan the codebase for the requested pattern.
+Return ONLY a summary containing:
+1. Total occurrence count
+2. Top 3 directories affected
+3. A 1-line code sample per directory
+Do NOT quote raw file contents into output.
+
+```
+
+Then invoke it from your main session:
+```text
+Use the codebase-scan subagent to find all uses of the validateUser() function.
+```
+
+**Best practices:**
+- Use `haiku` or lower-tier models for subagents; they handle search/grep work efficiently.
+- Keep the subagent prompt terse — the goal is a fast summary, not a detailed narrative.
+- Define subagents for repetitive exploratory tasks so you can reuse them across sessions.
+- Reserve the main session for reasoning and decision-making; delegate noisy tool work to subagents.
+
 #### Practical Rules for Claude Code
 
 * Keep `CLAUDE.md` short (under ~200 lines) and placed at the project root; move details into separate files and pull them in with `@filename`.
@@ -321,6 +373,7 @@ Claude Code relies on **Prompt Caching** to reuse unchanged context prefixes. Ce
 * Use `/clear` between unrelated tasks; use `/compact` when continuing the same task with less context pressure.
 * Caching has a minimum cacheable prefix size — a two-line `CLAUDE.md` or short system prompt may sit below that floor and never actually hit the cache. Don't expect savings on trivially small always-on instructions; the payoff shows up on larger, stable prefixes (tool definitions, longer steering files, loaded documents).
 * Cache breakpoints are limited per request. If you're layering system prompt + tool definitions + a large loaded document + conversation history, keep the boundaries between them in static-to-volatile order rather than leaving the split to be inferred.
+* Create subagents for any large-scale exploratory work to isolate noisy tool output and preserve main-session context for higher-level reasoning.
 
 #### Starter `CLAUDE.md`
 
@@ -485,19 +538,59 @@ Reach for anything in this section only after you've implemented the native rule
 
 Everything above this section is a native, vendor-shipped feature of Claude Code, Kiro CLI, or Copilot CLI. What follows is a mix of community/commercial projects that sit on top of those tools, plus one emerging open spec (OKF) — none of them ship natively inside these three CLIs, so vet each one (data flow, maintenance activity, added overhead, maturity) before a team-wide rollout. Treat this section as "things to evaluate," not "things to adopt by default."
 
-| Tool | What it does | Which tool(s) it plugs into | Key caveat |
-| --- | --- | --- | --- |
-| **Headroom** | A proxy/library/MCP server that compresses tool outputs, logs, files, and RAG chunks before they reach the model. Vendor claims 60–95% token reduction. | Claude Code, Codex, Copilot, Gemini, Bedrock, Vertex | Works by rerouting your API base URL through a local proxy — review what it caches/logs locally before wiring it into a shared team config. |
-| **KiroGraph** | An MCP server exposing a semantic, tree-sitter-based code knowledge graph — symbol lookups, call graphs, and impact analysis in one query instead of several read/grep tool calls. | Kiro CLI (full support); ~34 other MCP-capable tools (experimental) | Enabling every optional module adds several thousand tokens of tool definitions to *every* call (exact figures vary by version) — enable only the modules you actually use, or the tool overhead can outweigh the savings. |
-| **Graphify** | A `/graphify` skill that builds a local, tree-sitter-based knowledge graph of code, docs, PDFs, and more; the agent queries the graph (`graphify query`, `graphify path`) instead of reading or grepping files. Because it replaces raw file/log reads with small queried graph nodes, it shrinks the underlying input volume itself — a saving that stacks with prompt caching rather than depending on it. | Claude Code, Copilot CLI, Cursor, Codex, Gemini CLI, and 15+ more | Code parsing is fully local and free (no LLM call). Docs/PDF/image ingestion routes through your assistant's model API, so it isn't zero-cost for non-code content. |
-| **OKF (Open Knowledge Format)** | An open, vendor-neutral spec from Google Cloud (v0.1, launched June 2026) for representing curated agent context as a directory of markdown files with YAML frontmatter — one concept per file, cross-linked, file path as identity. | Format, not a tool — consumable by any agent that can read files; not tied to a specific CLI | Very new (v0.1) and still evolving. Unlike Skills or `/knowledge`, nothing loads full content only-when-relevant by default — you still need to design (or bolt on) your own progressive-loading layer on top of an OKF bundle. |
+### Three-Layer Architecture: Instructions, Knowledge, and Structure
 
-### Where each one fits into this playbook
+When combining multiple tools and knowledge-representation systems, think of them as three distinct layers:
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                   CLAUDE.md / AGENTS.md                      │
+│   (Instruction Layer: "How the agent must act & tool use")   │
+└──────────────────────────────┬───────────────────────────────┘
+                               │
+                               ▼ Commands agent to read
+┌──────────────────────────────────────────────────────────────┐
+│                    OKF Catalog / Skills                      │
+│   (Knowledge Layer: "Why code exists & domain rules")        │
+└──────────────────────────────┬───────────────────────────────┘
+                               │
+                               ▼ Queries AST relationships
+┌──────────────────────────────────────────────────────────────┐
+│                     Graphify Engine                          │
+│   (Structural Layer: "What calls what in AST")               │
+└──────────────────────────────────────────────────────────────┘
+
+```
+
+* **Instruction Layer** (`CLAUDE.md` / `AGENTS.md`): Root directives defining CLI tool usage, code style rules, and workflow restrictions.
+* **Knowledge Layer** (OKF Catalog / Skills): Git-versioned domain memory defining business logic, data schemas, trust tiers, and attestation contracts.
+* **Structural Layer** (Graphify): Deterministic syntax graph mapping code dependencies and architectural modules.
+
+### Tool Comparison
+
+| Tool | What it does | Which tool(s) it plugs into | Deployment Scale | Key caveats |
+| --- | --- | --- | --- | --- |
+| **Headroom** | A proxy/library/MCP server that compresses tool outputs, logs, files, and RAG chunks before they reach the model. Vendor claims 60–95% token reduction. | Claude Code, Codex, Copilot, Gemini, Bedrock, Vertex | Any size | Works by rerouting your API base URL through a local proxy — review what it caches/logs locally before wiring it into a shared team config. |
+| **KiroGraph** | An MCP server exposing a semantic, tree-sitter-based code knowledge graph — symbol lookups, call graphs, and impact analysis in one query instead of several read/grep tool calls. | Kiro CLI (full support); ~34 other MCP-capable tools (experimental) | Any size | Enabling every optional module adds several thousand tokens of tool definitions to *every* call — enable only the modules you actually use, or the tool overhead can outweigh the savings. |
+| **Graphify** | On-device, deterministic code graph engine using Tree-sitter AST extraction across 36+ languages. Outputs machine-index (`graph.json`), interactive visualization (`graph.html`), and narrative summary (`GRAPH_REPORT.md`). Applies Leiden community detection to map architectural modules and isolate high-centrality "god nodes". | Claude Code, Copilot CLI, Cursor, Codex, Gemini CLI, and 15+ more | **> 500 files or monorepos only.** Below 500 files, grep/Glob is more efficient. | Code parsing is fully local and free (no LLM call). Docs/PDF/image ingestion routes through your assistant's model API. Execution takes 10+ seconds on large repos — do NOT run in interactive Stop Hooks (causes hanging processes and CPU spikes); use non-blocking background Git hooks (`post-commit`/`post-checkout` with `&`) instead. |
+| **OKF (Open Knowledge Format) v0.2** | An open, vendor-neutral spec from Google Cloud for representing curated agent context as a directory of markdown files with YAML frontmatter — one concept per file, cross-linked, file path as identity. v0.2 adds **Production Trust System**: provenance (`sources`), trust tiers (`generated`, `verified`), staleness (`stale_after`), lifecycle (`status`), and reproducible computation contracts (`type: Attested Computation`). | Format, not a tool — consumable by any agent that can read files; not tied to a specific CLI | **> 500 files or monorepos only.** | Very recent (v0.2 launched mid-2026) and still evolving. Unlike Skills or `/knowledge`, nothing loads full content only-when-relevant by default — you still need to design (or bolt on) your own progressive-loading layer on top of an OKF bundle. Requires rigorous CI tooling to maintain frontmatter metadata over time. |
+
+### Graphify: Edge Confidence Tags
+
+When using Graphify, relationship edges in `graph.json` are decorated with evidence tags to indicate structural certainty:
+
+| Tag | Source & Extraction | Confidence | Practical Usage |
+| --- | --- | --- | --- |
+| **`EXTRACTED`** | Tree-sitter AST parsing (direct `import`, method call, class inheritance). | **1.0 (100%)** | Safe for code refactoring, automated symbol renaming, strict call-path verification. |
+| **`INFERRED`** | Dynamic routing, docstrings (`# NOTE:`, `# WHY:`), or naming heuristics. | **0.7 – 0.9** | Use for impact blast-radius estimation and cross-module architectural tracing; flag risky modifications. |
+| **`AMBIGUOUS`** | Conflicting targets or dynamic polymorphism resolution failures. | **< 0.7** | Flag for human engineering review; avoid automated refactoring across these edges. |
+
+### Where Each Tool Fits
 
 * **Headroom** is the closest thing to an automated version of Golden Rules 3 and 5 (minimal snippets, output limits) — it compresses what's already flowing through the pipe rather than requiring you to hand-curate it. Consider it if your logs/tool-output volume is the dominant cost driver and manual summarization isn't scaling.
 * **KiroGraph** extends the *Selective Indexing via Skills + Knowledge Bases* pattern in the Kiro Playbook above: instead of Kiro's agent reading files to build understanding, the graph is pre-built and queried. Good fit if you're already leaning on Kiro's Skills/`/knowledge` split and want the codebase itself indexed the same way.
-* **Graphify** fills the gap in the *Progressive Knowledge Indexing* section's "searched, not loaded, for large corpora" tier for **Claude Code and Copilot CLI** specifically — right now that tier has a native answer in Kiro (`/knowledge`) but not in the other two. If your team's biggest token sink is large-codebase exploration (not logs or docs), this is the most directly applicable of the three.
-* **OKF** is less a tool and more a portable version of the idea behind Skills and `AGENTS.md`/steering files: one markdown file per concept, machine-readable frontmatter, human-readable body. The difference is portability — an OKF bundle isn't tied to Claude Code, Kiro, or Copilot specifically, so it's worth piloting if you want one knowledge base that several agents/tools can read without reformatting per tool. Being v0.1, treat it as something to trial on a non-critical doc set, not something to standardize your team's whole knowledge layer on yet.
+* **Graphify** fills the gap in the *Progressive Knowledge Indexing* section's "searched, not loaded, for large corpora" tier for **Claude Code and Copilot CLI** specifically — right now that tier has a native answer in Kiro (`/knowledge`) but not in the other two. If your team's biggest token sink is large-codebase exploration (not logs or docs), this is the most directly applicable of the three. **Important:** use it only for codebases > 500 files; below that threshold, simpler grep/Glob searching is more efficient. Do NOT run Graphify in interactive Stop Hooks; use non-blocking background Git hooks instead.
+* **OKF v0.2** is less a tool and more a portable version of the idea behind Skills and `AGENTS.md`/steering files: one markdown file per concept, machine-readable frontmatter, human-readable body, with added trust/provenance/staleness metadata. The difference is portability — an OKF bundle isn't tied to Claude Code, Kiro, or Copilot specifically, so it's worth piloting if you want one knowledge base that several agents/tools can read without reformatting per tool. Being v0.2, treat it as something to trial on a non-critical doc set, not something to standardize your team's whole knowledge layer on yet. Also requires CI infrastructure to keep frontmatter in sync as code changes.
 
 None of these replace the native commands in the Cross-Tool Equivalents table — they're additive, and each introduces its own dependency (a local proxy, an MCP server, a generated graph file, or a new context format) that a team needs to own and update going forward.
 
@@ -519,6 +612,74 @@ This is closer to an expected tradeoff than a bug: compaction deliberately compr
 **"An agentic loop seems to be spinning / burning tokens with no progress."**
 This is what the budget/turn-count cap in the Team Pattern section is for. If you don't have one set yet, that's the first fix — Copilot CLI has this natively via session AI-credit limits; Claude Code and Kiro currently need it enforced externally. In the moment, stop the session rather than letting it continue, and start a fresh one with a narrower task brief once you understand what it got stuck on.
 
+**"Graphify output is stale and agents are refactoring non-existent modules."**
+This is the **Silent Graph Drift** problem: code changes across commits while static indexes (`graph.json`, `GRAPH_REPORT.md`) remain un-updated, leading agents to work from outdated AST snapshots. **Solution:** Use **non-blocking background Git hooks** to regenerate Graphify artifacts after each commit:
+
+```bash
+# .husky/post-commit
+#!/bin/bash
+if command -v graphify > /dev/null 2>&1; then
+  (
+    graphify . --update > ~/.cache/graphify-rebuild.log 2>&1
+    graphify export --format okf --out docs/knowledge/ >> ~/.cache/graphify-rebuild.log 2>&1
+  ) &
+fi
+
+```
+
+Then implement a **CI drift gate** (e.g., GitHub Actions) to verify artifacts and OKF catalogs stay in sync with source code on every push:
+
+```yaml
+name: Graphify & OKF Sync Verification
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  verify-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Graphify
+        run: |
+          pip install uv
+          uv tool install graphifyy
+
+      - name: Regenerate Graph & OKF Catalog
+        run: |
+          graphify .
+          graphify export --format okf --out docs/knowledge/
+
+      - name: Verify Git Sync Status
+        run: |
+          if [[ -n $(git status --porcelain docs/knowledge/) ]]; then
+            echo "ERROR: Code changes detected without updated OKF documentation."
+            echo "Run 'graphify export --format okf --out docs/knowledge/' locally."
+            exit 1
+          fi
+
+      - name: Verify Artifact Timestamp Alignment
+        run: |
+          JSON_TIME=$(stat -c %Y graphify-out/graph.json)
+          REPORT_TIME=$(stat -c %Y graphify-out/GRAPH_REPORT.md)
+          DIFF=$((JSON_TIME - REPORT_TIME))
+          ABS_DIFF=${DIFF#-}
+
+          if [ $ABS_DIFF -gt 60 ]; then
+            echo "ERROR: Artifact timestamp mismatch."
+            exit 1
+          fi
+          echo "Sync Verification Passed: Artifacts and OKF catalog are synchronized."
+
+```
+
 ---
 
 ## Team Rollout Checklist
@@ -533,7 +694,10 @@ This is what the budget/turn-count cap in the Team Pattern section is for. If yo
 * [ ] Prefer proactive manual compaction over waiting for automatic triggers when a big context-heavy task is coming up.
 * [ ] Order any custom context injection (RAG chunks, retrieved docs, injected snippets) static-to-volatile so it doesn't silently break prompt caching.
 * [ ] Set a budget cap or max-turn limit for autonomous agent runs, so a runaway loop fails safely instead of burning tokens silently.
+* [ ] Establish a **Git Boundary Rule**: reset or compact sessions at every commit to prevent context bloat across independent changes.
+* [ ] Create reusable subagents (`.claude/agents/`) for large-scale exploratory work to isolate noisy tool output.
 * [ ] If tracking spend across the team, log raw token counters (input / cache_read / cache_write / output / thinking) rather than relying on dollar totals alone.
+* [ ] If deploying Graphify + OKF, use **non-blocking background Git hooks** (not interactive Stop Hooks) to regenerate indexes, and implement CI drift gates to verify artifact sync.
 * [ ] If evaluating a third-party tool or spec (Headroom, KiroGraph, Graphify, OKF, or similar), review its data flow, update cadence, and maturity before rolling it out beyond a single volunteer's machine.
 
 ---
@@ -552,9 +716,11 @@ Everything else in the guide explains *why* these work — this is the scannable
 - Ask for diffs/patches, not rewrites (Rule 4).
 - Add an output limit — word count, bullet count, "patch only" (Rule 5).
 - Don't edit your instruction file or switch models/effort mid-session — both break the cache.
+- Delegate large-scale exploration to subagents, not the main thread (Rule 11).
 
 **When it gets messy**
 - Check usage first, don't guess: `/context` (Claude Code, Copilot CLI) or `/context show` (Kiro).
+- Reset at each Git boundary to prevent context bloat (Git Boundary Rule).
 - Summarize and reset before the session rots (Rule 7), or compact proactively before a big context-heavy task (Rule 10).
 - Set a turn/budget cap on autonomous runs so a runaway loop fails loudly, not silently.
 
@@ -568,11 +734,14 @@ Everything else in the guide explains *why* these work — this is the scannable
 | Scoped file read | `@file` | built-in read/grep | `#file` / `#selection` / `#editor` |
 | Lazy docs | Skills | Skills + `/knowledge` *(Experimental)* | `*.instructions.md` (path-scoped) |
 | Wipe history | `/clear` | new session | new session |
+| Subagent work | `.claude/agents/` | Not native | Not native |
 | Budget cap | manual/external | manual/external | native session AI-credit limit |
 
 **Don't:**
 - Don't fragment tiny questions into a full task-brief ritual — see [When to Stop Optimizing](#when-to-stop-optimizing).
 - Don't commit secrets into `CLAUDE.md` / `AGENTS.md` / `copilot-instructions.md` — they're regular tracked files.
+- Don't run Graphify in interactive Stop Hooks; use non-blocking background Git hooks instead.
+- Don't let Graphify/OKF artifacts drift out of sync with source code — implement CI drift gates to catch stale indexes automatically.
 - Don't cite a vendor-marketing token-reduction percentage without checking the source and framing it as a claim, not a fact.
 
 ---
@@ -583,4 +752,4 @@ Everything else in the guide explains *why* these work — this is the scannable
 2. **Minute 2:** Save the universal task brief prompt snippet.
 3. **Minute 3:** Practice requesting `diff only` on your next task.
 4. **Minute 4:** Check your active context status (`/context show` in Kiro, `/context` in Claude Code, or `/context` in Copilot CLI).
-5. **Minute 5:** Start clearing or resetting chats between tasks instead of running multi-issue sessions.
+5. **Minute 5:** Start clearing or resetting chats between tasks instead of running multi-issue sessions. Implement the Git Boundary Rule: reset at every commit.
