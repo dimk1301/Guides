@@ -30,32 +30,22 @@ A standard chatbot mostly pays for what it *says* — output tokens, generated s
 
 Because history is resent in full on every turn, the *cumulative* input volume across a session grows much faster than the number of turns. A 50-turn debugging session isn't 50x the cost of a 1-turn question, it's worse.
 
-**The mathematical shape of this cost:** if context grows linearly by $K$ tokens per turn over $N$ turns, total billed tokens scale quadratically: $\mathcal{O}(N^2 \cdot K)$. This means even a single 500-line file read in turn 3 incurs a compounding cost — it's billed again on turn 4, turn 5, and turn 30. This quadratic behavior is the reason Rules 1, 3, 7, and 9 below (fresh sessions, minimal snippets, proactive resets, inspecting context) matter more for agentic tools than they would for a one-shot chatbot question.
+**The mathematical shape of this cost:** if context grows linearly by K tokens per turn over N turns, total billed tokens scale quadratically: O(N² · K). This means even a single 500-line file read in turn 3 incurs a compounding cost — it's billed again on turn 4, turn 5, and turn 30. This quadratic behavior is the reason Rules 1, 3, 7, and 9 below (fresh sessions, minimal snippets, proactive resets, inspecting context) matter more for agentic tools than they would for a one-shot chatbot question.
 
 > Exact input/output cost splits vary by task and provider — treat "input dominates" as the general shape of agentic costs, not a fixed percentage to cite.
 
 ### What Actually Affects Token Usage
 
-```
-                  ┌──────────────────────────────┐
-                  │  Context Size (Inputs)       │
-                  │  - Active conversation       │
-                  │  - System instructions       │
-                  │  - Loaded files & terminal   │
-                  └──────────────┬───────────────┘
-                                 │
-                                 ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                          LLM Request                            │
-└──────────────┬──────────────────────────────┬───────────────────┘
-               │                                  │
-               ▼                                  ▼
-┌──────────────────────────────┐  ┌──────────────────────────────┐
-│  Model Choice                │  │  Output Constraints          │
-│  - Routine tasks → Fast      │  │  - Patches/diffs only        │
-│  - Heavy math → Reasoning    │  │  - Strict word & bullet limits│
-└──────────────────────────────┘  └──────────────────────────────┘
-
+```mermaid
+graph TD
+    A["Context Size<br/>- Active conversation<br/>- System instructions<br/>- Loaded files & terminal"] --> B["LLM Request"]
+    B --> C["Model Choice<br/>- Routine tasks → Fast<br/>- Heavy math → Reasoning"]
+    B --> D["Output Constraints<br/>- Patches/diffs only<br/>- Strict word & bullet limits"]
+    
+    style A fill:#e1f5ff
+    style B fill:#fff3e0
+    style C fill:#f3e5f5
+    style D fill:#f3e5f5
 ```
 
 * **Context size:** Conversation history, loaded files, logs, agent instructions, tool output.
@@ -77,9 +67,13 @@ This is the mechanism behind several of the Golden Rules below: pasting minimal 
 
 If you're pasting screenshots of errors, UI diffs, or architecture diagrams into a session, know that image tokens are counted and billed differently from text — typically derived from image dimensions rather than something you can eyeball the way you can with a paragraph. The same "minimal snippet" instinct from Rule 3 still applies: crop to the relevant region instead of pasting a full-screen screenshot, and don't leave large images sitting in a long-running session's history once you're done referencing them — they get resent on every subsequent turn just like everything else.
 
-### How Prompt Caching Breaks (and How to Keep It Intact)
+### How Prompt Caching Works and Cache Prefix Invalidation
 
-All three tools get an automatic discount on tokens that hit the cache. For Claude models this is well-documented: a cache hit costs 10% of the standard input price — a 90% discount (see the *Prompt Caching* row in the Claude Code Context Control Commands table below). Kiro CLI and Copilot CLI pass through comparable caching economics from their underlying model providers, but the exact discount, minimum cacheable size, and cache lifetime depend on which model you've selected inside each tool — don't assume the Claude numbers transfer 1:1 to a GPT or Gemini model running inside Kiro or Copilot.
+All three tools get an automatic discount on tokens that hit the cache. For Claude models this is well-documented: a cache hit costs 10% of the standard input price — a 90% discount. However, **there is a one-time cache-write premium** when first populating the cache: Anthropic charges 1.25× the standard input price for the initial write (or 2× for certain longer TTL configurations). This is why cache management matters — a rebuild isn't just full-price input, it's surcharged.
+
+**Note:** On subscription plans (Claude Pro/Max, Copilot premium requests), caching manifests as rate-limit relief rather than dollar savings; the economics above apply to API-key billing.
+
+Kiro CLI and Copilot CLI pass through comparable caching economics from their underlying model providers, but the exact discount, minimum cacheable size, and cache lifetime depend on which model you've selected inside each tool — don't assume the Claude numbers transfer 1:1 to a GPT or Gemini model running inside Kiro or Copilot.
 
 That discount only applies if the new prompt shares an exact, unbroken prefix with something already cached. Models process prompts strictly top-to-bottom: if a single character changes at token 10 of a 50,000-token prompt, everything from token 10 onward has to be recomputed, even though the rest of the prompt is unchanged. Think of it as a sandwich — the cache only holds as long as the bread (the fixed top portion) stays exactly the same.
 
@@ -128,10 +122,9 @@ Use these rules even if you are new to AI coding tools.
 5. **Add output limits:** Use rules such as `patch only`, `under 200 words`, or `max 5 bullets`.
 6. **Tier your models:** Use smaller or automatic models for routine work; reserve stronger models for complex reasoning.
 7. **Summarize & reset:** Summarize long sessions before they get messy, then continue in a new chat.
-8. **Use configuration files:** Store persistent rules in tool-specific instruction files instead of repeating them every time. Keep them static — editing them mid-session breaks the cache (see *How Prompt Caching Breaks*, above).
+8. **Use configuration files:** Store persistent rules in tool-specific instruction files instead of repeating them every time. Keep them static — editing them mid-session breaks the cache (see *How Prompt Caching Works and Cache Prefix Invalidation*, above).
 9. **Inspect active context:** Use built-in context tools to inspect, compact, or clear context rather than guessing.
-10. **Index large repos:** Prefer indexed or searchable knowledge stores for big codebases and docs instead of loading them permanently into context.
-11. **Delegate noisy exploration to subagents:** For large-scale scanning, grepping, or log analysis tasks, create isolated subagents to do the exploratory work and return only a summary. This breaks the quadratic cost compounding on exploratory tool output. *(See [Subagent Context Isolation](#subagent-context-isolation) in the Claude Code section for details and worked examples.)*
+10. **Delegate noisy exploration to subagents:** For large-scale scanning, grepping, or log analysis tasks, create isolated subagents to do the exploratory work and return only a summary. This breaks the quadratic cost compounding on exploratory tool output. *(See [Subagent Context Isolation](#subagent-context-isolation) in the Claude Code section for details and worked examples.)*
 
 *(These are levers, not a checklist to run on every prompt — see [When to Stop Optimizing](#when-to-stop-optimizing) below for when applying them isn't worth the overhead.)*
 
@@ -261,12 +254,12 @@ For teams, standardize four things:
 The built-in `/context` commands (see the Cross-Tool Equivalents table below) are enough for day-to-day use. If you need cost visibility across a team, or are building your own tooling around these agents, track raw token counters rather than dollar totals — they're the more stable unit as pricing changes. Five numbers cover it per request or loop iteration:
 
 * `input_tokens` — uncached input, full price
-* `cache_read_tokens` — cached input, heavily discounted
-* `cache_write_tokens` — one-time fee to populate the cache
+* `cache_read_tokens` — cached input, heavily discounted (10% of input price)
+* `cache_write_tokens` — one-time fee to populate the cache (1.25× to 2× the input price)
 * `output_tokens` — generated text
-* `thinking_tokens` — reasoning/extended-thinking tokens, where applicable
+* `thinking_tokens` — reasoning/extended-thinking tokens, where applicable (billed as output on most providers)
 
-A high `input_tokens`-to-`cache_read_tokens` ratio over time is usually the clearest sign that the context-ordering advice above, or Rules 1 and 7, aren't being followed in practice.
+A high `input_tokens`-to-`cache_read_tokens` ratio over time is usually the clearest sign that the context-ordering advice above, or Rules 1 and 7, aren't being followed in practice. Similarly, frequent large `cache_write_tokens` spikes indicate unnecessary cache invalidations (editing instruction files, switching models/effort mid-session).
 
 **Mapping counters to dollars, roughly:** if you need an actual budget number rather than just a trend line, multiply each counter by your model's current per-token rate — input, cache read, cache write, and output are usually four different rates, and the ratios between them change more often than the raw numbers do, so pull current rates from your provider's pricing page rather than hardcoding them. If you're building a dashboard or spreadsheet around this, add a reminder to refresh the rates; stale per-token prices are the most common source of wrong budget projections on long-lived internal tools.
 
@@ -288,20 +281,21 @@ Treat the rest of this guide as levers to pull when the task and context genuine
 
 ## Cross-Tool Equivalents
 
-The three tools converge on the same five levers, just with different commands. This table is a scannable index only — full mechanics, config keys, and caveats live in each tool's own Playbook section below, so look here first, then jump to your tool.
+The three tools converge on the same five levers, just with different commands. This table is the canonical reference — full mechanics, config keys, and caveats live in each tool's own Playbook section below, so look here first, then jump to your tool.
 
 | Lever | Claude Code | Kiro CLI | GitHub Copilot CLI |
 | --- | --- | --- | --- |
-| **Reasoning depth control** | `/effort` | `--effort` (launch) / `/effort` (mid-session) | Reasoning effort via `/model` picker |
+| **Automatic compaction** | Auto-compact at context limit (threshold configurable via env var or `/autocompact <window>`); manual `/compact` also available | On context overflow (configurable via `compaction.excludeMessages` and `compaction.excludeContextWindowPercent`) | On approaching context limit (~80% currently; threshold has moved between versions) |
 | **Manual compaction** | `/compact` | `/compact` | `/compact` |
-| **Automatic compaction** | None — manual only | On context overflow | On approaching context limit (~80% currently) |
-| **Scoped file reading** | `@file` references | Built-in read/grep tools | `#file`, `#selection`, `#editor` |
-| **Lazy-loaded documentation** | Skills | Skills + `/knowledge` *(Experimental)* | Path-scoped `*.instructions.md` (coarser — file-type match, not relevance) |
+| **Reasoning depth control** | `/effort` (low, medium, high, xhigh, max) | `--effort` (launch) / `/effort` (mid-session) | Reasoning effort via `/model` picker → "Thinking Effort" submenu |
+| **Scoped file reading** | `@file` references | Built-in read/grep tools | `@path/to/file` attachments (`#<number>` links issues/PRs) |
+| **Lazy-loaded documentation** | Skills | Skills + `/knowledge` *(Experimental — must be enabled)* | Path-scoped `*.instructions.md` (coarser — file-type match, not semantic relevance) |
 | **Non-destructive usage check** | `/context` | `/context show` | `/context` |
-| **Autonomous-run budget cap** | Not native — enforce via a wrapper/turn count you track yourself | Not native — same | Native: per-session AI-credit limit, stops cleanly and asks before exceeding |
+| **Autonomous-run budget cap** | Manual via wrapper/turn-count tracking (not native) | Manual via wrapper/turn-count tracking (not native) | Native: per-session AI-credit limit (`/limits`), stops cleanly and asks before exceeding |
 | **Subagent context isolation** | `.claude/agents/` (YAML frontmatter) | Not native | Not native |
+| **Cache-write premium** | 1.25× input price (standard 5-min TTL) or 2× (extended TTL) | Provider-dependent (varies by model) | Provider-dependent (varies by model) |
 
-The practical takeaway: whichever tool you're on, the same rule applies — **tune reasoning depth to the task, compact proactively rather than waiting for a wall, read only what's needed, and let large docs load lazily instead of upfront.** Details and exact syntax: see each tool's Playbook section.
+The practical takeaway: whichever tool you're on, the same rule applies — **tune reasoning depth to the task, compact proactively rather than waiting for a wall, read only what's needed, let large docs load lazily, and track cache writes as carefully as cache reads.** Details and exact syntax: see each tool's Playbook section.
 
 ---
 
@@ -309,31 +303,41 @@ The practical takeaway: whichever tool you're on, the same rule applies — **tu
 
 ### Claude Code Playbook
 
-Claude Code relies on **Prompt Caching** to reuse unchanged context prefixes. Certain actions invalidate the cache and force a complete context re-evaluation.
+Claude Code relies on **Prompt Caching** to reuse unchanged context prefixes, and ships with both automatic and manual compaction. Certain actions invalidate the cache and force a complete context re-evaluation.
 
 #### Context Control Commands
 
 | Tool / Command | What It Does | Cache Impact |
 | --- | --- | --- |
-| **Prompt Caching** | Reuses previously processed prompt prefixes automatically. | Saves ~90% on input costs (cache reads are billed at 10% of standard input price), but only for tokens that hit the cache. |
+| **Prompt Caching** | Reuses previously processed prompt prefixes automatically. | Saves ~90% on cache-read input costs (10% of standard input price), but incurs 1.25–2× premium on first write. |
+| **Auto-Compaction** | Automatically compresses history when context approaches the model's limit (configurable threshold via env var `CLAUDE_CODE_AUTO_COMPACT_WINDOW` or `/autocompact <window>`). | Resets the cached prefix on compaction trigger. |
 | `/context` | Shows a visual breakdown of current context usage without modifying it. | **Preserves cache prefix** (Preferred for checking progress). |
-| `/compact` | Summarizes history and rebuilds the active session context. | Resets the cached prefix. |
+| `/compact` | Manually summarizes history and rebuilds the active session context. | Resets the cached prefix. |
 | `/clear` | Wipes conversation history completely. | Rebuilds cache from scratch. |
-| `/effort` | Sets reasoning depth (`low` through `xhigh`/`max`). | Likely affects cache reuse, since effort level is part of the request configuration — avoid changing it mid-task. |
+| `/effort` | Sets reasoning depth (low, medium, high, xhigh, max). | Affects cache reuse; avoid changing mid-task since effort level is part of the request configuration. |
+| `/autocompact` | Set or adjust the automatic-compaction trigger window (e.g., `/autocompact 500k`; `auto` restores the default). Full disable is via settings/env var. | Changing the setting mid-session may reset the cache depending on how it is applied. |
 
 #### Subagent Context Isolation
 
 **What it is:** For large-scale exploratory work (repository scanning, grepping across many files, log analysis), create an isolated subagent context that runs independently and returns only a summary to the main session. This breaks the quadratic context-growth pattern by ensuring noisy exploratory output doesn't accumulate in the primary window.
 
-**Why it matters — the token economics:**
+**Why it matters — the token economics (with cache considerations):**
 
-Without subagents, a single repository scan returning 8,000 tokens of file paths accumulates a cost over subsequent turns. Over a 20-turn session, that single scan costs:
-$$20 \times 8,000 = 160,000 \text{ billed tokens}$$
+Without subagents, a single repository scan returning 8,000 tokens of file paths accumulates cost over subsequent turns. Over a 20-turn session *with warm cache*, that scan costs (in full-price token-equivalents):
 
-With subagents, the subagent reads 8,000 tokens once (paying for it once) and returns a 100-token summary to the main thread. The main thread pays only:
-$$8,000 + (20 \times 100) = 10,000 \text{ billed tokens}$$
+- Turn 3, first appearance: 8,000 tokens at full price = 8,000 equivalents
+- Turns 4–20, resent from history: 17 × 8,000 tokens at 10% cache-read price = 13,600 equivalents
+- **Total: ~21,600 token-equivalents**
 
-**Savings: ~150,000 tokens (93.75% reduction) on that single operation.**
+With subagents, the subagent reads the same 8,000 tokens in its own isolated context, and only a 100-token summary enters the main thread:
+
+- Subagent input: 8,000 tokens at full price (paid once; not cached across threads) = 8,000 equivalents
+- Main thread carrying the summary: 20 × 100 tokens at 10% cache-read price = ~200 equivalents
+- **Total: ~8,200 token-equivalents**
+
+**Savings: ~13,400 token-equivalents (~62%) in this scenario.** (Figures exclude the subagent's own internal tool-call loops — a subagent taking N steps costs proportionally more.)
+
+Real savings depend heavily on cache hit rates and turncount — the benefit is most pronounced in long sessions (20+ turns) where caching is warm. Even accounting for caching, subagents still isolate noisy exploratory output and prevent reasoning drift in the main thread.
 
 **How to use it:**
 
@@ -368,10 +372,11 @@ Use the codebase-scan subagent to find all uses of the validateUser() function.
 #### Practical Rules for Claude Code
 
 * Keep `CLAUDE.md` short (under ~200 lines) and placed at the project root; move details into separate files and pull them in with `@filename`.
-* Avoid changing `CLAUDE.md`, tool permissions, or effort level mid-session — each can force a cache rebuild (see *How Prompt Caching Breaks*, above, for why).
+* Avoid changing `CLAUDE.md`, tool permissions, effort level, or `/autocompact` settings mid-session — each can force a cache rebuild. This incurs the 1.25–2× cache-write premium.
 * Prefer `/context` over `/compact` when you just want to check usage, to keep your cache warm.
 * Use `/clear` between unrelated tasks; use `/compact` when continuing the same task with less context pressure.
-* Caching has a minimum cacheable prefix size — a two-line `CLAUDE.md` or short system prompt may sit below that floor and never actually hit the cache. Don't expect savings on trivially small always-on instructions; the payoff shows up on larger, stable prefixes (tool definitions, longer steering files, loaded documents).
+* Auto-compaction is on by default. If you want tighter control (e.g., to avoid rebuilds at critical moments), configure via `/autocompact` or environment variables before the session would overflow.
+* Caching has a minimum cacheable prefix size (roughly 1,024 tokens for Sonnet/Opus-class models; 2,048 for Haiku-class models) — a two-line `CLAUDE.md` or short system prompt may sit below that floor and never actually hit the cache. Don't expect savings on trivially small always-on instructions; the payoff shows up on larger, stable prefixes (tool definitions, longer steering files, loaded documents).
 * Cache breakpoints are limited per request. If you're layering system prompt + tool definitions + a large loaded document + conversation history, keep the boundaries between them in static-to-volatile order rather than leaving the split to be inferred.
 * Create subagents for any large-scale exploratory work to isolate noisy tool output and preserve main-session context for higher-level reasoning.
 
@@ -392,17 +397,18 @@ Use the codebase-scan subagent to find all uses of the validateUser() function.
 
 Kiro organizes context into three distinct tiers: **Always-on steering**, **On-demand skills**, and **Indexed Knowledge Bases**.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ ALWAYS-ON: AGENTS.md / .kiro/steering/*.md                   │
-├─────────────────────────────────────────────────────────────┤
-│ ON-DEMAND: Skills (metadata loads at startup, full content   │
-│            loads only when the agent needs it)               │
-├─────────────────────────────────────────────────────────────┤
-│ SEARCHED: /knowledge — Experimental (RAG index — 0 passive   │
-│           context cost once enabled)                         │
-└─────────────────────────────────────────────────────────────┘
-
+```mermaid
+graph TD
+    A["ALWAYS-ON<br/>AGENTS.md / .kiro/steering/*.md<br/>Loaded at startup for persistent guidance"]
+    B["ON-DEMAND<br/>Skills<br/>Metadata loads at startup,<br/>full content loads only when relevant"]
+    C["SEARCHED<br/>/knowledge — Experimental<br/>RAG index — 0 passive context cost once enabled"]
+    
+    A --> B
+    B --> C
+    
+    style A fill:#e3f2fd
+    style B fill:#f3e5f5
+    style C fill:#fff3e0
 ```
 
 #### Official Tools & Context Routing
@@ -493,19 +499,19 @@ Copilot CLI works best when constrained using concise instruction files and expl
 | --- | --- | --- |
 | **Auto Model Selection** | Routes tasks to an appropriate model based on intent. | Avoids running lightweight prompts through costly reasoning models. |
 | **Custom Instructions** | Project rules defined in `.github/copilot-instructions.md`. | Persistent guidance across sessions. |
-| **Context Scoping** | Direct reference variables like `#file`, `#selection`, or `#editor`. | Prevents unnecessary codebase context loading. |
+| **Context Scoping** | Attach files with `@relative/path`; reference issues/PRs with `#<number>`. | Prevents unnecessary codebase context loading. |
 | **Path-Scoped Rules** | Files like `*.instructions.md` matching specific file patterns. | Loads rules only when matching file types are edited. |
 | **Reasoning Effort (Copilot CLI)** | For reasoning models that support it, open the `/model` picker, select the model, then pick a level from the "Thinking Effort" submenu. | Balances response speed against reasoning depth per task. |
 | **Auto-Compaction (Copilot CLI)** | Automatically compresses history in the background as the session approaches the context limit (current docs cite ~80%, with earlier releases at ~95% — this threshold has moved between versions); `/compact` also available manually. | Enables long sessions without manual cleanup; `/context` shows the token-usage breakdown. |
-| **Session AI-Credit Limit** | Cap the amount of work Copilot performs on a single session before it stops and asks. | Direct, native implementation of Golden Rule 10's "budget cap" for autonomous/long-running runs. |
+| **Session AI-Credit Limit** | Cap the amount of work Copilot performs on a single session before it stops and asks. (`/limits` command to configure) | Direct, native implementation of the budget-cap pattern for autonomous/long-running runs. |
 
 #### Practical Rules for GitHub Copilot CLI
 
 * Avoid switching models or reasoning-effort levels mid-session — it can break cache reuse and force a rebuild.
 * Use `/context` to check usage before deciding whether to compact manually.
-* Prefer `#file` / `#selection` references over asking Copilot to explore the whole repo.
-* Cache lifetime is provider-dependent, not fixed: roughly 24 hours of inactivity for OpenAI-hosted models, about 1 hour for most others. If you're returning to an old session after a break, starting fresh — or running `/compact` so what rebuilds is a short summary rather than the full history — is often cheaper than hoping the cache is still warm.
-* Set a session AI-credit limit before kicking off a long autonomous run rather than relying on manual attention to notice it's spinning.
+* Prefer explicit `@path/to/file` attachments over asking Copilot to explore the whole repo.
+* Cache lifetime is provider-dependent (not fixed by Copilot): OpenAI models typically cache for 5–10 minutes of inactivity with possible off-peak extensions; other providers vary from ~1 hour to ~24 hours. If you're returning to an old session after a break, starting fresh — or running `/compact` so what rebuilds is a short summary rather than the full history — is often cheaper than hoping the cache is still warm.
+* Set a session AI-credit limit via `/limits` before kicking off a long autonomous run rather than relying on manual attention to notice it's spinning.
 
 #### Starter `.github/copilot-instructions.md`
 
@@ -542,24 +548,18 @@ Everything above this section is a native, vendor-shipped feature of Claude Code
 
 When combining multiple tools and knowledge-representation systems, think of them as three distinct layers:
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│                   CLAUDE.md / AGENTS.md                      │
-│   (Instruction Layer: "How the agent must act & tool use")   │
-└──────────────────────────────┬───────────────────────────────┘
-                               │
-                               ▼ Commands agent to read
-┌──────────────────────────────────────────────────────────────┐
-│                    OKF Catalog / Skills                      │
-│   (Knowledge Layer: "Why code exists & domain rules")        │
-└──────────────────────────────┬───────────────────────────────┘
-                               │
-                               ▼ Queries AST relationships
-┌──────────────────────────────────────────────────────────────┐
-│                     Graphify Engine                          │
-│   (Structural Layer: "What calls what in AST")               │
-└──────────────────────────────────────────────────────────────┘
-
+```mermaid
+graph TD
+    A["CLAUDE.md / AGENTS.md<br/>Instruction Layer<br/>How the agent must act & tool use"]
+    B["OKF Catalog / Skills<br/>Knowledge Layer<br/>Why code exists & domain rules"]
+    C["Graphify Engine<br/>Structural Layer<br/>What calls what in AST"]
+    
+    A -->|Commands agent to read| B
+    B -->|Queries AST relationships| C
+    
+    style A fill:#e3f2fd
+    style B fill:#f3e5f5
+    style C fill:#fff3e0
 ```
 
 * **Instruction Layer** (`CLAUDE.md` / `AGENTS.md`): Root directives defining CLI tool usage, code style rules, and workflow restrictions.
@@ -581,9 +581,9 @@ When using Graphify, relationship edges in `graph.json` are decorated with evide
 
 | Tag | Source & Extraction | Confidence | Practical Usage |
 | --- | --- | --- | --- |
-| **`EXTRACTED`** | Tree-sitter AST parsing (direct `import`, method call, class inheritance). | **1.0 (100%)** | Safe for code refactoring, automated symbol renaming, strict call-path verification. |
-| **`INFERRED`** | Dynamic routing, docstrings (`# NOTE:`, `# WHY:`), or naming heuristics. | **0.7 – 0.9** | Use for impact blast-radius estimation and cross-module architectural tracing; flag risky modifications. |
-| **`AMBIGUOUS`** | Conflicting targets or dynamic polymorphism resolution failures. | **< 0.7** | Flag for human engineering review; avoid automated refactoring across these edges. |
+| **EXTRACTED** | Tree-sitter AST parsing (direct `import`, method call, class inheritance). | **1.0 (100%)** | Safe for code refactoring, automated symbol renaming, strict call-path verification. |
+| **INFERRED** | Dynamic routing, docstrings (`# NOTE:`, `# WHY:`), or naming heuristics. | **0.7 – 0.9** | Use for impact blast-radius estimation and cross-module architectural tracing; flag risky modifications. |
+| **AMBIGUOUS** | Conflicting targets or dynamic polymorphism resolution failures. | **< 0.7** | Flag for human engineering review; avoid automated refactoring across these edges. |
 
 ### Where Each Tool Fits
 
@@ -604,13 +604,13 @@ A short list of the problems people actually hit, and where to look first.
 Run the usage-inspection command for your tool (`/context` in Claude Code and Copilot CLI, `/context show` in Kiro) before doing anything else — guessing wastes more time than checking. Common culprits: too many optional MCP modules/tool definitions enabled (see the KiroGraph caveat above), a long conversation history that hasn't been compacted, or a file you loaded early in the session and forgot was still there.
 
 **"Caching doesn't seem to be working — costs aren't dropping."**
-The most common cause is a broken prefix: something at the top of your context changed between requests (a timestamp, a reordered tool list, a mid-session model or effort-level switch, or inconsistent formatting). Re-check *How Prompt Caching Breaks* above and the static-to-volatile ordering. Also confirm you're not just between cache windows — Claude's default ephemeral cache lasts a few minutes, and Copilot CLI's provider-dependent cache windows range from about an hour to about a day of inactivity before they expire — so a long pause between messages can look like "caching stopped working" when it's actually just expired.
+The most common cause is a broken prefix: something at the top of your context changed between requests (a timestamp, a reordered tool list, a mid-session model or effort-level switch, or inconsistent formatting). Re-check *How Prompt Caching Works and Cache Prefix Invalidation* above and the static-to-volatile ordering. Also confirm you're not just between cache windows — Claude's default ephemeral cache lasts a few minutes, and Copilot CLI's cache windows vary by provider (roughly 5–10 minutes to ~24 hours depending on the backend — check provider docs for exact TTL). A long pause between messages can look like "caching stopped working" when it's actually just expired.
 
 **"Auto-compaction fired and now the agent seems to have forgotten something important."**
 This is closer to an expected tradeoff than a bug: compaction deliberately compresses intermediate tool output and exploratory discussion first, and is generally one-way once it happens. If something needs to definitely survive, state it explicitly as a decision or constraint before compaction happens, rather than leaving it buried in a tool result. Know your tool's recovery path — Kiro's `/chat resume` returns to the pre-compaction session; check whether your version of Claude Code or Copilot CLI offers an equivalent before assuming history is gone for good.
 
 **"An agentic loop seems to be spinning / burning tokens with no progress."**
-This is what the budget/turn-count cap in the Team Pattern section is for. If you don't have one set yet, that's the first fix — Copilot CLI has this natively via session AI-credit limits; Claude Code and Kiro currently need it enforced externally. In the moment, stop the session rather than letting it continue, and start a fresh one with a narrower task brief once you understand what it got stuck on.
+This is what the budget/turn-count cap in the Team Pattern section is for. If you don't have one set yet, that's the first fix — Copilot CLI has this natively via session AI-credit limits (`/limits`); Claude Code and Kiro currently need it enforced externally. In the moment, stop the session rather than letting it continue, and start a fresh one with a narrower task brief once you understand what it got stuck on.
 
 **"Graphify output is stale and agents are refactoring non-existent modules."**
 This is the **Silent Graph Drift** problem: code changes across commits while static indexes (`graph.json`, `GRAPH_REPORT.md`) remain un-updated, leading agents to work from outdated AST snapshots. **Solution:** Use **non-blocking background Git hooks** to regenerate Graphify artifacts after each commit:
@@ -715,34 +715,37 @@ Everything else in the guide explains *why* these work — this is the scannable
 - Paste snippets, not whole files or full logs (Rule 3).
 - Ask for diffs/patches, not rewrites (Rule 4).
 - Add an output limit — word count, bullet count, "patch only" (Rule 5).
-- Don't edit your instruction file or switch models/effort mid-session — both break the cache.
-- Delegate large-scale exploration to subagents, not the main thread (Rule 11).
+- Don't edit your instruction file or switch models/effort mid-session — both break the cache and incur the cache-write premium.
+- Delegate large-scale exploration to subagents, not the main thread (Rule 10).
 
 **When it gets messy**
 - Check usage first, don't guess: `/context` (Claude Code, Copilot CLI) or `/context show` (Kiro).
 - Reset at each Git boundary to prevent context bloat (Git Boundary Rule).
-- Summarize and reset before the session rots (Rule 7), or compact proactively before a big context-heavy task (Rule 10).
+- Summarize and reset before the session rots (Rule 7), or compact proactively before a big context-heavy task (Rules 7 & 9).
 - Set a turn/budget cap on autonomous runs so a runaway loop fails loudly, not silently.
 
 **Command quick-reference**
 
+<!-- MAINTENANCE: The table below mirrors the canonical Cross-Tool Equivalents table. Update BOTH together or delete this copy. -->
+
 | | Claude Code | Kiro CLI | Copilot CLI |
 | --- | --- | --- | --- |
 | Check usage | `/context` | `/context show` | `/context` |
-| Compact | `/compact` (manual only) | `/compact` (also automatic) | `/compact` (also automatic, ~80% currently) |
+| Auto-compact (status/threshold) | `/autocompact` (set window/threshold) | Automatic (configurable retention) | Automatic (~80% threshold) |
+| Manual compact | `/compact` | `/compact` | `/compact` |
 | Set effort | `/effort` | `--effort` / `/effort` | `/model` picker → Thinking Effort |
-| Scoped file read | `@file` | built-in read/grep | `#file` / `#selection` / `#editor` |
+| Scoped file read | `@file` | built-in read/grep | `@path/to/file` |
 | Lazy docs | Skills | Skills + `/knowledge` *(Experimental)* | `*.instructions.md` (path-scoped) |
 | Wipe history | `/clear` | new session | new session |
 | Subagent work | `.claude/agents/` | Not native | Not native |
-| Budget cap | manual/external | manual/external | native session AI-credit limit |
+| Budget cap | manual/external | manual/external | native `/limits` |
 
 **Don't:**
 - Don't fragment tiny questions into a full task-brief ritual — see [When to Stop Optimizing](#when-to-stop-optimizing).
 - Don't commit secrets into `CLAUDE.md` / `AGENTS.md` / `copilot-instructions.md` — they're regular tracked files.
+- Don't edit instruction files or switch models/effort mid-session — both trigger expensive cache rebuilds (1.25–2× the input price).
 - Don't run Graphify in interactive Stop Hooks; use non-blocking background Git hooks instead.
 - Don't let Graphify/OKF artifacts drift out of sync with source code — implement CI drift gates to catch stale indexes automatically.
-- Don't cite a vendor-marketing token-reduction percentage without checking the source and framing it as a claim, not a fact.
 
 ---
 
