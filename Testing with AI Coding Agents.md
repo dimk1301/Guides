@@ -2,6 +2,16 @@
 
 *Agent-agnostic — applies to any coding agent (Claude Code, Cursor, Copilot, Codex, etc.)*
 
+## TL;DR
+
+1. **Spec first** (acceptance criteria + edge cases) — it's the source of truth
+2. **Tests from the spec**, in a clean context, before any implementation exists
+3. **Human reviews the tests** — the cheap gate that makes it all work
+4. **Implement against the tests** — never edit tests to make them pass
+5. **Guardrail before merge** — mutation testing or a red-team prompt
+
+*Working in an existing codebase with no tests? See §6 — the first two steps invert.*
+
 ## Contents
 
 - [TL;DR](#tldr)
@@ -133,18 +143,33 @@ useEffect(() => {
 
 ### Guardrail — Stryker
 
+Stryker is a **mutation testing** tool: it deliberately breaks your code in small ways and checks whether your tests notice. §2 explained why that's a stronger signal than coverage — here's what running it actually looks like, step by step.
+
+Install and generate a starter config:
+
 ```bash
 npm i -D @stryker-mutator/core @stryker-mutator/jest-runner && npx stryker init
 ```
+
+Minimal config for this project:
 
 ```json
 // stryker.conf.json — "perTest" runs only the tests that cover each mutant (~10× faster)
 { "testRunner": "jest", "mutate": ["src/SearchBox.tsx"], "coverageAnalysis": "perTest" }
 ```
 
-Run `npx stryker run`. The report lists each surviving mutant with its file, line, and the exact change applied — treat every survivor as a missing test, not as noise to configure away.
+Now run `npx stryker run`. What happens next, in plain terms:
 
-Here, the mutants map directly onto the spec's rules:
+1. **Stryker creates "mutants"** — copies of `SearchBox.tsx`, each with one tiny deliberate change: a comparison flips (`>` becomes `>=`), an operator swaps (`&&` becomes `||`), a condition is deleted, or a constant shifts (`300` becomes `301`). Each mutant simulates one plausible bug.
+2. **It runs your test suite against each mutant** — one broken copy of the code at a time. This is why the first run takes minutes, not seconds: the suite runs once *per mutant*.
+3. **It grades every mutant:**
+   - **Killed** — at least one test *failed* against the broken code. Your suite genuinely guards that behavior. This is what you want.
+   - **Survived** — the suite stayed *green* despite the break. A real behavior change that no test would catch — a blind spot.
+4. **It prints a score**: killed ÷ total mutants. A high score means most possible behavior changes would be noticed by at least one test. This — not coverage percentage — is the number to gate on.
+
+The report lists each surviving mutant with its file, line, and the exact change applied — treat every survivor as a missing test, not as noise to configure away.
+
+For this component, the mutants map directly onto the spec's rules — which makes the report easy to read:
 
 | Mutant | Spec rule it probes | Result with the tests above |
 | --- | --- | --- |
@@ -153,7 +178,7 @@ Here, the mutants map directly onto the spec's rules:
 | remove `clearTimeout(t)` | "rapid retyping → only the latest query" | **Killed** — both `sho` and `shoes` get searched |
 | `results.length > 0` → `>= 0` | "'No results found' shown *instead of* a list" | **Survived** — nothing asserted the list is absent |
 
-The survivor is the interesting one: the empty-results test asserted "No results found" was *present*, never that the list was *absent*. Fix — add one line to that test:
+The survivor is the interesting one: the empty-results test asserted "No results found" was *present*, never that the list was *absent*. So the mutant that makes the component show both a list *and* the "No results" message goes unnoticed. Fix — add one line to that test:
 
 ```tsx
 expect(screen.queryByRole("list")).not.toBeInTheDocument();
