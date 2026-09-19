@@ -65,7 +65,7 @@ Type `/guide` inside a session to talk to the built-in Guide agent. It knows the
 - **Be specific.** Name files with `@`, state the goal and constraints, and say how to verify ("run the tests"). Vague prompts cause wandering exploration, which costs credits.
 - **Write project instructions once** (section 4) instead of retyping conventions.
 - **Use custom agents** for recurring jobs like code review or test writing.
-- **Approve deliberately.** Kiro asks before writing files or running commands. Trust routine patterns (e.g. `npm run`), not everything. In 3.x, trust flags are replaced by capability rules in `permissions.yaml`.
+- **Approve deliberately.** Kiro asks before writing files or running commands. Trust routine patterns (e.g. `npm run`), not everything. In 3.x, trust flags are replaced by capability rules in `permissions.yaml`. See section 5 for guardrails.
 - **Commit before big agent runs** so you can diff and revert.
 - **Don't paste secrets** and follow your company's AI usage policy.
 
@@ -204,7 +204,118 @@ Commit it so everyone gets the same behavior. Keep `AGENTS.md` under a page: it 
 
 ---
 
-## 5. Saving tokens and credits
+## 5. Guardrails: permissions, hooks, and policies
+
+Some guardrails are **hard** (enforced by the tool) and some are **soft** (the model is asked to comply). Combine them.
+
+| Layer | Type | Purpose |
+|---|---|---|
+| Permissions (`permissions.yaml` or agent `permissions`) | Hard | Allow, ask, or deny by capability and pattern |
+| Hooks (`PreToolUse` + exit code 2) | Hard | Custom checks that can block an action |
+| Admin policy (`managed-settings.json`) | Hard, org-wide | Restrictions users can't loosen |
+| `.kiroignore` | Partial | Hides files from search (see CLI caveat) |
+| Steering, agent-type hooks | Soft | Instructions the model may or may not follow |
+
+### 5.1 Permissions (allow / ask / deny)
+
+Rules have a capability (`fs_read`, `fs_write`, `shell`, `web_fetch`, `web_search`, `mcp`, `subagent`, and more), optional `match` / `exclude` globs, and an effect. **Deny beats ask beats allow**, regardless of which scope defined the rule. Shell commands are split on `;`, `&&`, `||`, `|` and each part is checked separately, so an allowed `npm test *` can't smuggle in a chained `curl`.
+
+```yaml
+# ~/.kiro/settings/permissions.yaml
+rules:
+  - capability: shell
+    match: ["npm *"]
+    exclude: ["npm publish*"]
+    effect: allow
+  - capability: fs_read
+    match: ["**/.env", "**/.env.*", "secrets/**", "**/*.pem"]
+    effect: deny
+  - capability: shell
+    match: ["rm -rf *", "sudo *"]
+    effect: deny
+```
+
+**Defaults with no config:** workspace file reads and read-only git/system-info commands are allowed. Writes to Kiro's own settings and permission files are always denied, and writes to `.git/**`, `.kiro/agents/**`, `.kiro/hooks/**`, and `.kiroignore` always prompt. Everything else prompts.
+
+**Sharing caveat:** user rules live in `~/.kiro/settings/`, and workspace rules are stored per user outside the repo, so a cloned repo cannot inject permissions and you can't commit a shared `permissions.yaml`. To share guardrails via git, use a `permissions` block in the agent config (`.kiro/agents/`) or hooks.
+
+In the CLI, `/tools untrust shell` forces prompts for shell. When approving with "Always allow", tighten the suggested pattern instead of accepting a broad one.
+
+### 5.2 Hooks
+
+In CLI 3.x, hooks are standalone `.kiro/hooks/*.json` files. A **command** action receives context as JSON on stdin, and exit code 2 blocks the operation for `PreToolUse` and `UserPromptSubmit`. An **agent** action only appends a prompt to the model context, so it is a soft reminder, not enforcement.
+
+| Trigger | Can block? |
+|---|---|
+| `PreToolUse` (matcher = tool name regex) | Yes |
+| `UserPromptSubmit` (matcher = prompt text) | Yes |
+| `PreTaskExec` (before a spec task) | Yes |
+| `PostToolUse`, `PostFileSave` / `Create` / `Delete` (matcher = file path) | No |
+| `SessionStart`, `Stop`, `PostTaskExec`, `Manual` | No |
+
+```json
+{
+  "version": "v1",
+  "hooks": [
+    { "name": "guard-shell", "trigger": "PreToolUse", "matcher": "shell",
+      "action": { "type": "command", "command": "./scripts/guard-shell.sh" },
+      "timeout": 5, "enabled": true },
+    { "name": "format-on-save", "trigger": "PostFileSave", "matcher": "\\.tsx?$",
+      "action": { "type": "command", "command": "prettier --write {{filePath}}" },
+      "timeout": 10, "enabled": true }
+  ]
+}
+```
+
+```bash
+#!/usr/bin/env bash
+# scripts/guard-shell.sh
+input=$(cat)
+cmd=$(echo "$input" | jq -r '.tool_input.command // empty')
+if echo "$cmd" | grep -Eq 'git push.*(--force|-f)|DROP TABLE'; then
+  echo "Blocked: destructive command" >&2
+  exit 2
+fi
+exit 0
+```
+
+**Verify the stdin schema:** the field names (`tool_input.command`) are from recollection, not confirmed in the current docs. Temporarily run `cat > /tmp/hook-input.json` in a hook, trigger it once, and read the file.
+
+**2.x vs 3.x:**
+- 2.x hooks are embedded in the agent config (`agentSpawn`, `preToolUse`, `postToolUse`, `stop`, `userPromptSubmit`) and use tool names like `fs_write` and `execute_bash`. 3.x uses `write` and `shell`.
+- `kiro-cli agent migrate` converts old hooks. To support both, use a matcher like `shell|execute_bash`.
+- `Stop` is documented as session end in 3.x, while other sources describe it firing when a response finishes. Test before relying on it.
+
+**Good uses:** block force-pushes, prod commands, or edits to lockfiles and migrations; auto-format or lint after edits; inject context at session start; scan prompts for secrets. Keep gating hooks fast, since they run before every matching call.
+
+### 5.3 .kiroignore
+
+Uses gitignore syntax at the project root, in subdirectories, or globally (`~/.kiro/settings/kiroignore`). The IDE enforces it across agent tools, but **in CLI 3.x it only filters content-search and filename-search results**. Don't rely on it as a secrets barrier in the CLI; add `fs_read` deny rules (5.1) as well.
+
+### 5.4 Company-wide policy
+
+Ask your admin whether a managed policy is deployed. Admins place a `managed-settings.json` at an OS-protected path (or push it via MDM) containing `deny` and `ask` rules. Admin policies can only restrict, never grant, and no preset or personal `allow` overrides them. A malformed file fails closed (all tools denied). Enforcement is client-side, so a user with local admin rights could circumvent it. Separate console settings govern models, MCP servers, and web tools.
+
+### 5.5 Other safety nets
+
+- **Plan mode** (`Shift+Tab`) reviews the approach before edits.
+- **Checkpoints and rewind** can undo agent changes (see the docs).
+- **Git:** commit before long runs and review the diff.
+- **Headless runs:** with no interactive client, every "ask" becomes a deny, so only explicitly allowed operations run. That is a good default for CI.
+- **Sub-agents** inherit the parent's rules, and the most restrictive rule wins.
+
+### 5.6 Suggested baseline
+
+1. Deny secret reads and destructive shell commands in your user `permissions.yaml`.
+2. Allow only the build and test commands you use, with excludes like `npm publish*`.
+3. Commit a `PreToolUse` guard hook and a format-on-save hook to `.kiro/hooks/`.
+4. Put per-role limits in agent configs (e.g. a read-only reviewer).
+5. Ask your admin about a managed policy.
+6. Test each guardrail by asking Kiro to do the forbidden thing.
+
+---
+
+## 6. Saving tokens and credits
 
 Kiro bills in credits. A simple prompt can cost under one credit; complex work (e.g. executing a spec task) usually costs more, and models consume credits at different rates. Run `/usage` to see what applies to you (enterprise accounts may be managed differently).
 
@@ -218,17 +329,20 @@ Kiro bills in credits. A simple prompt can cost under one credit; complex work (
 
 ---
 
-## 6. Caveats and security
+## 7. Caveats and security
 
 - 3.x breaks compatibility in places: session format, hooks (now standalone `.kiro/hooks/*.json`), tool IDs, and the trust model. Back up `~/.kiro/sessions/` before switching, and use `/upgrade-agent` to migrate agent configs.
 - Agents with write tools can modify anything under `~/.kiro` (skills, steering, MCP config), and skills run with the agent's permissions. Review third-party skills before installing.
 - Enterprise admins may restrict models, MCP servers, and settings.
 
-## 7. References
+## 8. References
 
 - Setup: kiro.dev/docs/cli/setup
 - CLI commands: kiro.dev/docs/reference/cli-commands
 - Slash commands: kiro.dev/docs/reference/slash-commands
+- Permissions and hooks: kiro.dev/docs/permissions, kiro.dev/docs/cli/v3/hooks-migration
+- Admin policies: kiro.dev/docs/enterprise/governance/permissions
+- Kiroignore: kiro.dev/docs/kiroignore
 - Steering, skills, custom agents: kiro.dev/docs/steering, /docs/skills, /docs/custom-agents
 - Models and effort: kiro.dev/docs/models
 - What's new in 3.0: kiro.dev/docs/cli/v3
