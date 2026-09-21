@@ -1,7 +1,7 @@
 # Structural Code Graphs for AI Coding Agents
 **CodeGraph, KiroGraph, and Graphify**
 
-> **Audience:** Experienced software engineers who are new to AI coding agents, MCP (Model Context Protocol), and code knowledge graphs.
+> **Audience:** Experienced software engineers new to AI coding agents, MCP, and code knowledge graphs.
 
 ---
 
@@ -9,18 +9,19 @@
 
 1. [Key Concepts and Definitions](#1-key-concepts-and-definitions)
 2. [The Problem](#2-the-problem)
-3. [How the Graph is Built](#3-how-the-graph-is-built)
-4. [Tool Comparison: CodeGraph vs KiroGraph vs Graphify](#4-tool-comparison-codegraph-vs-kirograph-vs-graphify)
-5. [Which Tool Should You Learn?](#5-which-tool-should-you-learn)
-6. [When to Use Which](#6-when-to-use-which)
-7. [Setup: CodeGraph in Claude Code](#7-setup-codegraph-in-claude-code)
-8. [Setup: KiroGraph in Kiro CLI](#8-setup-kirograph-in-kiro-cli)
-9. [Common Workflows](#9-common-workflows)
-10. [Evidence and Benchmarks](#10-evidence-and-benchmarks)
-11. [CLI and MCP Cheat Sheets](#11-cli-and-mcp-cheat-sheets)
-12. [Pitfalls and Tips](#12-pitfalls-and-tips)
-13. [Learning Path](#13-learning-path)
-14. [Appendix: Graphify Quick Start](#14-appendix-graphify-quick-start)
+3. [Parser, AST, and Graph: How They Relate](#3-parser-ast-and-graph-how-they-relate)
+4. [How the Graph is Built](#4-how-the-graph-is-built)
+5. [Tool Comparison: CodeGraph vs KiroGraph vs Graphify](#5-tool-comparison-codegraph-vs-kirograph-vs-graphify)
+6. [Which Tool Should You Learn?](#6-which-tool-should-you-learn)
+7. [When to Use Which](#7-when-to-use-which)
+8. [Setup: CodeGraph in Claude Code](#8-setup-codegraph-in-claude-code)
+9. [Setup: KiroGraph in Kiro CLI](#9-setup-kirograph-in-kiro-cli)
+10. [Common Workflows](#10-common-workflows)
+11. [Evidence and Benchmarks](#11-evidence-and-benchmarks)
+12. [CLI and MCP Cheat Sheets](#12-cli-and-mcp-cheat-sheets)
+13. [Pitfalls and Tips](#13-pitfalls-and-tips)
+14. [Learning Path](#14-learning-path)
+15. [Appendix: Graphify Quick Start](#15-appendix-graphify-quick-start)
 
 ---
 
@@ -62,7 +63,31 @@ With a knowledge graph, the agent issues one MCP call—e.g. `codegraph_explore`
 
 ---
 
-## 3. How the Graph is Built
+## 3. Parser, AST, and Graph: How They Relate
+
+Three layers, one pipeline:
+
+```
+Source code  →  [Parser]  →  AST  →  [Extractor + Resolver]  →  Graph
+```
+
+**Parser.** A program that reads source text and produces an AST. It is per-file and syntax-only. It answers: "Is this valid, and what is its grammatical structure?" It does not know what symbols refer to.
+
+**AST.** A tree of syntax. One AST per file. Nodes are language constructs (`FunctionDeclaration`, `CallExpression`, `ImportSpecifier`). Containment is the only relationship. No cross-file links, no type resolution.
+
+**Graph.** A semantic model built by walking ASTs and resolving references across files. Nodes are entities (functions, classes, methods), edges are relationships (`calls`, `imports`, `extends`, `implements`). A general graph, not a tree. Spans the whole project.
+
+**The key distinction.** Given `u.greet()`:
+
+- The **parser** produces a `CallExpression` node wrapping a `MemberExpression`.
+- The **AST** records only the syntax. It does not know what `u` is or where `greet` is defined.
+- The **graph** records a `calls` edge from the enclosing function to `User.greet`—*only if* the extractor can resolve `u`'s type across files.
+
+That `calls` edge does not exist anywhere in the AST. It is created by cross-file resolution. This is the entire value the graph adds: **it captures the semantic relationships the AST cannot represent.** Everything the graph fails to capture (dynamic dispatch, macro expansion, line-level content) is a consequence of what the AST omits and the resolver cannot infer.
+
+---
+
+## 4. How the Graph is Built
 
 **Parsing**  
 Source files are parsed into ASTs via Tree-sitter. KiroGraph indexes 24–26 node kinds. CodeGraph supports 66 languages using parallel worker pools. Graphify uses Tree-sitter plus multimodal extraction for docs, PDFs, and media.
@@ -71,6 +96,8 @@ Source files are parsed into ASTs via Tree-sitter. KiroGraph indexes 24–26 nod
 
 - **Nodes:** functions, methods, classes, interfaces, types, enums, variables, constants, routes, components, dependencies, vulnerabilities.
 - **Edges:** calls, imports, exports, extends, implements, contains, references, instantiates, overrides, decorates, `type_of`, returns.
+
+Some edges are **EXTRACTED** (visible directly in the AST), some are **INFERRED** (from type resolution or heuristics), and some are **AMBIGUOUS** (could not be resolved). Graphify tags edges with these provenance values for auditing.
 
 **Storage**  
 The structural graph is stored locally:
@@ -84,7 +111,7 @@ The graph is exposed to LLM agents as an MCP server. Agents execute typed struct
 
 ---
 
-## 4. Tool Comparison: CodeGraph vs KiroGraph vs Graphify
+## 5. Tool Comparison: CodeGraph vs KiroGraph vs Graphify
 
 | Feature / Dimension | CodeGraph | KiroGraph | Graphify |
 | :--- | :--- | :--- | :--- |
@@ -105,7 +132,7 @@ The graph is exposed to LLM agents as an MCP server. Agents execute typed struct
 
 ---
 
-## 5. Which Tool Should You Learn?
+## 6. Which Tool Should You Learn?
 
 **Start with CodeGraph if you are learning.**
 
@@ -122,7 +149,7 @@ The graph is exposed to LLM agents as an MCP server. Agents execute typed struct
 
 ---
 
-## 6. When to Use Which
+## 7. When to Use Which
 
 ### Use CodeGraph if:
 - You prioritize a lightweight, fast, self-contained binary with zero Node.js or external runtime dependencies.
@@ -143,13 +170,18 @@ The graph is exposed to LLM agents as an MCP server. Agents execute typed struct
 - You are willing to manage a Python environment and git-hook-based syncing.
 
 ### Use Neither if:
-- You work in unsupported language edge-cases (e.g., C projects heavily dependent on preprocessor macros where ASTs cannot reflect structure).
-- You are debugging dynamic dispatch runtime behaviors, reflection, or unindexed runtime state that static AST parsing cannot capture.
-- Your task requires exact line-level source code inspection across unindexed files where raw file reading is necessary.
+
+**1. You are debugging dynamic dispatch, reflection, or runtime-resolved behavior.**  
+Static AST graphs cannot see method calls resolved by variable names (`obj[methodName]()`), reflection (`Class.forName(...)`), DI container bindings, event bus topics, or dynamic imports. The graph records the call site but not the target. For these cases, use runtime tracing, debugger breakpoints, framework-specific diagnostics (e.g., Spring Actuator, `dotnet-trace`), or ingest runtime traces into the graph if the tool supports it (e.g., CodeGraph's `ingest_traces`).
+
+**2. Your task requires exact line-level inspection of unindexed files.**  
+The graph indexes supported source files and stores named nodes with verbatim source. It does not index generated code (protobuf stubs, GraphQL codegen), unsupported languages (SQL, YAML, HCL, templates), vendored dependencies, or files excluded by config. If you need to read a specific line in a generated file, compare a SQL migration against an ORM model, or inspect a C macro expansion, you must read the raw file. The graph tells you *which file* to read; it does not replace reading it.
+
+**General rule:** Use the graph for structural questions ("who calls X?", "what breaks if I change Y?"). Use raw file reading for content questions ("what does line 47 do?", "does this handle null?"). The graph is a map, not a copy.
 
 ---
 
-## 7. Setup: CodeGraph in Claude Code
+## 8. Setup: CodeGraph in Claude Code
 
 ### Prerequisites
 - Node.js and npm installed.
@@ -203,7 +235,7 @@ The MCP server delivers instructions automatically during the initialize respons
 
 ---
 
-## 8. Setup: KiroGraph in Kiro CLI
+## 9. Setup: KiroGraph in Kiro CLI
 
 ### Prerequisites
 - Node.js installed.
@@ -246,7 +278,7 @@ The MCP server delivers instructions automatically during the initialize respons
 
 ---
 
-## 9. Common Workflows
+## 10. Common Workflows
 
 | Workflow | Goal | CodeGraph | KiroGraph |
 | :--- | :--- | :--- | :--- |
@@ -260,7 +292,7 @@ The MCP server delivers instructions automatically during the initialize respons
 
 ---
 
-## 10. Evidence and Benchmarks
+## 11. Evidence and Benchmarks
 
 Evaluation across 31 real-world repositories compares a traditional file-exploration agent against a graph-based MCP agent.
 
@@ -281,7 +313,7 @@ Evaluation across 31 real-world repositories compares a traditional file-explora
 
 ---
 
-## 11. CLI and MCP Cheat Sheets
+## 12. CLI and MCP Cheat Sheets
 
 ### CodeGraph CLI Reference
 
@@ -359,7 +391,7 @@ Evaluation across 31 real-world repositories compares a traditional file-explora
 
 ---
 
-## 12. Pitfalls and Tips
+## 13. Pitfalls and Tips
 
 **Stale index**  
 The graph reflects a snapshot. If code changes without re-indexing, queries return stale results.
@@ -386,7 +418,7 @@ Static AST indexing cannot see reflection, dynamic imports, or runtime dependenc
 
 ---
 
-## 13. Learning Path
+## 14. Learning Path
 
 ### Step 1: Beginner — Single Symbol Lookup
 **Goal:** Query a symbol without reading raw files.  
@@ -412,7 +444,7 @@ fi
 
 ---
 
-## 14. Appendix: Graphify Quick Start
+## 15. Appendix: Graphify Quick Start
 
 ### Prerequisites
 - Python 3.10+ and `pip` installed.
@@ -470,4 +502,4 @@ graphify --update       # manual incremental update
 
 ---
 
-*This guide is complete and self-contained. All chapters are linked in the Table of Contents. Content is tailored for experienced developers who are new to AI coding agents, MCP, and code knowledge graphs.*
+*Guide complete. All chapters linked in the Table of Contents. Section 3 provides the minimum-viable conceptual model for how parser, AST, and graph relate. Section 7 includes the deepened "Use Neither" conditions. Content targets experienced developers new to AI coding agents, MCP, and code knowledge graphs.*
