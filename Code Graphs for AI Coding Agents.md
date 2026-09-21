@@ -1,6 +1,8 @@
 # Structural Code Graphs for AI Coding Agents
 **CodeGraph, KiroGraph, and Graphify**
 
+> **Audience:** Experienced software engineers who are new to AI coding agents, MCP (Model Context Protocol), and code knowledge graphs.
+
 ---
 
 ## Table of Contents
@@ -24,98 +26,61 @@
 
 ## 1. Key Concepts and Definitions
 
-Before comparing tools, here are the core terms used throughout this guide.
-
 | Term | Definition |
 | :--- | :--- |
 | **AST (Abstract Syntax Tree)** | A tree representation of source code that captures its structural syntax, such as functions, classes, and expressions. |
-| **Tree-sitter** | A parser generator that builds ASTs from source code. It enables fast, incremental structural analysis across many languages. |
-| **Knowledge Graph** | A graph of nodes (functions, classes, files) and edges (calls, imports, extends) that represents code structure and relationships. |
-| **MCP (Model Context Protocol)** | A standard protocol that allows AI agents to call external tools—such as a knowledge graph server—directly from their environment. |
+| **Tree-sitter** | A parser generator that builds ASTs from source code. Enables fast, incremental structural analysis across many languages. |
+| **Knowledge Graph** | A graph of nodes (functions, classes, files) and edges (calls, imports, extends) representing code structure and relationships. |
+| **MCP (Model Context Protocol)** | A standard protocol allowing AI agents to call external tools—such as a knowledge graph server—directly from their environment. |
 | **Blast Radius** | The set of all code that could be affected by a change to a given function, class, or module. |
-| **Incremental Indexing** | Updating only the parts of the graph that changed, rather than rebuilding the entire index from scratch. |
+| **Incremental Indexing** | Updating only the parts of the graph that changed, rather than rebuilding the entire index. |
 | **FTS5** | SQLite’s full-text search extension, used for fast text search over indexed symbols. |
-| **Vector Engine** | A system for semantic search using embeddings, allowing queries based on meaning rather than exact text. |
+| **Vector Engine** | A system for semantic search using embeddings, enabling queries based on meaning rather than exact text. |
 
 ---
 
 ## 2. The Problem
 
-Imagine you are new to a huge library with millions of books. Someone asks you, “Where is the book that explains how to fix a car engine?” Without a catalog, you would have to walk through every aisle, pull out books one by one, and skim them until you find the right one. That could take hours.
+Traditional LLM coding agents explore codebases through iterative file reads, `grep`, and `glob` searches. Each read or search is a separate tool call, and every tool call consumes context tokens. On large or complex tasks—e.g. “fix the auth bug” or “add rate limiting”—this creates two structural problems.
 
-That is exactly what traditional AI coding agents do when they explore a codebase. They use simple text searches (like `grep`) and read files one at a time. For a small project, this works. For a large project with thousands of files, it becomes painfully slow and expensive.
+**1. Token and tool-call waste**  
+Cost scales with codebase size and task depth. To trace a single call chain, the agent may need dozens of `grep`/read cycles. That inflates token usage, increases latency, and can hit model rate limits.
 
-### Two Big Problems
+**2. No structural context**  
+Text search has no AST-level awareness. It cannot reliably resolve:
 
-**1. Wasting Money and Time (Token & Tool Call Waste)**  
-Every time the AI reads a file or runs a search, it uses “tokens.” Tokens are like words—the AI pays for each one it reads and writes. If the AI has to read 50 files to find one function, that’s 50 separate actions (called “tool calls”), and thousands of tokens spent. The bigger the codebase, the more it costs, and the more likely you’ll hit rate limits (like a speed limit for AI requests).
+- transitive callers/callees
+- interface-to-implementation mappings
+- dynamic callbacks or framework routing
+- inheritance/implementation hierarchies
+- cross-file dependency chains
 
-**2. Missing the Big Picture (Lack of Structural Context)**  
-Text searches only look for exact words. They don’t understand how pieces of code are connected. For example, if function `A` calls function `B`, and `B` calls `C`, a simple search for `C` won’t tell you that `A` eventually leads to `C`. It also can’t track things like: which classes inherit from which, which interfaces are implemented by which classes, or how a web request flows through different layers. This means the AI might miss important connections and give you incomplete answers.
+**Concrete example**  
+An agent asked “how does a request reach the database?” must grep for a function name, read matching files, manually parse the call, grep again, and repeat. Mapping one call chain can consume thousands of tokens across many tool calls.
 
-### A Simple Example
-
-**Without a Graph (The Old Way):**  
-You ask the AI: “How does a user request reach the database?”  
-The AI has to:
-1. Search for a function name (e.g., `handleRequest`).
-2. Read the file where it’s defined.
-3. Manually figure out what that function calls next.
-4. Search for that next function.
-5. Read that file.
-6. Repeat until it finds the database call.
-
-This could take dozens of steps and thousands of tokens.
-
-**With a Knowledge Graph (The New Way):**  
-The AI makes a single tool call to a special graph database. The graph already knows all the connections. In milliseconds, it returns the entire path: `handleRequest → validateUser → queryDatabase`. It also gives you the exact lines of code and tells you what else might break if you change something.
-
-### Why This Matters
-
-A knowledge graph turns a slow, expensive, error-prone exploration into a fast, cheap, and accurate lookup. It’s like having a magical library catalog that not only tells you where every book is, but also shows you how all the books reference each other.
+With a knowledge graph, the agent issues one MCP call—e.g. `codegraph_explore` or `kirograph_path`. The graph pre-computes or traces the path via SQL recursive CTEs, returning the full call flow, line-numbered source, and blast radius in sub-milliseconds.
 
 ---
 
 ## 3. How the Graph is Built
 
-Building a knowledge graph for code is like creating a detailed map of a city. You need to know where every building is, what roads connect them, and how people travel between them. Here’s how it works, step by step.
+**Parsing**  
+Source files are parsed into ASTs via Tree-sitter. KiroGraph indexes 24–26 node kinds. CodeGraph supports 66 languages using parallel worker pools. Graphify uses Tree-sitter plus multimodal extraction for docs, PDFs, and media.
 
-### Step 1: Parsing – Reading the Code Like a Human
+**Node and edge extraction**
 
-First, the tool reads your source code. But instead of just treating it as plain text, it uses a special program called **Tree-sitter**. Think of Tree-sitter as a robot that understands programming languages. It reads a file and breaks it down into a tree structure called an **Abstract Syntax Tree (AST)**.
+- **Nodes:** functions, methods, classes, interfaces, types, enums, variables, constants, routes, components, dependencies, vulnerabilities.
+- **Edges:** calls, imports, exports, extends, implements, contains, references, instantiates, overrides, decorates, `type_of`, returns.
 
-An AST is like a family tree for code. For example, a function called `calculateTax` might have child nodes for its parameters, its local variables, and the statements inside it. This tree captures the *structure* of the code, not just the words.
+**Storage**  
+The structural graph is stored locally:
 
-- **KiroGraph** recognizes about 24–26 different types of nodes (like functions, classes, etc.).
-- **CodeGraph** supports 66 programming languages and can parse them in parallel (many at once).
-- **Graphify** also uses Tree-sitter but can additionally read documents, PDFs, and images.
+- **CodeGraph:** SQLite (`.codegraph/db.sqlite`) with WAL and FTS5.
+- **KiroGraph:** SQLite (`.kirograph/kirograph.db`) plus 9 pluggable semantic vector engines (PGlite, Qdrant, Typesense, etc.).
+- **Graphify:** NetworkX graph exported as `graph.json`, `graph.html`, and `GRAPH_REPORT.md`.
 
-### Step 2: Nodes and Edges – The Building Blocks
-
-Once the code is parsed, the tool extracts two things:
-
-- **Nodes:** These are the “things” in your code. Examples: a function, a class, an interface, a variable, a route, or even a security vulnerability.
-- **Edges:** These are the relationships between nodes. Examples: “function A calls function B,” “class X extends class Y,” “file M imports file N,” “interface I is implemented by class C.”
-
-Think of nodes as people and edges as friendships or family relationships. The graph captures who knows whom and how they interact.
-
-### Step 3: Storage – Keeping the Map Safe
-
-The graph is saved locally on your computer, usually in a small database file.
-
-- **CodeGraph** uses a single SQLite file (`.codegraph/db.sqlite`) with special features for fast text search.
-- **KiroGraph** also uses SQLite (`.kirograph/kirograph.db`) but adds support for 9 different vector engines, which allow searching by meaning rather than exact words.
-- **Graphify** exports the graph as a JSON file, an HTML visualization, and a markdown report.
-
-Because everything is stored locally, your code never leaves your machine. You can add these files to `.gitignore` so they don’t get committed to version control.
-
-### Step 4: MCP Exposure – Talking to Your AI Agent
-
-Finally, the graph is exposed to your AI coding agent through something called **MCP (Model Context Protocol)**. MCP is like a walkie-talkie between your AI and the graph. When the AI needs to know something, it sends a query over MCP, and the graph responds instantly.
-
-For example, the AI might ask: “Show me all functions that call `loginUser`.” The graph looks it up and returns the answer in milliseconds. No more grepping through files!
-
-This is why a knowledge graph is so powerful: it turns a slow, manual search into a fast, automated conversation.
+**MCP exposure**  
+The graph is exposed to LLM agents as an MCP server. Agents execute typed structural queries over MCP instead of scanning raw files. This is the integration layer that makes the graph usable by an AI agent without custom tooling.
 
 ---
 
@@ -297,32 +262,22 @@ The MCP server delivers instructions automatically during the initialize respons
 
 ## 10. Evidence and Benchmarks
 
-You might wonder: “Does using a knowledge graph actually make a difference?” Researchers compared two types of AI agents: one that explores files the old-fashioned way (File Exploration Agent) and one that uses a knowledge graph (Graph-Based MCP Agent). They tested them on 31 real-world code repositories. Here’s what they found, explained in simple terms.
+Evaluation across 31 real-world repositories compares a traditional file-exploration agent against a graph-based MCP agent.
 
-### The Numbers
+| Metric | File Exploration Agent | Graph-Based MCP Agent |
+| :--- | :--- | :--- |
+| Token Usage | Baseline | 90% reduction (10x savings) |
+| Tool Calls | Baseline | 2.1x fewer |
+| Overall Quality | 92% | 83% |
+| Query Latency | Seconds to minutes | < 1 ms via SQL CTEs |
 
-| What They Measured | Old Way (File Exploration) | New Way (Graph-Based) | What It Means |
-| :--- | :--- | :--- | :--- |
-| **Token Usage** | Baseline (100%) | 90% less (10x savings) | The graph agent used only 10% of the tokens. That’s like paying for 1 page instead of 10. |
-| **Tool Calls** | Baseline | 2.1x fewer | The graph agent needed half as many separate actions to get the job done. |
-| **Overall Quality** | 92% | 83% | The graph agent’s answers were slightly less accurate in some cases. |
-| **Query Latency** | Seconds to minutes | Less than 1 millisecond | The graph agent responded almost instantly. |
+**Trade-offs and limitations**
 
-> **Important:** These numbers come from the tool makers’ own research. Your results may vary depending on your codebase. Always test on your own projects.
+- **Line-level queries:** Graph tools struggle when the task requires exact line-level statements not stored as named nodes.
+- **Preprocessor/macro expansion:** Structural extraction fails on C/C++ macro expansions because AST parsing occurs before preprocessing.
+- **Dynamic dispatch:** Static AST indexing cannot capture runtime reflection or dynamic resolution. Raw file reading remains necessary for those cases.
 
-### Why Is the Quality Slightly Lower?
-
-The graph is fantastic for structural questions like “Who calls this function?” or “What breaks if I change this?” But it has three limitations:
-
-1. **Line-Level Details:** If you need to see the exact code inside a function that isn’t named (like a complex expression), the graph might not store it. You’d still need to read the raw file.
-2. **Preprocessor Macros (C/C++):** In languages like C, macros are expanded before the code is compiled. The graph is built from the original source, so it can’t see what the macro turns into.
-3. **Dynamic Dispatch & Reflection:** Some code decides at runtime which function to call (e.g., in JavaScript or Python). The graph can’t predict these dynamic choices because it only knows static structure.
-
-So the graph is like a brilliant map, but sometimes you still need to walk the streets yourself.
-
-### The Bottom Line
-
-For most everyday tasks—understanding code, finding call chains, checking impact—the graph saves enormous time and money. For highly detailed, line-by-line debugging, you may need to combine it with traditional file reading.
+**Caveat:** These figures are vendor-reported and should be validated on your own codebase before relying on them.
 
 ---
 
@@ -406,65 +361,28 @@ For most everyday tasks—understanding code, finding call chains, checking impa
 
 ## 12. Pitfalls and Tips
 
-Even the best tools have quirks. Here are common problems you might run into and how to avoid them.
+**Stale index**  
+The graph reflects a snapshot. If code changes without re-indexing, queries return stale results.
 
-### 1. Stale Index – Your Map Is Out of Date
+- **CodeGraph:** background file watcher with XXH3 content hashing. Check the staleness banner in tool responses after manual edits.
+- **KiroGraph:** relies on the `agentStop` hook. If you edit outside Kiro, manually refresh or re-index.
+- **Graphify:** uses Git hooks or manual `--update`. Rebuild before critical refactors.
 
-**What it is:** The graph is built from a snapshot of your code. If you change your code but don’t update the graph, it becomes stale—like using a map from 10 years ago to navigate a city with new roads.
+**Tool overload**  
+Registering too many granular MCP tools can confuse the model and consume context window during initialization.
 
-**How to avoid it:**
-- **CodeGraph:** It watches your files in the background and updates automatically. But always check the “staleness banner” in tool responses after you make manual edits.
-- **KiroGraph:** It updates when your AI agent stops working (the `agentStop` hook). If you edit code outside Kiro, you may need to manually re-index.
-- **Graphify:** It uses Git hooks or a manual `--update` command. The graph can become stale between commits, so rebuild before a big refactor.
+- **CodeGraph** exposes one primary tool (`codegraph_explore`) to avoid mis-picks.
+- **KiroGraph** exposes many tools; use auto-approve lists to limit visibility.
+- **Graphify** has 24+ tools; enable only what you need.
 
-**Tip:** If something seems wrong, run the status command (e.g., `codegraph status` or `kirograph_status`) to check if the graph is fresh.
+**Security and privacy**  
+All three store data locally. CodeGraph and KiroGraph use `.codegraph/` or `.kirograph/`; Graphify writes to `graphify-out/`. Add these to `.gitignore`. CodeGraph also runs binary verification and dependency integrity checks in CI.
 
-### 2. Too Many Tools – Remote Control Overload
+**Unsupported languages**  
+No graph tool covers every language perfectly. CodeGraph has upstream Kotlin grammar issues and some C/C++ macro limitations. Graphify may not parse certain framework routing. Test on a small project before relying on it for a large codebase.
 
-**What it is:** Some graph tools offer dozens of MCP tools. If your AI agent sees 50 different tools, it might get confused about which one to use. It also wastes context window space (the AI’s short-term memory).
-
-**How to avoid it:**
-- **CodeGraph** solves this by exposing just one main tool: `codegraph_explore`. It handles almost everything.
-- **KiroGraph** exposes many tools, but you can configure auto-approve lists to limit which ones are visible.
-- **Graphify** has 24+ tools, so read the documentation and enable only what you need.
-
-**Tip:** Start with the fewest tools possible. Add more only when you find a specific need.
-
-### 3. Security & Privacy – Keep Your Code Safe
-
-**What it is:** You might worry that your code is being sent to the cloud. Good news: all three tools store their databases locally.
-
-- **CodeGraph** and **KiroGraph** keep everything on your machine (`.codegraph/` or `.kirograph/` folders).
-- **Graphify** writes to `graphify-out/` locally.
-- CodeGraph also runs automated security checks on its own binary to prevent tampering.
-
-**How to stay safe:**
-- Add the graph database folders to your `.gitignore` file. This prevents accidentally committing your local database to a public repository.
-- If you’re extra cautious, you can encrypt your disk. But for most users, local storage is already very secure.
-
-**Tip:** Never share your `.codegraph/`, `.kirograph/`, or `graphify-out/` folders with others unless you intend to. They contain a full structural map of your code.
-
-### 4. Unsupported Languages – When the Map Doesn’t Cover Your City
-
-**What it is:** No graph tool supports every programming language perfectly. For example, CodeGraph has trouble with Kotlin (waiting on a Tree-sitter update) and some C/C++ macros. Graphify may not parse your favorite framework’s routing.
-
-**How to avoid it:**
-- Check the tool’s documentation for supported languages.
-- If your language is unsupported, fall back to traditional file reading.
-- Consider using a different tool that better fits your tech stack.
-
-**Tip:** If you work with a niche language, test the tool on a small project first before relying on it for a large codebase.
-
-### 5. Dynamic Code – When the Map Can’t Predict Traffic
-
-**What it is:** Static analysis (like AST parsing) can’t see runtime behavior. If your code uses reflection, dynamic imports, or runtime dependency injection, the graph might miss those connections.
-
-**How to avoid it:**
-- Use the graph for what it’s good at: structural relationships that are visible in the source code.
-- For dynamic behavior, fall back to reading files, adding logging, or using runtime tracing tools.
-- Some tools (like CodeGraph) allow ingesting runtime traces to augment the graph. Check if your tool supports this.
-
-**Tip:** Don’t expect the graph to be a crystal ball. It’s a map of the static code, not a simulation of the running program.
+**Dynamic code**  
+Static AST indexing cannot see reflection, dynamic imports, or runtime dependency injection. Use the graph for structural relationships and fall back to raw file reading, logging, or runtime tracing for dynamic behavior. Some tools (e.g. CodeGraph) support ingesting runtime traces to augment the graph.
 
 ---
 
@@ -552,4 +470,4 @@ graphify --update       # manual incremental update
 
 ---
 
-*This guide is now complete, with beginner-friendly explanations for chapters 2, 3, 10, and 12, a fully linked table of contents, and all non-essential noise removed. The core valuable information remains intact for both beginners and experienced users.*
+*This guide is complete and self-contained. All chapters are linked in the Table of Contents. Content is tailored for experienced developers who are new to AI coding agents, MCP, and code knowledge graphs.*
